@@ -41,7 +41,7 @@ export interface SettingsData {
 export type SettingsChangedEventHandler = (newData: SettingsData) => void
 
 export class Settings {
-    private static settingsFile = joinPath(app.getPath('appData'), 'UACyberShield', 'itarmykit', 'settings.json')
+    private static settingsFile = joinPath(app.getPath('appData'), 'ITArmyKitProfile', 'settings.json')
     private data: SettingsData = {
         system: {
             autoUpdate: true,
@@ -50,7 +50,7 @@ export class Settings {
             language: 'en-US'
         },
         modules: {
-            dataPath: joinPath(app.getPath('appData'), 'UACyberShield', 'itarmykit', 'modules')
+            dataPath: joinPath(app.getPath('appData'), 'ITArmyKitProfile', 'modules')
         },
         schedule: {
             enabled: false,
@@ -92,7 +92,7 @@ export class Settings {
 
     async deleteData() {
         this.deleteModulesData()
-        const p = joinPath(app.getPath('appData'), 'UACyberShield', 'itarmykit')
+        const p = joinPath(app.getPath('appData'), 'ITArmyKitProfile')
         if (existsSync(p)) {
             await fsPromises.rmdir(p, { recursive: true })
         }

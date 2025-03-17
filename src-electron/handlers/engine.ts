@@ -34,7 +34,7 @@ export interface State {
 
 
 export class ExecutionEngine {
-    private static stateFilePath = path.join(app.getPath('appData'), 'UACyberShield', 'itarmykit', 'engine.state.json')
+    private static stateFilePath = path.join(app.getPath('appData'), 'ITArmyKitProfile', 'engine.state.json')
 
     private modules: Array<Distress | DB1000N | MHDDOSProxy> = []
     private runningModule: Distress | DB1000N | MHDDOSProxy | null

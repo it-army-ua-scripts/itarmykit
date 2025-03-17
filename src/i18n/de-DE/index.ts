@@ -218,7 +218,7 @@ export default {
   },
 
   developers: {
-    shieldSubtitle: "Wir sind eine Organisation, die seit dem 25. Februar 2022 tätig ist - dem zweiten Tag der großangelegten Invasion von Moskau in die Ukraine.",
+    itaySubtitle: "Eine Community ukrainischer IT-Spezialisten, die Ende Februar 2022 gegründet wurde, um den Feind im Informations- und Cyberspace nach dem Beginn der russischen Invasion in der Ukraine am 24. Februar 2022 zu neutralisieren.",
     shieldMore: "Lernen Sie über uns und unsere Operationen:",
     partners: "Kollege und Partner",
     contacts: "Kontakte",

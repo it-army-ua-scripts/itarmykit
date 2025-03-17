@@ -219,7 +219,7 @@ module.exports = configure(function (/* ctx */) {
         },
 
         artifactName: '${name}-${os}-${arch}.${ext}',
-        appId: 'uacybershield.itarmykitxp',
+        appId: 'itarmykit_x86',
 
         publish: {
           provider: 'github',

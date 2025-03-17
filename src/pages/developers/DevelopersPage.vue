@@ -14,15 +14,15 @@
           class="q-pa-xs col"
           style="max-width: 135px"
         >
-          <img src="UCS512.png" width="128" height="128" />
+          <img src="itArmyLogo.jpg" width="128" height="128" />
         </q-btn>
         <div class="col q-pl-md">
-          <div class="full-width text-h4 text-bold">#UACyberShield</div>
+          <div class="full-width text-h4 text-bold">IT Army of Ukraine</div>
           <div class="full-width text-subtitle2">
-            {{ $t("developers.shieldSubtitle") }}
+            {{ $t("developers.itaySubtitle") }}
           </div>
-          <a href="https://t.me/uashield" target="_blank"
-            >https://t.me/uashield</a
+          <a href="https://t.me/itarmyofukraine2022" target="_blank"
+            >https://t.me/itarmyofukraine2022</a
           >
         </div>
       </q-card-section>
@@ -33,75 +33,6 @@
       <q-separator></q-separator>
 
       <q-card-section class="items-center allign-center">
-        <q-btn
-          class="q-pa-sm q-ma-xs"
-          @click="openExternalLink('https://t.me/itarmyofukraine2022')"
-        >
-          <q-avatar
-            style="outline: 2px solid #555"
-            class="cursor-pointer"
-            square
-          >
-            <img src="itArmyLogo.jpg" />
-          </q-avatar>
-          <q-tooltip> IT Army of Ukraine </q-tooltip>
-        </q-btn>
-
-        <q-btn class="q-pa-sm q-ma-xs" @click="showMurka()">
-          <q-avatar
-            style="outline: 2px solid #555"
-            class="cursor-pointer"
-            square
-          >
-            <img src="../../layouts/snowEffect/murka_the_cat.jpg" />
-          </q-avatar>
-          <q-tooltip> Slamy's (developer) cat </q-tooltip>
-        </q-btn>
-
-        <q-btn
-          class="q-pa-sm q-ma-xs"
-          @click="openExternalLink('https://t.me/+63wu1QC3KM04ZTJi')"
-        >
-          <q-avatar
-            style="outline: 2px solid #555"
-            class="cursor-pointer"
-            square
-          >
-            <img src="./kiberkozak.png" />
-          </q-avatar>
-          <q-tooltip>Кіберкозаки</q-tooltip>
-        </q-btn>
-
-        <q-btn
-          class="q-pa-sm q-ma-xs"
-          @click="openExternalLink('https://t.me/+U1y6GhTcu701YWVi')"
-        >
-          <q-avatar
-            style="outline: 2px solid #555"
-            class="cursor-pointer"
-            square
-          >
-            <img src="./kiberpalanica1.jpg" />
-          </q-avatar>
-          <q-tooltip
-            >КіберПаляниця. Працює з перших днів повномасштабного вторгнення,
-            Кожен день - це нова битва</q-tooltip
-          >
-        </q-btn>
-
-        <q-btn
-          class="q-pa-sm q-ma-xs"
-          @click="openExternalLink('https://cyberarmy.com.ua/')"
-        >
-          <q-avatar
-            style="outline: 2px solid #555"
-            class="cursor-pointer"
-            square
-          >
-            <img src="./kiberpalanica2.jpg" />
-          </q-avatar>
-          <q-tooltip>КіберПаляниця Wiki</q-tooltip>
-        </q-btn>
 
         <q-btn
           class="q-pa-sm q-ma-xs"
