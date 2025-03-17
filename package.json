@@ -1,16 +1,16 @@
 {
   "name": "itarmykit",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "IT Army Kit",
   "productName": "IT Army Kit",
   "author": {
-    "name": "slamy",
-    "email": "unknown@unknown.com",
-    "url": "https://github.com/opengs"
+    "name": "it army dev",
+    "email": "armyuait@gmail.com",
+    "url": "https://github.com/it-army-ua-scripts"
   },
   "private": false,
   "license": "GPL-3.0",
-  "repository": "https://github.com/opengs/itarmykit",
+  "repository": "https://github.com/it-army-ua-scripts/itarmykit",
   "homepage": "https://itarmy.com.ua",
   "scripts": {
     "lint": "eslint --ext .js,.ts,.vue ./",

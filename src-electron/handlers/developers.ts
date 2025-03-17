@@ -28,13 +28,9 @@ let contributorsCacheTime: Date | null = null
 
 
 async function getDevelopersFromGithub(): Promise<Contributor[]> {
-    const itkitResponse = await fetch("https://api.github.com/repos/opengs/itarmykit/contributors?per_page=100")
+    const itkitResponse = await fetch("https://api.github.com/repos/it-army-ua-scripts/itarmykit/contributors?per_page=100")
     const itkitContributors = await itkitResponse.json() as Contributor[]
     itkitContributors.sort((a, b) => b.contributions - a.contributions)
-
-    const shieldResponse = await fetch("https://api.github.com/repos/opengs/uashield/contributors?per_page=100")
-    const shieldContributors = await shieldResponse.json() as Contributor[]
-    shieldContributors.sort((a, b) => b.contributions - a.contributions)
 
     const db1000nResponse = await fetch("https://api.github.com/repos/arriven/db1000n/contributors?per_page=100")
     const db1000nContributors = await db1000nResponse.json() as Contributor[]

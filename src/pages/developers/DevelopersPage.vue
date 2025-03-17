@@ -125,15 +125,12 @@
           1. {{ $t("developers.contactP1") }}
           <a href="https://t.me/itarmyofukraine2022" target="_blank"
             >https://t.me/itarmyofukraine2022</a
-          >, {{ $t("developers.contactP1_1") }}
-          <a href="https://t.me/uashield" target="_blank"
-            >https://t.me/uashield</a
           >. {{ $t("developers.contactP1_2") }}
         </p>
         <p>
           2. {{ $t("developers.contactP2") }}
-          <a href="https://github.com/opengs/itarmykit" target="_blank"
-            >https://github.com/opengs/itarmykit</a
+          <a href="https://github.com/it-army-ua-scripts/itarmykit" target="_blank"
+            >https://github.com/it-army-ua-scripts/itarmykit</a
           >, {{ $t("developers.contactP2_1") }}
         </p>
         <p>3. {{ $t("developers.contactP3") }}</p>
