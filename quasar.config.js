@@ -222,7 +222,7 @@ module.exports = configure(function (/* ctx */) {
           target: [
             {
               target: 'dmg',
-              arch: ['x64', 'arm64']
+              arch: ['universal']
             }
           ]
         },

@@ -69,27 +69,3 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
         run: |
           quasar build --mode electron --publish always -T darwin --icon=/src-electron/icons/icon.icns
-
-  build_for_macos_13_arm64:
-    name: Build for MacOS-13 ARM64
-    runs-on: macos-13-xlarge
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '18'
-      - name: Install dependencies
-        run: |
-          rm -rf dist/
-          npm install -g @quasar/cli yarn --force
-          yarn install
-      - name: dmg-license add
-        run: |
-          sudo npm install -g dmg-license
-      - name: Build and release MacOS-13 ARM64 binaries
-        env:
-          EP_GH_IGNORE_TIME: true
-          GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
-        run: |
-          quasar build --mode electron --publish always -T darwin --icon=/src-electron/icons/icon.icns
