@@ -30,7 +30,6 @@
 
 import { Config as DistressConfig } from 'app/lib/module/distress'
 import { Config as MHDDOSProxyConfig } from 'app/lib/module/mhddosproxy'
-import { Config as DB1000NConfig } from 'app/lib/module/db1000n'
 import { InstallProgress, ModuleExecutionStatisticsEventData, ModuleName, Version } from 'app/lib/module/module'
 import { IpcRendererEvent, contextBridge, ipcRenderer } from 'electron'
 
@@ -61,10 +60,10 @@ const modulesAPI = {
   async uninstallVersion (moduleName: ModuleName, versionTag: string): Promise<void> {
     return await ipcRenderer.invoke('modules:uninstallVersion', moduleName, versionTag)
   },
-  async getConfig <T = DistressConfig | MHDDOSProxyConfig | DB1000NConfig> (moduleName: ModuleName): Promise<T> {
+  async getConfig <T = DistressConfig | MHDDOSProxyConfig> (moduleName: ModuleName): Promise<T> {
     return await ipcRenderer.invoke('modules:getConfig', moduleName)
   },
-  async setConfig <T = DistressConfig | MHDDOSProxyConfig | DB1000NConfig> (moduleName: ModuleName, config: T): Promise<void> {
+  async setConfig <T = DistressConfig | MHDDOSProxyConfig> (moduleName: ModuleName, config: T): Promise<void> {
     return await ipcRenderer.invoke('modules:setConfig', moduleName, config)
   }
 }

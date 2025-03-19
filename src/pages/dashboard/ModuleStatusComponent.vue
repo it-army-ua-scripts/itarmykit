@@ -29,7 +29,7 @@
 import { computed, onMounted, ref } from "vue";
 import { ModuleName } from "app/lib/module/module";
 
-const selectedModule = ref("DB1000N" as ModuleName | null);
+const selectedModule = ref("DISTRESS" as ModuleName | null);
 const moduleEnabled = ref(false);
 
 const displayMessage = computed(() => {

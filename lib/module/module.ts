@@ -10,7 +10,7 @@ import { Settings } from '../../src-electron/handlers/settings'
 import { getCPUArchitecture } from './archLib'
 import { ca } from 'app/dist/electron/UnPackaged/assets/index.3949846e'
 
-export type ModuleName = 'DB1000N' | 'DISTRESS' | 'MHDDOS_PROXY'
+export type ModuleName = 'DISTRESS' | 'MHDDOS_PROXY'
 
 export interface Version {
     // Unique identifier of the version

@@ -40,18 +40,6 @@ export default {
         selectUse: "Select for Use"
       }
     },
-    db1000n: {
-      scale: "Scaling",
-      scaleDescription: "Used to scale the number of tasks launched, similar to running multiple instances simultaneously",
-      interval: "Interval",
-      intervalDescription: "Minimum interval between task iterations",
-      primitive: "Primitive Mode",
-      primitiveDescription: "Activate if you want to perform primitive tasks, which are less resource efficient",
-      proxiesList: "Proxy List",
-      proxiesListDescription: "Address (in the file system or on the Internet) to the file with proxy servers in the format 'protocol://ip:port' or 'ip:port'",
-      proxyProtocol: "Proxy Protocol",
-      proxyProtocolDescription: "Protocol to use if not defined in the proxy list"
-    },
     mhddosProxy: {
       copies: "Copies",
       copiesDescription: "Number of processes (module copies) launched. 0 for auto",

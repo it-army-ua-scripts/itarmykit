@@ -13,7 +13,7 @@ export const useModulesInstallationStore = defineStore('modulesInstallation', {
     progress: 0,
     errorCode: 'OK' as InstallationErrorCodes,
     errorMessage: '',
-    installingModule: "DB1000N" as ModuleName,
+    installingModule: "DISTRESS" as ModuleName,
     installingTag: ""
   }),
   getters: {

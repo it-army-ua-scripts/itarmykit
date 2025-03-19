@@ -25,7 +25,6 @@
       <div class="text-overline q-mt-md">
         {{ $t("modules.menu.available") }}
       </div>
-      <!-- <div  :class="'text-subtitle2 q-pl-xs ' + (isPageActive('modules_db1000n') ? ($q.dark.isActive ? 'bg-black':'bg-grey-4') : 'selectable_menu')" style="border-top: solid #ccc 1px; border-bottom: solid #ccc 1px;" @click="goToPage('modules_db1000n')">DB1000N</div> -->
       <div
         :class="
           'text-subtitle2 q-pl-xs ' +

@@ -36,6 +36,20 @@
 
         <q-btn
           class="q-pa-sm q-ma-xs"
+          @click="openExternalLink('https://www.ukraine.com.ua/')"
+        >
+          <q-avatar
+            style="outline: 2px solid #555"
+            class="cursor-pointer"
+            square
+          >
+            <img src="./hosting_ukraine.jpg" />
+          </q-avatar>
+          <q-tooltip>Hosting Ukraine</q-tooltip>
+        </q-btn>
+
+        <q-btn
+          class="q-pa-sm q-ma-xs"
           @click="openExternalLink('https://t.me/studentcyberarmy')"
         >
           <q-avatar

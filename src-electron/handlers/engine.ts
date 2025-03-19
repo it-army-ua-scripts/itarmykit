@@ -5,7 +5,6 @@ import { Mutex } from 'async-mutex'
 
 
 import { Distress } from "app/lib/module/distress";
-import { DB1000N } from "app/lib/module/db1000n";
 import { MHDDOSProxy } from "app/lib/module/mhddosproxy";
 import { ModuleExecutionErrorEventData, ModuleExecutionStatisticsEventData, ModuleExecutionStdoutEventData, ModuleName } from "app/lib/module/module";
 
@@ -36,8 +35,8 @@ export interface State {
 export class ExecutionEngine {
     private static stateFilePath = path.join(app.getPath('appData'), 'ITArmyKitProfile', 'engine.state.json')
 
-    private modules: Array<Distress | DB1000N | MHDDOSProxy> = []
-    private runningModule: Distress | DB1000N | MHDDOSProxy | null
+    private modules: Array<Distress |  MHDDOSProxy> = []
+    private runningModule: Distress | MHDDOSProxy | null
     private state?: State
     private stateLock: Mutex = new Mutex()
 
@@ -86,7 +85,7 @@ export class ExecutionEngine {
         })
     }
 
-    constructor(modules: Array<Distress | DB1000N | MHDDOSProxy>) {
+    constructor(modules: Array<Distress | MHDDOSProxy>) {
         this.modules = modules
         this.runningModule = null
 
@@ -324,7 +323,7 @@ export class ExecutionEngine {
     }
 }
 
-export function handleExecutionEngine(modules: Array<Distress | DB1000N | MHDDOSProxy>): ExecutionEngine {
+export function handleExecutionEngine(modules: Array<Distress | MHDDOSProxy>): ExecutionEngine {
     const engine = new ExecutionEngine(modules)
 
     app.on('before-quit', async () => {
