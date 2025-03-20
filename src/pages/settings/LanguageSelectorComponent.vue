@@ -23,7 +23,7 @@
 </template>
 
 <script lang="ts" setup>
-import PeopleAreLikeShipsComponent from '../top/achivements/PeopleAreLikeShipsComponent.vue'
+import PeopleAreLikeShipsComponent from '../top/achievements/PeopleAreLikeShipsComponent.vue'
 
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'

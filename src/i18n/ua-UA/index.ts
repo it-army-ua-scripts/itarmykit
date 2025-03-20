@@ -69,7 +69,7 @@ export default {
     month: "За місяць",
     activeness: "Activeness",
 
-    achivements: {
+    achievements: {
       peopleAreLikeShips: {
         title: "Люди як кораблі",
         subtitle: "якщо російські, то йдуть *****",
