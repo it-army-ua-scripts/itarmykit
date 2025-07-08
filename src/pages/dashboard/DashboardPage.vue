@@ -1,16 +1,16 @@
 <template>
   <q-page padding>
     <div class="row">
-      <div class="col-xs-12 col-sm-6 col-lg-3 q-pa-xs">
+      <div class="col-xs-12 col-sm-6 col-lg-3 q-pa-xs d-flex">
         <ModuleStatusComponent />
       </div>
-      <div class="col-xs-12 col-sm-6 col-lg-3 q-pa-xs">
+      <div class="col-xs-12 col-sm-6 col-lg-3 q-pa-xs d-flex">
         <BytesSendComponent />
       </div>
-      <div class="col-xs-12 col-sm-6 col-lg-3 q-pa-xs">
+      <div class="col-xs-12 col-sm-6 col-lg-3 q-pa-xs d-flex">
         <ActivenessScoreComponent />
       </div>
-      <div class="col-xs-12 col-sm-6 col-lg-3 q-pa-xs">
+      <div class="col-xs-12 col-sm-6 col-lg-3 q-pa-xs d-flex">
         <ItArmyIDComponent />
       </div>
     </div>

@@ -1,5 +1,5 @@
 <template>
-  <q-card flat bordered class="row q-pa-sm bg-transparent">
+  <q-card flat bordered class="row q-pa-sm bg-transparent full-height" style="height: 100%;">
     <div
       :class="'col ' + ($q.dark.isActive ? 'bg-grey-9' : 'bg-yellow-7')"
       style="max-width: 62px; height: 62px"
