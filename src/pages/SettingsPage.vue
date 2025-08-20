@@ -146,11 +146,11 @@
           debounce="500"
           type="number"
         />
-        <q-input
+        <q-input onkeyup="this.value = this.value.replace(/\s/g, '')"
           outlined
           label="IT Army API Key"
           class="q-mt-sm"
-          v-model="itArmyAPIKey"
+          v-model.trim="itArmyAPIKey"
           @update:model-value="setItArmyAPIKey"
           debounce="500"
           type="password"
