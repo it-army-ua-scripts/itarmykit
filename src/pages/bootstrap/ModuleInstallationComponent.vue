@@ -13,7 +13,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { Preset, configure } from './moduleConfig';
-import { InstallProgress, InstallationErrorCodes } from 'app/lib/module/module';
+import { InstallProgress } from 'app/lib/module/module';
 
 const props = defineProps<{
     presetName: Preset

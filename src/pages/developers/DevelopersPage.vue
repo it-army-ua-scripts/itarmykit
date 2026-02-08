@@ -112,9 +112,6 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from "vue";
-import { useRouter } from "vue-router";
-
-import MeaovSound from "../../layouts/snowEffect/cat_meaow.mp3";
 
 import { Contributor } from "app/src-electron/handlers/developers";
 
@@ -148,11 +145,6 @@ function openExternalLink(link: string) {
 let hazardTimeout: NodeJS.Timeout | null = null;
 
 const showMurkaDialog = ref(false);
-function showMurka() {
-  showMurkaDialog.value = true;
-  const audio = new Audio(MeaovSound);
-  audio.play();
-}
 
 onMounted(async () => {
   hazardTimeout = setInterval(() => {

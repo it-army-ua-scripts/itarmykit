@@ -1,1 +1,46 @@
 // app global css in SCSS form
+
+/* === Stat cards === */
+.stat-icon-box {
+  width: 72px;
+  min-width: 72px;
+  height: 100%;
+  border-radius: 8px 0 0 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffd836;
+  align-self: stretch;
+}
+
+.stat-icon-box .q-icon {
+  font-size: 32px;
+}
+
+body.q-dark .stat-icon-box,
+body.body--dark .stat-icon-box,
+.q-dark .stat-icon-box {
+  background: #2a364d;
+}
+
+/* === Mode: Matrix === */
+.matrix-active,
+.matrix-active .q-layout,
+.matrix-active .q-page-container,
+.matrix-active .q-page {
+  background: transparent !important;
+}
+
+.matrix-active .q-header,
+.matrix-active .q-drawer,
+.matrix-active .q-card,
+.matrix-active .q-table__card,
+.matrix-active .q-item,
+.matrix-active .q-toolbar {
+  background: rgba(10, 12, 16, 0.65) !important;
+  backdrop-filter: blur(2px);
+}
+
+.matrix-active .q-drawer {
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+}

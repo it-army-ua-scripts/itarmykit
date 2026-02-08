@@ -1,5 +1,5 @@
 <template>
-    <canvas v-if="matrixStore._enabled" ref="canvas" width="1000" height="2000" style="position: fixed; overflow: hidden;" />
+    <canvas v-if="matrixStore._enabled" ref="canvas" width="1000" height="2000" style="position: fixed; inset: 0; width: 100vw; height: 100vh; overflow: hidden; pointer-events: none; z-index: 0;" />
 </template>
 
 <script setup lang="ts">

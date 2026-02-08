@@ -13,40 +13,70 @@
 
     <q-tab-panels v-model="activeTab" animated class="bg-transparent">
       <q-tab-panel name="weekly" class="bg-transparent">
-        <q-table
-          class="bg-transparent"
-          flat
-          dense
-          :columns="columns"
-          :rows="topWeek"
-          hide-pagination
-          :pagination="{ rowsPerPage: 100 }"
-          :grid="$q.screen.lt.md"
-        />
+        <div class="top-list">
+          <q-card
+            v-for="(row, idx) in topWeek"
+            :key="row.name + row.traffic"
+            flat
+            bordered
+            class="top-list-item"
+            :class="idx < 3 ? 'top-list-item--leader' : ''"
+          >
+            <div v-if="idx < 3" class="top-list-rank">#{{ idx + 1 }}</div>
+
+            <div class="top-list-label">Traffic</div>
+            <div class="top-list-value">{{ humanBytesString(row.traffic) }}</div>
+
+            <div class="top-list-label">Name</div>
+            <div class="top-list-value">{{ row.name }}</div>
+
+            <div class="top-list-label">Servers</div>
+            <div class="top-list-value">{{ row.servers }}</div>
+          </q-card>
+        </div>
       </q-tab-panel>
       <q-tab-panel name="monthly" class="bg-transparent">
-        <q-table
-          class="bg-transparent"
-          flat
-          dense
-          :columns="columns"
-          :rows="topMonth"
-          hide-pagination
-          :pagination="{ rowsPerPage: 100 }"
-          :grid="$q.screen.lt.md"
-        />
+        <div class="top-list">
+          <q-card
+            v-for="(row, idx) in topMonth"
+            :key="row.name + row.traffic"
+            flat
+            bordered
+            class="top-list-item"
+            :class="idx < 3 ? 'top-list-item--leader' : ''"
+          >
+            <div v-if="idx < 3" class="top-list-rank">#{{ idx + 1 }}</div>
+
+            <div class="top-list-label">Traffic</div>
+            <div class="top-list-value">{{ humanBytesString(row.traffic) }}</div>
+
+            <div class="top-list-label">Name</div>
+            <div class="top-list-value">{{ row.name }}</div>
+
+            <div class="top-list-label">Servers</div>
+            <div class="top-list-value">{{ row.servers }}</div>
+          </q-card>
+        </div>
       </q-tab-panel>
       <q-tab-panel name="activeness" class="bg-transparent">
-        <q-table
-          class="bg-transparent"
-          flat
-          dense
-          :columns="activenessColumns"
-          :rows="activenessTop10"
-          hide-pagination
-          :pagination="{ rowsPerPage: 100 }"
-          :grid="$q.screen.lt.md"
-        />
+        <div class="top-list">
+          <q-card
+            v-for="(row, idx) in activenessTop10"
+            :key="row.name + row.score"
+            flat
+            bordered
+            class="top-list-item"
+            :class="idx < 3 ? 'top-list-item--leader' : ''"
+          >
+            <div v-if="idx < 3" class="top-list-rank">#{{ idx + 1 }}</div>
+
+            <div class="top-list-label">Name</div>
+            <div class="top-list-value">{{ row.name }}</div>
+
+            <div class="top-list-label">Score</div>
+            <div class="top-list-value">{{ row.score }}</div>
+          </q-card>
+        </div>
       </q-tab-panel>
     </q-tab-panels>
   </q-page>
@@ -54,7 +84,7 @@
 
 <script setup lang="ts">
 import { UserStat } from "app/lib/activeness/api";
-import { QTableColumn, useQuasar } from "quasar";
+import { useQuasar } from "quasar";
 import { ref, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 
@@ -85,29 +115,6 @@ function humanBytesString(bytes: number, dp = 1) {
   return bytes.toFixed(dp) + " " + units[u];
 }
 
-const columns = [
-  {
-    name: "Traffic",
-    field: (row) => humanBytesString(row.traffic),
-    align: "left",
-    label: "Traffic",
-    sortable: false,
-  },
-  {
-    name: "Name",
-    field: "name",
-    align: "left",
-    label: "Name",
-    sortable: false,
-  },
-  {
-    name: "Servers",
-    field: "servers",
-    align: "left",
-    label: "Servers",
-    sortable: false,
-  },
-] as Array<QTableColumn>;
 
 const topWeek = ref(
   [] as Array<{
@@ -145,22 +152,6 @@ async function loadTop() {
   }
 }
 
-const activenessColumns = [
-  {
-    name: "name",
-    label: "Name",
-    field: "name",
-    align: "left",
-    sortable: false,
-  },
-  {
-    name: "acore",
-    label: "Score",
-    field: "score",
-    align: "left",
-    sortable: false,
-  },
-] as Array<QTableColumn>;
 const activenessTop10 = ref<UserStat[]>([]);
 async function loadActiveness() {
   const stats = await window.activenessAPI.getStats();
@@ -175,8 +166,6 @@ async function loadActiveness() {
     return;
   }
 
-  console.log(stats);
-
   activenessTop10.value = stats.top10;
 }
 
@@ -185,3 +174,65 @@ onMounted(async () => {
   await loadActiveness();
 });
 </script>
+
+<style scoped>
+.top-list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.top-list-item {
+  padding: 12px;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  border: 1px solid #e6e6e6;
+  text-align: center;
+  position: relative;
+}
+
+.top-list-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #6b6b6b;
+  margin-bottom: 2px;
+  letter-spacing: 0.4px;
+}
+
+.top-list-value {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  word-break: break-word;
+}
+
+.top-list-item--leader {
+  border-color: #f0c419;
+  box-shadow: 0 8px 20px rgba(240, 196, 25, 0.2);
+}
+
+.top-list-rank {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #f0c419;
+  color: #111;
+  font-weight: 800;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+@media (max-width: 1400px) {
+  .top-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .top-list {
+    grid-template-columns: 1fr;
+  }
+}
+</style>

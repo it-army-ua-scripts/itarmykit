@@ -299,7 +299,6 @@
 </template>
 
 <script lang="ts" setup>
-import { app } from "electron";
 import { useQuasar } from "quasar";
 import LanguageSelectorComponent from "./settings/LanguageSelectorComponent.vue";
 
