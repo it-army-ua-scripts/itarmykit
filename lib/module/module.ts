@@ -144,7 +144,7 @@ export abstract class Module<ConfigType extends BaseConfig> {
     abstract installVersion(versionTag: string): AsyncGenerator<InstallProgress, void, void>
     public async uninstallVersion (versionTag: string): Promise<void> {
       const installDirectory = await this.getInstallationDirectory()
-      await fs.promises.rmdir(path.join(installDirectory, versionTag), { recursive: true })
+      await fs.promises.rm(path.join(installDirectory, versionTag), { recursive: true, force: true })
     }
 
     public async installLatestVersion (): Promise<boolean> {
@@ -265,6 +265,9 @@ export abstract class Module<ConfigType extends BaseConfig> {
 
     protected async *downloadFile (url: string, outPath: string): AsyncGenerator<{progress: number}, void, void> {
       const response = await fetch(url)
+      if (!response.ok) {
+        throw new Error(`Download failed: ${response.status} ${response.statusText}`)
+      }
       const fileStream = fs.createWriteStream(outPath)
       const contentLengthHeader = response.headers.get('content-length')
       if (contentLengthHeader == null) {
@@ -306,6 +309,10 @@ export abstract class Module<ConfigType extends BaseConfig> {
           })
         })
         if (r.progress == 100) {
+          await new Promise<void>((resolve, reject) => {
+            fileStream.on('finish', resolve)
+            fileStream.on('error', reject)
+          })
           return
         }
         if (lastYieldProgress + 5 < r.progress || r.progress == 100) {

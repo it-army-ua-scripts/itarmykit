@@ -99,7 +99,7 @@ export class Settings {
         this.deleteModulesData()
         const p = joinPath(app.getPath('appData'), 'ITArmyKitProfile')
         if (existsSync(p)) {
-            await fsPromises.rmdir(p, { recursive: true })
+            await fsPromises.rm(p, { recursive: true, force: true })
         }
     }
 
@@ -250,7 +250,7 @@ export class Settings {
 
     async deleteModulesData() {
         if (existsSync(this.data.modules.dataPath)) {
-            await fsPromises.rmdir(this.data.modules.dataPath, { recursive: true })
+            await fsPromises.rm(this.data.modules.dataPath, { recursive: true, force: true })
         }
     }
 
