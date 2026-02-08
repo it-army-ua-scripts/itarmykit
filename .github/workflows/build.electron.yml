@@ -46,9 +46,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
         run: |
           quasar build --mode electron --publish always -T win32 --icon=/src-electron/icons/icon.ico
-  build_for_macos_13:
-    name: Build for MacOS-13
-    runs-on: macos-13
+  build_for_macos_14:
+    name: Build for MacOS-14
+    runs-on: macos-14
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -63,7 +63,7 @@ jobs:
       - name: dmg-license add
         run: |
           sudo npm install -g dmg-license
-      - name: Build and release MacOS-13 binaries
+      - name: Build and release MacOS-14 binaries
         env:
           EP_GH_IGNORE_TIME: true
           GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
