@@ -40,9 +40,9 @@
 
             <div class="text-h4 text-bold text-negative text-center q-pa-lg" v-if="$q.platform.is.win">{{ $t('bootstrap.data.windows') }}</div>
 
-            <q-stepper-navigation class="row">
-            <q-btn @click="step = 1" color="primary" :label="$t('bootstrap.data.backButton')" class="q-mr-sm col-2" outline />
-            <q-btn @click="finishDataStep" color="primary" :label="$t('bootstrap.data.continueButton')" class="col fit" outline />
+            <q-stepper-navigation class="row q-col-gutter-sm">
+            <q-btn @click="step = 1" color="primary" :label="$t('bootstrap.data.backButton')" class="q-mr-sm col-12 col-sm-auto q-mb-sm" outline />
+            <q-btn @click="finishDataStep" color="primary" :label="$t('bootstrap.data.continueButton')" class="col-12 col-sm q-mb-sm" outline />
 
             </q-stepper-navigation>
         </q-step>
@@ -58,9 +58,9 @@
             <div class="q-mb-md">{{ $t('settings.idDescription') }} <a href="https://itarmy.com.ua/statistics/" target="_blank" rel="noopener noreferrer">https://itarmy.com.ua</a></div>
             <q-input :label="$t('bootstrap.itarmy.uuidInputTitle')" outlined v-model="itArmyUUID" @update:model-value="setItArmyUUID" :debounce="500" type="number"/>
 
-            <q-stepper-navigation class="row">
-                <q-btn @click="step = 2" color="primary" :label="$t('bootstrap.itarmy.backButton')" class="q-mr-sm col-2" outline />
-            <q-btn @click="finishItArmyStep" color="primary" :label="$t('bootstrap.itarmy.continueButton')" class="col fit" outline />
+            <q-stepper-navigation class="row q-col-gutter-sm">
+                <q-btn @click="step = 2" color="primary" :label="$t('bootstrap.itarmy.backButton')" class="q-mr-sm col-12 col-sm-auto q-mb-sm" outline />
+            <q-btn @click="finishItArmyStep" color="primary" :label="$t('bootstrap.itarmy.continueButton')" class="col-12 col-sm q-mb-sm" outline />
             </q-stepper-navigation>
         </q-step>
 
@@ -128,9 +128,9 @@
                     </q-item-section>
                 </q-item>
             </q-list>
-            <q-stepper-navigation class="row">
-                <q-btn @click="step = 2" color="primary" :label="$t('bootstrap.data.backButton')" class="q-mr-sm col-2" outline />
-            <q-btn @click="finishModuleStep" color="primary" :label="$t('bootstrap.data.continueButton')" class="col fit" outline />
+            <q-stepper-navigation class="row q-col-gutter-sm">
+                <q-btn @click="step = 2" color="primary" :label="$t('bootstrap.data.backButton')" class="q-mr-sm col-12 col-sm-auto q-mb-sm" outline />
+            <q-btn @click="finishModuleStep" color="primary" :label="$t('bootstrap.data.continueButton')" class="col-12 col-sm q-mb-sm" outline />
             </q-stepper-navigation>
         </q-step>
         </q-stepper>

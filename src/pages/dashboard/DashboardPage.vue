@@ -20,7 +20,7 @@
       }}</q-card-section>
       <BitrateChartComponent class="fit" />
     </q-card>
-    <div class="col q-pl-lg">
+    <div class="q-mt-md">
       <div class="text-bold text-h5 q-mt-lg">
         {{ $t("modules.active.executionLog") }}:
       </div>

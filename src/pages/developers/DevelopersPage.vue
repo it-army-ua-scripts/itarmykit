@@ -5,9 +5,8 @@
     :value="biohazardActivationMenu"
     v-if="biohazardActivationMenu > 0.05"
   />
-  <div class="row q-pt-lg">
-    <div class="col-2"></div>
-    <q-card class="col-8 bg-transparent" flat>
+  <div class="row q-pt-lg justify-center">
+    <q-card class="col-12 col-lg-8 bg-transparent" flat>
       <q-card-section class="row">
         <q-btn
           @click="biohazardClick"
@@ -105,8 +104,6 @@
         </div>
       </q-card-section>
     </q-card>
-    <div class="col-2"></div>
-
     <q-dialog v-model="showMurkaDialog">
       <q-img src="../../layouts/snowEffect/murka_the_cat.jpg"></q-img>
     </q-dialog>

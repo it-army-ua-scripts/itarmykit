@@ -1,5 +1,5 @@
 <template>
-    <q-card flat style="min-width: 500px;">
+    <q-card flat style="width: min(500px, 90vw);">
         <q-card-section>
             <div class="text-h5 text-bold text-light-green-13">{{ $t('settings.matrixQuiz.header', {name: itArmyUUID}) }}</div>
             <div class="text-caption text-light-green-13">{{ $t('settings.matrixQuiz.body') }}</div>
@@ -30,10 +30,9 @@
         </q-card-section>
 
         <q-card-actions>
-            <div class="row fit">
-                <q-btn color="blue-8" class="col-5" @click="emits('onClose')">{{ $t('settings.matrixQuiz.cancell')  }}</q-btn>
-                <div class="col-2"></div>
-                <q-btn color="red-8" class="col-5" @click="solve">{{ $t('settings.matrixQuiz.submit')  }}</q-btn>
+            <div class="row fit q-col-gutter-sm">
+                <q-btn color="blue-8" class="col-12 col-sm-6" @click="emits('onClose')">{{ $t('settings.matrixQuiz.cancell')  }}</q-btn>
+                <q-btn color="red-8" class="col-12 col-sm-6" @click="solve">{{ $t('settings.matrixQuiz.submit')  }}</q-btn>
             </div>
         </q-card-actions>
     </q-card>

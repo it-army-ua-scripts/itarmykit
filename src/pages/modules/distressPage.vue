@@ -1,9 +1,9 @@
 <template>
-  <q-page padding class="row">
-    <div class="col" style="max-width: 300px">
+  <q-page padding class="row q-col-gutter-md">
+    <div class="col-12 col-md-3">
       <MenuComponent />
     </div>
-    <div class="col q-pl-lg">
+    <div class="col-12 col-md-9">
       <div class="row text-h5 text-bold">DISTRESS</div>
       <q-separator />
       <div class="row col q-pt-sm">
@@ -58,7 +58,7 @@
       </div>
       <q-separator />
       <div class="row q-pt-md">
-        <div class="col text-subtitle1">
+        <div class="col-12 col-sm text-subtitle1">
           {{ $t("modules.available.selVersion") }}
         </div>
         <q-select
@@ -66,7 +66,7 @@
           v-model="configSelectedVersion"
           type="number"
           dense
-          class="col-4"
+          class="col-12 col-sm-4"
           :options="installedVersions"
           @update:model-value="setConfigDebouced"
         />
@@ -90,7 +90,7 @@
         </q-item-section>
       </q-item>
       <div class="row q-pt-sm">
-        <div class="col text-subtitle1">
+        <div class="col-12 col-sm text-subtitle1">
           {{ $t("modules.distress.concurrency") }}
         </div>
         <q-slider
@@ -101,7 +101,7 @@
           :step="64"
           label
           color="primary"
-          class="col-8 q-pr-md"
+          class="col-12 col-sm-8 q-pr-md"
           @update:model-value="setConfigDebouced"
         />
         <q-input
@@ -109,7 +109,7 @@
           v-model="configConcurrency"
           type="number"
           dense
-          class="col-2"
+          class="col-12 col-sm-2"
           @update:model-value="setConfigDebouced"
         />
         <div class="col-12 text-caption text-grey-8" style="margin-top: -15px">
@@ -117,7 +117,7 @@
         </div>
       </div>
       <div class="row q-pt-sm">
-        <div class="col text-subtitle1">
+        <div class="col-12 col-sm text-subtitle1">
           {{ $t("modules.distress.torConnections") }}
         </div>
         <q-slider
@@ -127,7 +127,7 @@
           :step="1"
           label
           color="primary"
-          class="col-8 q-pr-md"
+          class="col-12 col-sm-8 q-pr-md"
           @update:model-value="setConfigDebouced"
         />
         <q-input
@@ -135,7 +135,7 @@
           v-model="configTorConnections"
           type="number"
           dense
-          class="col-2"
+          class="col-12 col-sm-2"
           @update:model-value="setConfigDebouced"
         />
         <div class="col-12 text-caption text-grey-8" style="margin-top: -15px">
@@ -143,7 +143,7 @@
         </div>
       </div>
       <div class="row q-pt-sm">
-        <div class="col text-subtitle1">
+        <div class="col-12 col-sm text-subtitle1">
           {{ $t("modules.distress.useMyIp") }}
         </div>
         <q-slider
@@ -153,7 +153,7 @@
           :step="1"
           label
           color="primary"
-          class="col-8 q-pr-md"
+          class="col-12 col-sm-8 q-pr-md"
           @update:model-value="setConfigDebouced"
         />
         <q-input
@@ -161,7 +161,7 @@
           v-model="configUseMyIP"
           type="number"
           dense
-          class="col-2"
+          class="col-12 col-sm-2"
           @update:model-value="setConfigDebouced"
         />
         <div class="col-12 text-caption text-grey-8" style="margin-top: -15px">

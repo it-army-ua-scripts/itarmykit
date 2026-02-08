@@ -21,6 +21,7 @@
           :rows="topWeek"
           hide-pagination
           :pagination="{ rowsPerPage: 100 }"
+          :grid="$q.screen.lt.md"
         />
       </q-tab-panel>
       <q-tab-panel name="monthly" class="bg-transparent">
@@ -32,6 +33,7 @@
           :rows="topMonth"
           hide-pagination
           :pagination="{ rowsPerPage: 100 }"
+          :grid="$q.screen.lt.md"
         />
       </q-tab-panel>
       <q-tab-panel name="activeness" class="bg-transparent">
@@ -43,6 +45,7 @@
           :rows="activenessTop10"
           hide-pagination
           :pagination="{ rowsPerPage: 100 }"
+          :grid="$q.screen.lt.md"
         />
       </q-tab-panel>
     </q-tab-panels>

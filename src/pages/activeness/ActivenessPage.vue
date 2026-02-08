@@ -1,7 +1,7 @@
 <template>
   <q-spinner size="xl" class="q-ma-xl" v-if="loadingAll" />
   <div v-if="loginRequired && !loadingAll">
-    <q-card flat class="q-pa-xl">
+    <q-card flat class="q-pa-md">
       <q-card-section>
         <div class="text-h5 text-center">
           {{ $t("activeness.login.title") }}
@@ -41,9 +41,8 @@
   </div>
 
   <div v-if="!loginRequired && !loadingAll" class="q-pa-md">
-    <div class="row q-mb-sm">
-      <div class="col-10"></div>
-      <div class="col-2">
+    <div class="row q-mb-sm justify-end">
+      <div class="col-12 col-md-3">
         <q-btn class="full-width" icon="logout" outline @click="logout">{{
           $t("activeness.logoutButton")
         }}</q-btn>
@@ -61,6 +60,7 @@
       style="width: 100%"
       :wrap-cells="true"
       dense
+      :grid="$q.screen.lt.md"
     >
       <template v-slot:body-cell-actions="props">
         <q-td :props="props" style="overflow-wrap: break-word">

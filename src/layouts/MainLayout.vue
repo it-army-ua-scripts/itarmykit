@@ -16,7 +16,10 @@
           @click="toggleLeftDrawer"
         />
 
-        <q-toolbar-title class="text-right q-pr-xl text-subtitle2">
+        <q-toolbar-title
+          class="text-right q-pr-md text-subtitle2 ellipsis"
+          style="min-width: 0"
+        >
           <ShortStatisticsComponent />
         </q-toolbar-title>
 

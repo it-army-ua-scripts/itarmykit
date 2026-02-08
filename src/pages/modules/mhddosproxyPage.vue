@@ -1,9 +1,9 @@
 <template>
-    <q-page padding class="row">
-        <div class="col" style="max-width: 300px;">
+    <q-page padding class="row q-col-gutter-md">
+        <div class="col-12 col-md-3">
             <MenuComponent />
         </div>
-        <div class="col q-pl-lg">
+        <div class="col-12 col-md-9">
             <div class="row text-h5 text-bold">MHDDOS PROXY</div>
             <q-separator />
             <div class="row col q-pt-sm">
@@ -18,8 +18,8 @@
             <div class="row text-h5 text-bold q-mt-lg">{{ $t('modules.available.configuration') }}</div>
             <q-separator />
             <div class="row q-pt-md">
-                <div class="col text-subtitle1">{{ $t('modules.available.selVersion') }}</div>
-                <q-select outlined v-model="configSelectedVersion" type="number" dense class="col-4" :options="installedVersions" @update:model-value="setConfigDebouced"/>
+                <div class="col-12 col-sm text-subtitle1">{{ $t('modules.available.selVersion') }}</div>
+                <q-select outlined v-model="configSelectedVersion" type="number" dense class="col-12 col-sm-4" :options="installedVersions" @update:model-value="setConfigDebouced"/>
                 <div class="col-12 text-caption text-grey-8" style="margin-top: -15px;">{{ $t('modules.available.selVersionDescription') }}</div>
             </div>
             <q-item class="row q-pa-none q-pt-sm">
@@ -32,21 +32,21 @@
                 </q-item-section>
             </q-item>
             <div class="row q-pt-sm">
-                <div class="col text-subtitle1">{{ $t('modules.mhddosProxy.copies') }}</div>
-                <q-slider v-model="configCopies" :min="0" :max="64" :step="1" label color="primary" class="col-7 q-pr-md" @update:model-value="setConfigDebouced"/>
-                <q-input outlined v-model="configCopies" type="number" dense class="col-2" @update:model-value="setConfigDebouced"/>
+                <div class="col-12 col-sm text-subtitle1">{{ $t('modules.mhddosProxy.copies') }}</div>
+                <q-slider v-model="configCopies" :min="0" :max="64" :step="1" label color="primary" class="col-12 col-sm-7 q-pr-md" @update:model-value="setConfigDebouced"/>
+                <q-input outlined v-model="configCopies" type="number" dense class="col-12 col-sm-2" @update:model-value="setConfigDebouced"/>
                 <div class="col-12 text-caption text-grey-8" style="margin-top: -15px;">{{ $t('modules.mhddosProxy.copiesDescription') }}</div>
             </div>
             <div class="row q-pt-sm">
-                <div class="col text-subtitle1">{{ $t('modules.mhddosProxy.threads') }}</div>
-                <q-slider v-model="configThreads" :min="0" :max="65534" :step="64" label color="primary" class="col-7 q-pr-md" @update:model-value="setConfigDebouced"/>
-                <q-input outlined v-model="configThreads" type="number" dense class="col-2" @update:model-value="setConfigDebouced"/>
+                <div class="col-12 col-sm text-subtitle1">{{ $t('modules.mhddosProxy.threads') }}</div>
+                <q-slider v-model="configThreads" :min="0" :max="65534" :step="64" label color="primary" class="col-12 col-sm-7 q-pr-md" @update:model-value="setConfigDebouced"/>
+                <q-input outlined v-model="configThreads" type="number" dense class="col-12 col-sm-2" @update:model-value="setConfigDebouced"/>
                 <div class="col-12 text-caption text-grey-8" style="margin-top: -15px;">{{ $t('modules.mhddosProxy.threadsDescription') }}</div>
             </div>
             <div class="row q-pt-sm">
-                <div class="col text-subtitle1">{{ $t('modules.mhddosProxy.useMyIp') }}</div>
-                <q-slider v-model="configUseMyIP" :min="0" :max="100" :step="1" label color="primary" class="col-7 q-pr-md" @update:model-value="setConfigDebouced"/>
-                <q-input outlined v-model="configUseMyIP" type="number" dense class="col-2" @update:model-value="setConfigDebouced"/>
+                <div class="col-12 col-sm text-subtitle1">{{ $t('modules.mhddosProxy.useMyIp') }}</div>
+                <q-slider v-model="configUseMyIP" :min="0" :max="100" :step="1" label color="primary" class="col-12 col-sm-7 q-pr-md" @update:model-value="setConfigDebouced"/>
+                <q-input outlined v-model="configUseMyIP" type="number" dense class="col-12 col-sm-2" @update:model-value="setConfigDebouced"/>
                 <div class="col-12 text-caption text-grey-8" style="margin-top: -15px;">{{ $t('modules.mhddosProxy.useMyIpDescription') }}</div>
             </div>
             <div class="row q-pt-sm">

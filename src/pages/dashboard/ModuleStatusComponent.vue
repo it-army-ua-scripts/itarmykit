@@ -1,5 +1,5 @@
 <template>
-  <q-card flat bordered class="row q-pa-sm bg-transparent full-height" style="height: 100%;">
+  <q-card flat bordered class="row q-pa-sm bg-transparent full-height items-center" style="height: 100%;">
     <div
       :class="'col ' + ($q.dark.isActive ? 'bg-grey-9' : 'bg-yellow-7')"
       style="max-width: 62px; height: 62px"
@@ -16,7 +16,7 @@
       </div>
       <div class="text-subtitle1 text-bold">{{ displayMessage }}</div>
     </div>
-    <div class="col-2 q-mt-md">
+    <div class="col-auto q-mt-md">
       <q-toggle
         v-model="moduleEnabled"
         @update:model-value="setModuleEnabled"

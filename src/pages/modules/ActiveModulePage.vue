@@ -1,9 +1,9 @@
 <template>
-  <q-page padding class="row">
-    <div class="col" style="max-width: 300px">
+  <q-page padding class="row q-col-gutter-md">
+    <div class="col-12 col-md-3">
       <MenuComponent />
     </div>
-    <div class="col q-pl-lg">
+    <div class="col-12 col-md-9">
       <q-select
         outlined
         v-model="selectedModule"
