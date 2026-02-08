@@ -224,6 +224,33 @@ onMounted(async () => {
   border-radius: 6px;
 }
 
+body.q-dark .top-list-item,
+body.body--dark .top-list-item,
+.q-dark .top-list-item {
+  background: #1f1f1f;
+  border-color: #3a3a3a;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+body.q-dark .top-list-label,
+body.body--dark .top-list-label,
+.q-dark .top-list-label {
+  color: #a5a5a5;
+}
+
+body.q-dark .top-list-value,
+body.body--dark .top-list-value,
+.q-dark .top-list-value {
+  color: #f2f2f2;
+}
+
+body.q-dark .top-list-item--leader,
+body.body--dark .top-list-item--leader,
+.q-dark .top-list-item--leader {
+  border-color: #f0c419;
+  box-shadow: 0 8px 20px rgba(240, 196, 25, 0.35);
+}
+
 @media (max-width: 1400px) {
   .top-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));

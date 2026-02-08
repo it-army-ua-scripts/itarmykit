@@ -60,6 +60,22 @@ function createWindow () {
     mainWindow = undefined
   })
 
+  mainWindow.webContents.on('render-process-gone', (_event, details) => {
+    console.error('render-process-gone', details)
+    if (!mainWindow) {
+      return
+    }
+    // If renderer died, recreate the window to restore the app
+    const winBounds = mainWindow.getBounds()
+    mainWindow.destroy()
+    mainWindow = undefined
+    createWindow()
+    if (mainWindow) {
+      mainWindow.setBounds(winBounds)
+      mainWindow.show()
+    }
+  })
+
   handle(mainWindow)
 }
 
