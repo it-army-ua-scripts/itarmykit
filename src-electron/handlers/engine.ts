@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { WebContents, app, ipcMain } from 'electron'
+import { Settings } from './settings'
 import { Mutex } from 'async-mutex'
 
 
@@ -34,10 +35,13 @@ export interface State {
 
 export class ExecutionEngine {
     private static stateFilePath = path.join(app.getPath('appData'), 'ITArmyKitProfile', 'engine.state.json')
+    private static stateBackupFilePath = path.join(app.getPath('appData'), 'ITArmyKitProfile', 'engine.state.json.bak')
+    private static stateTempFilePath = path.join(app.getPath('appData'), 'ITArmyKitProfile', 'engine.state.json.tmp')
 
     private modules: Array<Distress |  MHDDOSProxy> = []
     private runningModule: Distress | MHDDOSProxy | null
     private state?: State
+    private settings: Settings
     private stateLock: Mutex = new Mutex()
 
     private async appendToExecutionLog(entry: ExecutionLogEntry) {
@@ -85,8 +89,9 @@ export class ExecutionEngine {
         })
     }
 
-    constructor(modules: Array<Distress | MHDDOSProxy>) {
+    constructor(modules: Array<Distress | MHDDOSProxy>, settings: Settings) {
         this.modules = modules
+        this.settings = settings
         this.runningModule = null
 
         for (const module of modules) {
@@ -199,6 +204,7 @@ export class ExecutionEngine {
             config.moduleToRun = module
             await this.setState(config)
         })
+        await this.settings.setExecutionModuleToRun(module)
     }
 
     public async startModule() {
@@ -252,8 +258,16 @@ export class ExecutionEngine {
                 const configString = await fs.promises.readFile(ExecutionEngine.stateFilePath, 'utf8')
                 this.state = JSON.parse(configString) as State
             } catch {
-                this.state = { run: false, executionLog: [] ,statistics: [], stdErr: [], stdOut: [], statisticsTotals: { totalBytesSent: 0 } } // To enable TS types
-                await this.setState(this.state)
+                // Try to recover from backup if main file is corrupted (e.g., power loss during write).
+                try {
+                    const backupString = await fs.promises.readFile(ExecutionEngine.stateBackupFilePath, 'utf8')
+                    this.state = JSON.parse(backupString) as State
+                    console.warn('[ExecutionEngine] Recovered state from backup file')
+                    await this.setState(this.state)
+                } catch {
+                    this.state = { run: false, executionLog: [] ,statistics: [], stdErr: [], stdOut: [], statisticsTotals: { totalBytesSent: 0 } } // To enable TS types
+                    await this.setState(this.state)
+                }
             }
         }
 
@@ -262,13 +276,36 @@ export class ExecutionEngine {
             this.state.statisticsTotals = { totalBytesSent: 0 }
         }
 
+        // Fallback: if moduleToRun is missing, try to recover from settings.
+        if (this.state.moduleToRun === undefined) {
+            try {
+                const settingsData = await this.settings.getData()
+                if (settingsData.execution?.moduleToRun) {
+                    this.state.moduleToRun = settingsData.execution.moduleToRun
+                    console.warn('[ExecutionEngine] Recovered moduleToRun from settings')
+                    await this.setState(this.state)
+                }
+            } catch {
+                // ignore recovery errors
+            }
+        }
+
         return this.state
     }
 
     private async setState(config: State) {
         this.state = config
         await fs.promises.mkdir(path.dirname(ExecutionEngine.stateFilePath), { recursive: true })
-        await fs.promises.writeFile(ExecutionEngine.stateFilePath, JSON.stringify(config))
+        const payload = JSON.stringify(config)
+        // Atomic-ish write: write temp file, rotate current to backup, then rename temp to main.
+        await fs.promises.writeFile(ExecutionEngine.stateTempFilePath, payload)
+        try {
+            await fs.promises.access(ExecutionEngine.stateFilePath)
+            await fs.promises.rename(ExecutionEngine.stateFilePath, ExecutionEngine.stateBackupFilePath)
+        } catch {
+            // Ignore if main file doesn't exist yet.
+        }
+        await fs.promises.rename(ExecutionEngine.stateTempFilePath, ExecutionEngine.stateFilePath)
     }
 
     private executionLogListeners = [] as Array<WebContents>
@@ -323,8 +360,8 @@ export class ExecutionEngine {
     }
 }
 
-export function handleExecutionEngine(modules: Array<Distress | MHDDOSProxy>): ExecutionEngine {
-    const engine = new ExecutionEngine(modules)
+export function handleExecutionEngine(modules: Array<Distress | MHDDOSProxy>, settings: Settings): ExecutionEngine {
+    const engine = new ExecutionEngine(modules, settings)
 
     app.on('before-quit', async () => {
         await engine.dispose()

@@ -21,7 +21,7 @@ export function handle (mainWindow: BrowserWindow) {
   ]
 
   handleModules(modules)
-  const engine = handleExecutionEngine(modules)
+  const engine = handleExecutionEngine(modules, settings)
   handleTop()
   handleUpdater(settings, engine)
   handleTray(settings, mainWindow)
