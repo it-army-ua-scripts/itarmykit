@@ -237,7 +237,10 @@ export abstract class Module<ConfigType extends BaseConfig> {
       }
 
       //Cache github releases for 5 minutes in order to ommit Gihub API rate limit
-      if (this.githubReleaseCacheTime === undefined || this.githubReleaseCacheTime.getTime() + 5 * 60 * 1000 > new Date().getTime()) {
+      const now = Date.now()
+      const cacheTtlMs = 5 * 60 * 1000
+      if (this.githubReleaseCacheTime === undefined || this.githubReleaseCacheTime.getTime() + cacheTtlMs < now) {
+        console.debug('[Module] Refreshing GitHub releases cache', { owner, repo })
         const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases`)
         if (response.status !== 200) {
           throw new Error(`Cant fetch github releases: ${await response.text()}`)
@@ -246,6 +249,8 @@ export abstract class Module<ConfigType extends BaseConfig> {
         newReleasesList = newReleasesList.filter((release) => !release.prerelease && !release.draft)
         this.githubReleaseCache = newReleasesList
         this.githubReleaseCacheTime = new Date()
+      } else {
+        console.debug('[Module] Using cached GitHub releases', { owner, repo })
       }
 
       return await Promise.all(this.githubReleaseCache.map(async (release: any) => {
