@@ -75,7 +75,7 @@ export class MHDDOSProxy extends Module<Config> {
     }
 
     await new Promise<void>((resolve) => {
-      const handler = spawn(`taskkill /F /T /PID ${filename}`, { shell: true })
+      const handler = spawn(`taskkill /F /T /IM ${filename}`, { shell: true })
       handler.on('close', () => {resolve()})
       handler.on('error', () => {resolve()})
       handler.on('exit', () => {resolve()})
@@ -226,6 +226,6 @@ export class MHDDOSProxy extends Module<Config> {
     })
   }
   override async stop (): Promise<void> {
-    this.stopExecutable()
+    await this.stopExecutable()
   }
 }

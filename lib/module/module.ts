@@ -407,9 +407,11 @@ export abstract class Module<ConfigType extends BaseConfig> {
         this.emit('execution:stderr', { type: 'execution:stderr', data: this.executableOutputToString(data) })
       })
       this.executedProcessHandler.on('error', (error: Error) => {
+        this.executedProcessHandler = undefined
         this.emit('execution:error', { type: 'execution:error', error })
       })
       this.executedProcessHandler.on('close', (code: number) => {
+        this.executedProcessHandler = undefined
         this.emit('execution:stopped', { type: 'execution:stopped', exitCode: code })
       })
 

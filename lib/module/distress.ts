@@ -177,6 +177,6 @@ export class Distress extends Module<Config> {
     })
   }
   override async stop (): Promise<void> {
-    this.stopExecutable()
+    await this.stopExecutable()
   }
 }
