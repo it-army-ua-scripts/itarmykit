@@ -374,14 +374,6 @@ export abstract class Module<ConfigType extends BaseConfig> {
         config = await this.getConfig()
       }
 
-      this.autoupdateInterval = setInterval(async () => {
-        const updateConfig = await this.getConfig()
-        if (updateConfig.autoUpdate && await this.installLatestVersion() && this.isRunning) {
-          await this.stop()
-          await this.start()
-        }
-      }, 1000 * 60 * 30) // Try to autoupdate once in 30 minutes
-
       const installDirectory = await this.getInstallationDirectory()
 
       if (config.selectedVersion === undefined) {
@@ -389,6 +381,14 @@ export abstract class Module<ConfigType extends BaseConfig> {
         this.emit('execution:error', { type: 'execution:error', error })
         throw error
       }
+
+      this.autoupdateInterval = setInterval(async () => {
+        const updateConfig = await this.getConfig()
+        if (updateConfig.autoUpdate && await this.installLatestVersion() && this.isRunning) {
+          await this.stop()
+          await this.start()
+        }
+      }, 1000 * 60 * 30) // Try to autoupdate once in 30 minutes
 
       if (this.executedProcessHandler !== undefined) {
         throw new Error('Already running')
