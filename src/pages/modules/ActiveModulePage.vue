@@ -44,20 +44,20 @@
         outlined
         v-model="executionLog"
         type="textarea"
-        class="row q-mt-sm"
+        class="row q-mt-sm log-input"
       />
 
       <div class="text-bold text-h6 q-mt-lg">
         {{ $t("modules.active.stdout") }}:
       </div>
       <q-separator></q-separator>
-      <q-input outlined v-model="stdOUT" type="textarea" class="row q-mt-sm" />
+      <q-input outlined v-model="stdOUT" type="textarea" class="row q-mt-sm log-input" />
 
       <div class="text-bold text-h6 q-mt-lg">
         {{ $t("modules.active.stderr") }}:
       </div>
       <q-separator></q-separator>
-      <q-input outlined v-model="stdERR" type="textarea" class="row q-mt-sm" />
+      <q-input outlined v-model="stdERR" type="textarea" class="row q-mt-sm log-input" />
     </div>
   </q-page>
 </template>

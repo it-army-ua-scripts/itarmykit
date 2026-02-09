@@ -174,6 +174,24 @@
         </q-item>
 
         <q-item
+          class=""
+          v-ripple
+          clickable
+          @click="setLiquidGlass(!guiLiquidGlass)"
+        >
+          <q-item-section>
+            <q-item-label>{{ $t("settings.liquidGlass") }}</q-item-label>
+          </q-item-section>
+          <q-item-section side top>
+            <q-toggle
+              color="primary"
+              v-model="guiLiquidGlass"
+              @update:model-value="setLiquidGlass"
+            />
+          </q-item-section>
+        </q-item>
+
+        <q-item
           v-if="matrixModeUnlocked"
           class=""
           v-ripple
@@ -386,6 +404,16 @@ async function setDarkMode(newValue: boolean) {
   }
 }
 
+const guiLiquidGlass = ref(false);
+function applyLiquidGlass(enabled: boolean) {
+  document.body.classList.toggle("liquid-glass", enabled);
+}
+async function setLiquidGlass(newValue: boolean) {
+  await window.settingsAPI.gui.setLiquidGlass(newValue);
+  guiLiquidGlass.value = newValue;
+  applyLiquidGlass(newValue);
+}
+
 const guiMatrixMode = ref(false);
 async function setMatrixMode(newValue: boolean) {
   matrixStore.setEnabled(newValue);
@@ -408,6 +436,8 @@ async function loadSettings() {
   itArmyUUID.value = settings.itarmy.uuid;
   itArmyAPIKey.value = settings.itarmy.apiKey;
   guiDarkMode.value = settings.gui.darkMode;
+  guiLiquidGlass.value = settings.gui.liquidGlass;
+  applyLiquidGlass(settings.gui.liquidGlass);
   guiMatrixMode.value = settings.gui.matrixMode;
   matrixModeUnlocked.value = settings.gui.matrixModeUnlocked;
 }

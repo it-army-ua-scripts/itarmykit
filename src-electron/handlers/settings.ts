@@ -32,6 +32,7 @@ export interface SettingsData {
         darkMode: boolean
         matrixMode: boolean
         matrixModeUnlocked: boolean
+        liquidGlass: boolean
     },
     activeness: {
         sid?: SID
@@ -73,7 +74,8 @@ export class Settings {
         gui: {
             darkMode: false,
             matrixMode: false,
-            matrixModeUnlocked: false
+            matrixModeUnlocked: false,
+            liquidGlass: false
         },
         activeness: {},
         execution: {}
@@ -134,8 +136,12 @@ export class Settings {
             this.data.gui = {
                 darkMode: false,
                 matrixMode: false,
-                matrixModeUnlocked: false
+                matrixModeUnlocked: false,
+                liquidGlass: false
             }
+        }
+        if (this.data.gui.liquidGlass === undefined) {
+            this.data.gui.liquidGlass = false
         }
 
         if (this.data.activeness === undefined) {
@@ -324,6 +330,16 @@ export class Settings {
         this.settingsChangedEmiter.emit('settingsChanged', this.data)
     }
 
+    async setGuiLiquidGlass(data: SettingsData['gui']['liquidGlass']) {
+        if (!this.loaded) {
+            await this.load()
+        }
+
+        this.data.gui.liquidGlass = data
+        await this.save()
+        this.settingsChangedEmiter.emit('settingsChanged', this.data)
+    }
+
     async setActivenessSID(data: SettingsData['activeness']['sid']) {
         if (!this.loaded) {
             await this.load()
@@ -422,5 +438,9 @@ export function handleSettings(settings: Settings) {
 
     ipcMain.handle('settings:gui:matrixModeUnlocked', async (_e, data: SettingsData['gui']['matrixModeUnlocked']) => {
         await settings.setGuiMatrixModeUnlocked(data)
+    })
+
+    ipcMain.handle('settings:gui:liquidGlass', async (_e, data: SettingsData['gui']['liquidGlass']) => {
+        await settings.setGuiLiquidGlass(data)
     })
 }

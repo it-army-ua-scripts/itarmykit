@@ -14,6 +14,7 @@ async function applySettings() {
   const settings = await window.settingsAPI.get()
   i18n.locale.value = settings.system.language
   $q.dark.set(settings.gui.darkMode)
+  document.body.classList.toggle('liquid-glass', settings.gui.liquidGlass)
 }
 
 onMounted(async () => {

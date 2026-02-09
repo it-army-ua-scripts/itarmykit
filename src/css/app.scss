@@ -23,6 +23,383 @@ body.body--dark .stat-icon-box,
   background: #2a364d;
 }
 
+/* === Mode: Liquid Glass === */
+body.liquid-glass {
+  --glass-bg: rgba(255, 255, 255, 0.44);
+  --glass-border: rgba(255, 255, 255, 0.32);
+  --glass-shadow: 0 18px 48px rgba(20, 30, 60, 0.14);
+  --glass-highlight: linear-gradient(160deg, rgba(255, 255, 255, 0.75), rgba(255, 255, 255, 0.2) 45%, rgba(255, 255, 255, 0.05));
+  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  background:
+    radial-gradient(1200px 900px at 15% -10%, rgba(130, 190, 255, 0.32), transparent 55%),
+    radial-gradient(900px 700px at 85% 0%, rgba(255, 190, 210, 0.25), transparent 58%),
+    radial-gradient(1000px 800px at 40% 110%, rgba(150, 240, 220, 0.22), transparent 60%),
+    linear-gradient(180deg, #f8fbff 0%, #edf3fb 45%, #f8fbff 100%);
+  color: #0b1220;
+}
+
+body.body--dark.liquid-glass {
+  --glass-bg: rgba(18, 24, 36, 0.45);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  --glass-highlight: linear-gradient(160deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.04) 45%, rgba(255, 255, 255, 0));
+  --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(1200px 900px at 15% -10%, rgba(80, 140, 255, 0.22), transparent 55%),
+    radial-gradient(900px 700px at 85% 0%, rgba(180, 90, 160, 0.18), transparent 60%),
+    radial-gradient(1000px 800px at 40% 110%, rgba(80, 210, 190, 0.2), transparent 60%),
+    linear-gradient(180deg, #0a0f1c 0%, #0f1728 50%, #0a0f1c 100%);
+  color: #e7eefc;
+}
+
+body.liquid-glass .q-header,
+body.liquid-glass .q-drawer {
+  background: rgba(255, 255, 255, 0.5) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  box-shadow: 0 10px 30px rgba(20, 30, 60, 0.08);
+}
+
+body.body--dark.liquid-glass .q-header,
+body.body--dark.liquid-glass .q-drawer {
+  background: rgba(16, 20, 30, 0.5) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+}
+
+body.liquid-glass .q-drawer .q-item,
+body.liquid-glass .q-drawer .q-item__section,
+body.liquid-glass .q-drawer .q-item__label {
+  color: #0b1220;
+}
+
+body.body--dark.liquid-glass .q-drawer .q-item,
+body.body--dark.liquid-glass .q-drawer .q-item__section,
+body.body--dark.liquid-glass .q-drawer .q-item__label {
+  color: #e7eefc;
+}
+
+body.liquid-glass .q-drawer .selectable_menu {
+  position: relative;
+  border-radius: 14px;
+  margin: 4px 10px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  background: transparent;
+  transition: background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+body.liquid-glass .q-drawer .selectable_menu:hover {
+  background: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 6px 18px rgba(15, 25, 45, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+body.body--dark.liquid-glass .q-drawer .selectable_menu:hover {
+  background: rgba(16, 22, 34, 0.55);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+body.liquid-glass .q-drawer .selectable_menu.bg-black,
+body.liquid-glass .q-drawer .selectable_menu.bg-grey-4 {
+  background: rgba(255, 255, 255, 0.7) !important;
+  box-shadow: 0 10px 24px rgba(20, 30, 60, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+body.liquid-glass .q-drawer .selectable_menu.bg-black::after,
+body.liquid-glass .q-drawer .selectable_menu.bg-grey-4::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 6px;
+  height: 10px;
+  border-radius: 999px;
+  background: radial-gradient(60% 120% at 50% 50%, rgba(120, 170, 255, 0.35), rgba(120, 170, 255, 0));
+  filter: blur(8px);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+body.body--dark.liquid-glass .q-drawer .selectable_menu.bg-black,
+body.body--dark.liquid-glass .q-drawer .selectable_menu.bg-grey-4 {
+  background: rgba(16, 22, 34, 0.72) !important;
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+body.body--dark.liquid-glass .q-drawer .selectable_menu.bg-black::after,
+body.body--dark.liquid-glass .q-drawer .selectable_menu.bg-grey-4::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 6px;
+  height: 10px;
+  border-radius: 999px;
+  background: radial-gradient(60% 120% at 50% 50%, rgba(80, 140, 255, 0.35), rgba(80, 140, 255, 0));
+  filter: blur(8px);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+body.liquid-glass .q-drawer .q-item-label[header] {
+  letter-spacing: 0.08em;
+  color: rgba(10, 18, 32, 0.65);
+}
+
+body.body--dark.liquid-glass .q-drawer .q-item-label[header] {
+  color: rgba(235, 240, 255, 0.7);
+}
+
+body.liquid-glass .q-drawer .q-icon {
+  opacity: 0.85;
+}
+
+body.liquid-glass .q-drawer .q-item-label[header] + .row,
+body.liquid-glass .q-drawer .row + .row {
+  border-top: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+body.body--dark.liquid-glass .q-drawer .q-item-label[header] + .row,
+body.body--dark.liquid-glass .q-drawer .row + .row {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body.liquid-glass .q-card,
+body.liquid-glass .q-table__card,
+body.liquid-glass .q-dialog .q-card {
+  position: relative;
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  overflow: hidden;
+}
+
+body.body--dark.liquid-glass .q-card,
+body.body--dark.liquid-glass .q-table__card,
+body.body--dark.liquid-glass .q-dialog .q-card {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+body.liquid-glass .q-card,
+body.liquid-glass .q-table__card,
+body.liquid-glass .q-dialog .q-card {
+  border-radius: 20px;
+  box-shadow: var(--glass-shadow), var(--glass-inset);
+}
+
+body.liquid-glass .q-card::before,
+body.liquid-glass .q-table__card::before,
+body.liquid-glass .q-dialog .q-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(140deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.18) 40%, rgba(255, 255, 255, 0.05));
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+body.body--dark.liquid-glass .q-card::before,
+body.body--dark.liquid-glass .q-table__card::before,
+body.body--dark.liquid-glass .q-dialog .q-card::before {
+  background:
+    linear-gradient(140deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.06) 40%, rgba(255, 255, 255, 0));
+  opacity: 0.65;
+}
+
+body.liquid-glass .q-card::after,
+body.liquid-glass .q-table__card::after,
+body.liquid-glass .q-dialog .q-card::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+}
+
+body.body--dark.liquid-glass .q-card::after,
+body.body--dark.liquid-glass .q-table__card::after,
+body.body--dark.liquid-glass .q-dialog .q-card::after {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+body.liquid-glass .q-separator {
+  background: rgba(255, 255, 255, 0.45);
+}
+
+body.body--dark.liquid-glass .q-separator {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+body.liquid-glass .q-btn {
+  border-radius: 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+body.liquid-glass .q-btn--outline {
+  background: rgba(255, 255, 255, 0.45);
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+body.body--dark.liquid-glass .q-btn--outline {
+  background: rgba(16, 22, 34, 0.45);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+body.liquid-glass .q-field--outlined .q-field__control {
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(18px) saturate(170%);
+  border-radius: 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+body.body--dark.liquid-glass .q-field--outlined .q-field__control {
+  background: rgba(16, 22, 34, 0.55);
+}
+
+/* === Text Input Frames === */
+body.liquid-glass .q-field--outlined .q-field__control::before,
+body.liquid-glass .q-field--outlined .q-field__control::after {
+  border-color: rgba(255, 255, 255, 0.55) !important;
+}
+
+body.liquid-glass .q-field--outlined.q-field--focused .q-field__control::before,
+body.liquid-glass .q-field--outlined.q-field--focused .q-field__control::after {
+  border-color: rgba(90, 150, 255, 0.85) !important;
+  box-shadow: 0 0 0 4px rgba(90, 150, 255, 0.18);
+}
+
+body.liquid-glass .q-field--outlined .q-field__control:hover::before,
+body.liquid-glass .q-field--outlined .q-field__control:hover::after {
+  border-color: rgba(255, 255, 255, 0.75) !important;
+}
+
+body.body--dark.liquid-glass .q-field--outlined .q-field__control::before,
+body.body--dark.liquid-glass .q-field--outlined .q-field__control::after {
+  border-color: rgba(255, 255, 255, 0.18) !important;
+}
+
+body.body--dark.liquid-glass .q-field--outlined.q-field--focused .q-field__control::before,
+body.body--dark.liquid-glass .q-field--outlined.q-field--focused .q-field__control::after {
+  border-color: rgba(120, 170, 255, 0.65) !important;
+  box-shadow: 0 0 0 4px rgba(80, 140, 255, 0.22);
+}
+
+body.body--dark.liquid-glass .q-field--outlined .q-field__control:hover::before,
+body.body--dark.liquid-glass .q-field--outlined .q-field__control:hover::after {
+  border-color: rgba(255, 255, 255, 0.28) !important;
+}
+
+body.liquid-glass .q-field--outlined .q-field__label {
+  color: rgba(20, 30, 50, 0.7);
+}
+
+body.body--dark.liquid-glass .q-field--outlined .q-field__label {
+  color: rgba(220, 230, 250, 0.7);
+}
+
+/* === Logs === */
+.log-input .q-field__control {
+  background: rgba(10, 16, 28, 0.92);
+  border-radius: 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 10px 26px rgba(0, 0, 0, 0.18);
+}
+
+/* === Rankings / Top === */
+body.liquid-glass .top-list-item {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(6px) saturate(130%);
+  box-shadow:
+    0 16px 30px rgba(18, 28, 50, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  border-radius: 18px;
+}
+
+body.liquid-glass .top-list-item::after {
+  content: none;
+}
+
+body.body--dark.liquid-glass .top-list-item {
+  background: rgba(14, 18, 28, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+body.liquid-glass .top-list-item--leader {
+  border-color: rgba(255, 215, 110, 0.6);
+  box-shadow: 0 18px 40px rgba(255, 210, 120, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+body.liquid-glass .top-list-rank {
+  background: rgba(255, 215, 110, 0.95);
+  box-shadow: 0 6px 14px rgba(255, 200, 90, 0.45);
+}
+
+body.liquid-glass .top-list-label {
+  color: rgba(10, 18, 32, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  font-size: 11px;
+  text-shadow: none;
+}
+
+body.liquid-glass .top-list-value {
+  color: #0a1222;
+  font-weight: 800;
+  text-shadow: none;
+}
+
+body.body--dark.liquid-glass .top-list-label {
+  color: rgba(225, 235, 255, 0.7);
+}
+
+body.body--dark.liquid-glass .top-list-value {
+  color: #f4f7ff;
+}
+
+body.liquid-glass .top-list-item::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  background: radial-gradient(120% 120% at 10% 0%, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0) 55%);
+  pointer-events: none;
+}
+
+body.body--dark.liquid-glass .top-list-item::before {
+  background: radial-gradient(120% 120% at 10% 0%, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0) 55%);
+}
+
+.log-input .q-field__native {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #d7e2ff;
+  letter-spacing: 0.1px;
+  min-height: 200px;
+}
+
+body.liquid-glass .log-input .q-field__control {
+  background: rgba(8, 12, 20, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+body.liquid-glass .log-input .q-field__native {
+  color: #e6eeff;
+}
+
+body.body--dark .log-input .q-field__control,
+body.body--dark.liquid-glass .log-input .q-field__control {
+  background: rgba(6, 10, 18, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
 /* === Mode: Matrix === */
 .matrix-active,
 .matrix-active .q-layout,

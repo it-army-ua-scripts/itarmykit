@@ -160,6 +160,7 @@ export default {
     system: "Система",
     look: "Інтерфейс",
     darkMode: "Темний режим",
+    liquidGlass: "Liquid Glass",
     matrixMode: "Режим матриці (хакерський)",
     autoUpdates: "Автоматичне оновлення",
     autoUpdatesDescription: "Автоматичне оновлення програми до останньої версії.",

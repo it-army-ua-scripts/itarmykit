@@ -48,7 +48,6 @@ module.exports = configure(function (/* ctx */) {
       // 'line-awesome',
       // 'roboto-font-latin-ext', // this or either 'roboto-font', NEVER both!
 
-      'roboto-font', // optional, you are not bound to it
       'material-icons' // optional, you are not bound to it
     ],
 
@@ -58,6 +57,8 @@ module.exports = configure(function (/* ctx */) {
         browser: ['es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1'],
         node: 'node16'
       },
+
+      sourcemap: false,
 
       vueRouterMode: 'hash', // available values: 'hash', 'history'
       // vueRouterBase,
@@ -205,6 +206,23 @@ module.exports = configure(function (/* ctx */) {
 
       builder: {
         // https://www.electron.build/configuration/configuration
+        compression: 'maximum',
+        asar: true,
+        electronLanguages: [
+          'en-US',
+          'uk'
+        ],
+        files: [
+          '**/*',
+          '!**/*.map',
+          '!**/*.md',
+          '!**/test/**',
+          '!**/tests/**',
+          '!**/__tests__/**',
+          '!**/docs/**',
+          '!**/example/**',
+          '!**/examples/**'
+        ],
         win: {
           icon: 'src-electron/icons/icon.ico',
           target: [

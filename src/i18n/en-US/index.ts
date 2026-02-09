@@ -160,6 +160,7 @@ export default {
     system: "System",
     look: "GUI",
     darkMode: "Dark Mode",
+    liquidGlass: "Liquid Glass",
     matrixMode: "Matrix Mode",
     autoUpdates: "Automatic Updates",
     autoUpdatesDescription: "Automatically update the application to the latest version.",

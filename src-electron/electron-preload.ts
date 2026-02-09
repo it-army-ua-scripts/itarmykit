@@ -212,6 +212,9 @@ const settingsAPI = {
     },
     async setMatrixModeUnlocked (data: SettingsData['gui']['matrixModeUnlocked']): Promise<void> {
       return await ipcRenderer.invoke('settings:gui:matrixModeUnlocked', data)
+    },
+    async setLiquidGlass (data: SettingsData['gui']['liquidGlass']): Promise<void> {
+      return await ipcRenderer.invoke('settings:gui:liquidGlass', data)
     }
   }
 }
