@@ -1,14 +1,13 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
-import internal, { EventEmitter } from 'stream'
+import { EventEmitter } from 'events'
+import { Readable } from 'stream'
 import path from 'path'
 import { app } from 'electron'
 import fs from 'fs'
 import fetch from 'electron-fetch'
 import decompress from 'decompress'
-import { v4 as uuid4 } from 'uuid'
 import { Settings } from '../../src-electron/handlers/settings'
 import { getCPUArchitecture } from './archLib'
-import { ca } from 'app/dist/electron/UnPackaged/assets/index.3949846e'
 
 export type ModuleName = 'DISTRESS' | 'MHDDOS_PROXY'
 
@@ -281,7 +280,7 @@ export abstract class Module<ConfigType extends BaseConfig> {
       if (response.body == null) {
         throw new Error('Response body is null')
       }
-      const body = response.body as internal.Readable
+      const body = response.body as Readable
       body.pipe(fileStream)
 
       const e = new EventEmitter()

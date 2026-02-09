@@ -194,7 +194,15 @@ export class ExecutionEngine {
     public async init() {
         const config = await this.getState()
         if (config.run) {
-            await this.startModule()
+            if (config.moduleToRun) {
+                await this.startModule()
+            } else {
+                await this.stateLock.runExclusive(async () => {
+                    const updated = await this.getState()
+                    updated.run = false
+                    await this.setState(updated)
+                })
+            }
         }
     }
 
@@ -222,6 +230,15 @@ export class ExecutionEngine {
             config.stdErr = []
             await this.setState(config)
         })
+
+        if (!moduleName) {
+            await this.stateLock.runExclusive(async () => {
+                const config = await this.getState()
+                config.run = false
+                await this.setState(config)
+            })
+            throw new Error('Module to run is not set')
+        }
 
         const module = this.modules.find(m => m.name === moduleName)
         if (!module) {

@@ -4,10 +4,14 @@ import { ExecutionEngine } from './engine';
 
 export function handleUpdater(settings: Settings, executionEngine: ExecutionEngine) {
     const updateFunction = async () => {
-        const settingsData = await settings.getData()
-        if (settingsData.system.autoUpdate) {
-            console.log("Checking for updates...")
-            await autoUpdater.checkForUpdates()
+        try {
+            const settingsData = await settings.getData()
+            if (settingsData.system.autoUpdate) {
+                console.log("Checking for updates...")
+                await autoUpdater.checkForUpdates()
+            }
+        } catch (err) {
+            console.warn('Auto-update check failed', err)
         }
     }
 
@@ -29,5 +33,8 @@ export function handleUpdater(settings: Settings, executionEngine: ExecutionEngi
     })
     autoUpdater.on('update-not-available', (info) => {
         console.log('Update not available.')
+    })
+    autoUpdater.on('error', (err) => {
+        console.warn('Auto-update error', err)
     })
 }

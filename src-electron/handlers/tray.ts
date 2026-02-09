@@ -7,7 +7,7 @@ const lang = {
         "open": "Open",
         "exit": "Exit",
     },
-    "ua-UA": {
+            "ua-UA": {
         "open": "Відкрити",
         "exit": "Вийти",
     }
