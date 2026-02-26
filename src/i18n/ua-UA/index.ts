@@ -226,6 +226,29 @@ export default {
 	moduleStatus: "Статус модуля",
 	updates: "Версія KIT",
 	latest: "Поточна",
+  chart: {
+    now: "Зараз",
+    average: "Середня",
+    peak: "Пік",
+    bitrate: "Швидкість",
+    trend: "Тренд",
+    view: {
+      raw: "Сирі",
+      smooth: "Плавні",
+    },
+    noData: "Статистики ще немає",
+    events: {
+      started: "Запущено",
+      stopped: "Зупинено",
+      error: "Помилка",
+    },
+    ranges: {
+      m5: "5 хв",
+      m15: "15 хв",
+      h1: "1 год",
+      h6: "6 год",
+    },
+  },
   activeness: {
     score: "Бали Activeness",
   },

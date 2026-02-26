@@ -226,6 +226,29 @@ export default {
 	moduleStatus: "Module Status",
 	updates: "KIT Version",
 	latest: "Current",
+  chart: {
+    now: "Now",
+    average: "Average",
+    peak: "Peak",
+    bitrate: "Bitrate",
+    trend: "Trend",
+    view: {
+      raw: "Raw",
+      smooth: "Smooth",
+    },
+    noData: "No statistics yet",
+    events: {
+      started: "Started",
+      stopped: "Stopped",
+      error: "Error",
+    },
+    ranges: {
+      m5: "5m",
+      m15: "15m",
+      h1: "1h",
+      h6: "6h",
+    },
+  },
   activeness: {
     score: "Activeness Score",
   },

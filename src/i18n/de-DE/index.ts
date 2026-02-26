@@ -225,6 +225,29 @@ export default {
 	moduleStatus: "Modul-Status",
 	updates: "KIT Version",
 	latest: "Aktuell",
+  chart: {
+    now: "Jetzt",
+    average: "Durchschnitt",
+    peak: "Spitzenwert",
+    bitrate: "Datenrate",
+    trend: "Trend",
+    view: {
+      raw: "Roh",
+      smooth: "Geglättet",
+    },
+    noData: "Noch keine Statistik",
+    events: {
+      started: "Gestartet",
+      stopped: "Gestoppt",
+      error: "Fehler",
+    },
+    ranges: {
+      m5: "5 Min",
+      m15: "15 Min",
+      h1: "1 Std",
+      h6: "6 Std",
+    },
+  },
   activeness: {
     score: "Activeness Score",
   },
