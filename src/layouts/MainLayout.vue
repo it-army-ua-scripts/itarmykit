@@ -138,6 +138,12 @@ const pages = [
     page: "settings",
     icon: "settings",
   },
+  {
+    name: "schedule",
+    title: "layout.schedule",
+    page: "schedule",
+    icon: "schedule",
+  },
   { name: "top", title: "layout.top", page: "top", icon: "leaderboard" },
   {
     name: "developers",

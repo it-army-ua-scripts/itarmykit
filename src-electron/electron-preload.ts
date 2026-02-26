@@ -203,6 +203,23 @@ const settingsAPI = {
       return await ipcRenderer.invoke('settings:bootstrap:selectedModulesConfig', data)
     }
   },
+  schedule: {
+    async setEnabled (data: SettingsData['schedule']['enabled']): Promise<void> {
+      return await ipcRenderer.invoke('settings:schedule:enabled', data)
+    },
+    async setStartTime (data: SettingsData['schedule']['startTime']): Promise<void> {
+      return await ipcRenderer.invoke('settings:schedule:startTime', data)
+    },
+    async setEndTime (data: SettingsData['schedule']['endTime']): Promise<void> {
+      return await ipcRenderer.invoke('settings:schedule:endTime', data)
+    },
+    async setModules (data: SettingsData['schedule']['modules']): Promise<void> {
+      return await ipcRenderer.invoke('settings:schedule:modules', data)
+    },
+    async setIntervals (data: SettingsData['schedule']['intervals']): Promise<void> {
+      return await ipcRenderer.invoke('settings:schedule:intervals', data)
+    }
+  },
   gui: {
     async setDarkMode (data: SettingsData['gui']['darkMode']): Promise<void> {
       return await ipcRenderer.invoke('settings:gui:darkMode', data)

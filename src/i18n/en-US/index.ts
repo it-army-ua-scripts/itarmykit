@@ -1,4 +1,4 @@
-// This is just an example,
+﻿// This is just an example,
 // so you can safely delete all default props below
 
 export default {
@@ -7,8 +7,34 @@ export default {
     modules: 'DDOS Modules',
     activeness: 'Activeness',
     settings: 'Settings',
+    schedule: 'Scheduling',
     top: 'Rankings',
     developers: 'Developers',
+  },
+  schedule: {
+    title: 'Scheduling',
+    description: 'Automatically start and stop selected modules by time window.',
+    enabled: 'Enable Scheduler',
+    enabledDescription: 'When enabled, app enforces module run/stop state based on selected time.',
+    startTime: 'Start Time',
+    endTime: 'End Time',
+    intervalModule: 'Module',
+    modulesTitle: 'Modules to run in schedule window',
+    intervalsTitle: 'Time Intervals',
+    noIntervals: 'No intervals configured.',
+    daysTitle: 'Days of week',
+    addInterval: 'Add Interval',
+    removeInterval: 'Remove Interval',
+    days: {
+      sun: 'Sun',
+      mon: 'Mon',
+      tue: 'Tue',
+      wed: 'Wed',
+      thu: 'Thu',
+      fri: 'Fri',
+      sat: 'Sat'
+    },
+    close: 'Close'
   },
   modules: {
     menu: {
@@ -248,3 +274,5 @@ export default {
     notifyFailedTOIgnoreTask: "Failed to ignore task. Error: {error}",
   }
 }
+
+

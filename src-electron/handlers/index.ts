@@ -11,6 +11,7 @@ import { handleActiveness } from './activeness'
 import { handleItArmy } from './itarmy'
 import { handleHelpers } from './helpers'
 import { BrowserWindow } from 'electron'
+import { handleSchedule } from './schedule'
 
 export function handle (mainWindow: BrowserWindow) {
   const settings = new Settings()
@@ -29,6 +30,7 @@ export function handle (mainWindow: BrowserWindow) {
   handleDevelopers()
   handleActiveness(settings)
   handleItArmy(settings)
+  handleSchedule(settings, engine)
 
   handleHelpers()
 }

@@ -9,7 +9,7 @@ export interface SettingsData {
         autoUpdate: boolean
         hideInTray: boolean
         startOnBoot: boolean,
-        language: 'en-US' | 'ua-UA'
+        language: 'en-US' | 'ua-UA' | 'de-DE'
     },
     modules: {
         dataPath: string;
@@ -19,6 +19,8 @@ export interface SettingsData {
         startTime: string;
         endTime: string;
         activity: 'DO_NOTHING' | 'MINIMAL'
+        modules: Array<'DISTRESS' | 'MHDDOS_PROXY'>
+        intervals: ScheduleInterval[]
     },
     itarmy: {
         uuid: string,
@@ -60,7 +62,16 @@ export class Settings {
             enabled: false,
             startTime: '07:30',
             endTime: '17:30',
-            activity: 'DO_NOTHING'
+            activity: 'DO_NOTHING',
+            modules: ['DISTRESS'],
+            intervals: [
+                {
+                    startTime: '07:30',
+                    endTime: '17:30',
+                    days: [0, 1, 2, 3, 4, 5, 6],
+                    module: 'DISTRESS'
+                }
+            ]
         },
         itarmy: {
             uuid: '',
@@ -122,6 +133,9 @@ export class Settings {
         if (this.data.system.language === undefined) {
             this.data.system.language = 'en-US'
         }
+        if (!['en-US', 'ua-UA', 'de-DE'].includes(this.data.system.language)) {
+            this.data.system.language = 'en-US'
+        }
 
         if (this.data.bootstrap === undefined) {
             this.data.bootstrap = {
@@ -137,6 +151,71 @@ export class Settings {
                 matrixModeUnlocked: false
             }
         }
+
+        if (this.data.schedule === undefined) {
+            this.data.schedule = {
+                enabled: false,
+                startTime: '07:30',
+                endTime: '17:30',
+                activity: 'DO_NOTHING',
+                modules: ['DISTRESS'],
+                intervals: [
+                    {
+                        startTime: '07:30',
+                        endTime: '17:30',
+                        days: [0, 1, 2, 3, 4, 5, 6],
+                        module: 'DISTRESS'
+                    }
+                ]
+            }
+        }
+        if (typeof this.data.schedule.enabled !== 'boolean') {
+            this.data.schedule.enabled = false
+        }
+        if (typeof this.data.schedule.startTime !== 'string') {
+            this.data.schedule.startTime = '07:30'
+        }
+        if (typeof this.data.schedule.endTime !== 'string') {
+            this.data.schedule.endTime = '17:30'
+        }
+        if (this.data.schedule.activity !== 'DO_NOTHING' && this.data.schedule.activity !== 'MINIMAL') {
+            this.data.schedule.activity = 'DO_NOTHING'
+        }
+
+        if (!Array.isArray(this.data.schedule.modules)) {
+            this.data.schedule.modules = ['DISTRESS']
+        }
+        if (!Array.isArray(this.data.schedule.intervals)) {
+            this.data.schedule.intervals = []
+        }
+        if (this.data.schedule.intervals.length === 0) {
+            this.data.schedule.intervals = [
+                {
+                    startTime: this.data.schedule.startTime || '07:30',
+                    endTime: this.data.schedule.endTime || '17:30',
+                    days: [0, 1, 2, 3, 4, 5, 6],
+                    module: 'DISTRESS'
+                }
+            ]
+        }
+        this.data.schedule.intervals = this.data.schedule.intervals
+            .filter((interval: any) => interval && typeof interval === 'object')
+            .map((interval: any) => {
+                const startTime = typeof interval.startTime === 'string' ? interval.startTime : '07:30'
+                const endTime = typeof interval.endTime === 'string' ? interval.endTime : '17:30'
+                const days = Array.isArray(interval.days)
+                    ? interval.days
+                        .map((day: any) => Number(day))
+                        .filter((day: number) => Number.isInteger(day) && day >= 0 && day <= 6)
+                    : [0, 1, 2, 3, 4, 5, 6]
+                const module = interval.module === 'MHDDOS_PROXY' ? 'MHDDOS_PROXY' : 'DISTRESS'
+                return {
+                    startTime,
+                    endTime,
+                    days: Array.from(new Set(days)),
+                    module
+                }
+            })
 
         if (this.data.activeness === undefined) {
             this.data.activeness = {}
@@ -348,6 +427,56 @@ export class Settings {
         this.settingsChangedEmiter.emit('settingsChanged', this.data)
     }
 
+    async setScheduleEnabled(data: SettingsData['schedule']['enabled']) {
+        if (!this.loaded) {
+            await this.load()
+        }
+
+        this.data.schedule.enabled = data
+        await this.save()
+        this.settingsChangedEmiter.emit('settingsChanged', this.data)
+    }
+
+    async setScheduleStartTime(data: SettingsData['schedule']['startTime']) {
+        if (!this.loaded) {
+            await this.load()
+        }
+
+        this.data.schedule.startTime = data
+        await this.save()
+        this.settingsChangedEmiter.emit('settingsChanged', this.data)
+    }
+
+    async setScheduleEndTime(data: SettingsData['schedule']['endTime']) {
+        if (!this.loaded) {
+            await this.load()
+        }
+
+        this.data.schedule.endTime = data
+        await this.save()
+        this.settingsChangedEmiter.emit('settingsChanged', this.data)
+    }
+
+    async setScheduleModules(data: SettingsData['schedule']['modules']) {
+        if (!this.loaded) {
+            await this.load()
+        }
+
+        this.data.schedule.modules = data
+        await this.save()
+        this.settingsChangedEmiter.emit('settingsChanged', this.data)
+    }
+
+    async setScheduleIntervals(data: SettingsData['schedule']['intervals']) {
+        if (!this.loaded) {
+            await this.load()
+        }
+
+        this.data.schedule.intervals = data
+        await this.save()
+        this.settingsChangedEmiter.emit('settingsChanged', this.data)
+    }
+
 }
 
 export function handleSettings(settings: Settings) {
@@ -423,4 +552,31 @@ export function handleSettings(settings: Settings) {
     ipcMain.handle('settings:gui:matrixModeUnlocked', async (_e, data: SettingsData['gui']['matrixModeUnlocked']) => {
         await settings.setGuiMatrixModeUnlocked(data)
     })
+
+    ipcMain.handle('settings:schedule:enabled', async (_e, data: SettingsData['schedule']['enabled']) => {
+        await settings.setScheduleEnabled(data)
+    })
+
+    ipcMain.handle('settings:schedule:startTime', async (_e, data: SettingsData['schedule']['startTime']) => {
+        await settings.setScheduleStartTime(data)
+    })
+
+    ipcMain.handle('settings:schedule:endTime', async (_e, data: SettingsData['schedule']['endTime']) => {
+        await settings.setScheduleEndTime(data)
+    })
+
+    ipcMain.handle('settings:schedule:modules', async (_e, data: SettingsData['schedule']['modules']) => {
+        await settings.setScheduleModules(data)
+    })
+
+    ipcMain.handle('settings:schedule:intervals', async (_e, data: SettingsData['schedule']['intervals']) => {
+        await settings.setScheduleIntervals(data)
+    })
+}
+
+export interface ScheduleInterval {
+    startTime: string
+    endTime: string
+    days: number[]
+    module: 'DISTRESS' | 'MHDDOS_PROXY'
 }

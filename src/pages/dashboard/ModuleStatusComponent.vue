@@ -19,8 +19,14 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { ModuleName } from "app/lib/module/module";
+import { IpcRendererEvent } from "electron";
+
+interface ExecutionLogEntry {
+  type: "STARTED" | "STOPPED" | "ERROR";
+  moduleName: ModuleName;
+}
 
 const selectedModule = ref("DISTRESS" as ModuleName | null);
 const moduleEnabled = ref(false);
@@ -42,6 +48,7 @@ async function loadState() {
 }
 
 async function setModuleEnabled(newValue: boolean) {
+  moduleEnabled.value = newValue;
   if (newValue) {
     await window.executionEngineAPI.startModule();
   } else {
@@ -51,7 +58,24 @@ async function setModuleEnabled(newValue: boolean) {
   await loadState();
 }
 
+function onExecutionLog(_e: IpcRendererEvent, data: ExecutionLogEntry) {
+  if (data.type === "STARTED") {
+    moduleEnabled.value = true;
+    selectedModule.value = data.moduleName;
+    return;
+  }
+
+  if (data.type === "STOPPED" || data.type === "ERROR") {
+    moduleEnabled.value = false;
+  }
+}
+
 onMounted(async () => {
+  await window.executionEngineAPI.listenForExecutionLog(onExecutionLog);
   await loadState();
+});
+
+onUnmounted(() => {
+  void window.executionEngineAPI.stopListeningForExecutionLog(onExecutionLog);
 });
 </script>
