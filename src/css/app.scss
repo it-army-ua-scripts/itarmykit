@@ -31,16 +31,30 @@ body.body--dark .stat-icon-box,
   background: transparent !important;
 }
 
-.matrix-active .q-header,
-.matrix-active .q-drawer,
-.matrix-active .q-card,
-.matrix-active .q-table__card,
-.matrix-active .q-item,
-.matrix-active .q-toolbar {
+body.body--dark .matrix-active .q-header,
+body.body--dark .matrix-active .q-drawer,
+body.body--dark .matrix-active .q-card,
+body.body--dark .matrix-active .q-table__card,
+body.body--dark .matrix-active .q-item,
+body.body--dark .matrix-active .q-toolbar {
   background: rgba(10, 12, 16, 0.65) !important;
   backdrop-filter: blur(2px);
 }
 
-.matrix-active .q-drawer {
+body.body--dark .matrix-active .q-drawer {
   border-right: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+body.body--light .matrix-active .q-header,
+body.body--light .matrix-active .q-drawer,
+body.body--light .matrix-active .q-card,
+body.body--light .matrix-active .q-table__card,
+body.body--light .matrix-active .q-item,
+body.body--light .matrix-active .q-toolbar {
+  background: rgba(255, 255, 255, 0.62) !important;
+  backdrop-filter: blur(2px);
+}
+
+body.body--light .matrix-active .q-drawer {
+  border-right: 1px solid rgba(15, 23, 42, 0.16);
 }

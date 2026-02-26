@@ -44,11 +44,11 @@ function draw() {
 	if ($q.dark.isActive) {
 		context.fillStyle = 'rgba(27, 27, 27, 0.1)';
 	} else {
-		context.fillStyle = 'rgba(255, 255, 255, 0.1)';
+		context.fillStyle = 'rgba(255, 255, 255, 0.05)';
 	}
 	context.fillRect(0, 0, canvas.value.width, canvas.value.height);
 	
-	context.fillStyle = '#0F05';
+	context.fillStyle = $q.dark.isActive ? 'rgba(34, 197, 94, 0.42)' : 'rgba(16, 148, 48, 0.6)';
 	context.font = fontSize + 'px monospace';
 
 	for(let i = 0; i < rainDrops.length; i++)
