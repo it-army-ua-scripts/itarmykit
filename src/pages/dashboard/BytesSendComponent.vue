@@ -26,7 +26,6 @@
 
 <script lang="ts" setup>
 import {
-  ModuleExecutionStartedEventData,
   ModuleExecutionStatisticsEventData,
 } from "app/lib/module/module";
 import { IpcRendererEvent } from "electron";
@@ -86,13 +85,22 @@ async function loadTotalBytesSendFromAllTools() {
   }
 }
 
+let totalTrafficRefreshInterval: ReturnType<typeof setInterval> | undefined;
+
 onMounted(async () => {
-  window.executionEngineAPI.listenForStatistics(onStatisticsUpdate);
   await loadLastStatistics();
   await loadTotalBytesSendFromAllTools();
+  window.executionEngineAPI.listenForStatistics(onStatisticsUpdate);
+  totalTrafficRefreshInterval = setInterval(() => {
+    void loadTotalBytesSendFromAllTools();
+  }, 5000);
 });
 
 onUnmounted(() => {
   window.executionEngineAPI.stopListeningForStatistics(onStatisticsUpdate);
+  if (totalTrafficRefreshInterval !== undefined) {
+    clearInterval(totalTrafficRefreshInterval);
+    totalTrafficRefreshInterval = undefined;
+  }
 });
 </script>
