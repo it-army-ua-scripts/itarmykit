@@ -50,7 +50,7 @@
     "eslint-plugin-import": "^2.19.1",
     "eslint-plugin-n": "^15.0.0",
     "eslint-plugin-promise": "^6.0.0",
-    "eslint-plugin-vue": "^9.0.0",
+    "eslint-plugin-vue": "^9.33.0",
     "postcss": "^8.4.13",
     "typescript": "^5.8.2",
     "vite": "^2.9.18"
