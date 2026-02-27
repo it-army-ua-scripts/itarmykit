@@ -229,21 +229,34 @@
     source-map "^0.6.1"
     yaml-eslint-parser "^0.3.2"
 
-"@intlify/core-base@9.14.0":
-  version "9.14.0"
-  resolved "https://registry.yarnpkg.com/@intlify/core-base/-/core-base-9.14.0.tgz#63ce687a6560c0af6a16cb567d9d8a1ea1a5a65e"
-  integrity sha512-zJn0imh9HIsZZUtt9v8T16PeVstPv6bP2YzlrYJwoF8F30gs4brZBwW2KK6EI5WYKFi3NeqX6+UU4gniz5TkGg==
+"@intlify/core-base@11.2.8":
+  version "11.2.8"
+  resolved "https://registry.yarnpkg.com/@intlify/core-base/-/core-base-11.2.8.tgz#083551bdd79b415476f282ded84f5ddc5fad75c1"
+  integrity sha512-nBq6Y1tVkjIUsLsdOjDSJj4AsjvD0UG3zsg9Fyc+OivwlA/oMHSKooUy9tpKj0HqZ+NWFifweHavdljlBLTwdA==
   dependencies:
-    "@intlify/message-compiler" "9.14.0"
-    "@intlify/shared" "9.14.0"
+    "@intlify/message-compiler" "11.2.8"
+    "@intlify/shared" "11.2.8"
 
-"@intlify/message-compiler@9.14.0", "@intlify/message-compiler@^9.1.0":
+"@intlify/message-compiler@11.2.8":
+  version "11.2.8"
+  resolved "https://registry.yarnpkg.com/@intlify/message-compiler/-/message-compiler-11.2.8.tgz#3d967c07a36a8d6060730c1d3a2d40e3caaf07b3"
+  integrity sha512-A5n33doOjmHsBtCN421386cG1tWp5rpOjOYPNsnpjIJbQ4POF0QY2ezhZR9kr0boKwaHjbOifvyQvHj2UTrDFQ==
+  dependencies:
+    "@intlify/shared" "11.2.8"
+    source-map-js "^1.0.2"
+
+"@intlify/message-compiler@^9.1.0":
   version "9.14.0"
   resolved "https://registry.yarnpkg.com/@intlify/message-compiler/-/message-compiler-9.14.0.tgz#e767141dd12862b3c1bf02ab5fc4852792812381"
   integrity sha512-sXNsoMI0YsipSXW8SR75drmVK56tnJHoYbPXUv2Cf9lz6FzvwsosFm6JtC1oQZI/kU+n7qx0qRrEWkeYFTgETA==
   dependencies:
     "@intlify/shared" "9.14.0"
     source-map-js "^1.0.2"
+
+"@intlify/shared@11.2.8":
+  version "11.2.8"
+  resolved "https://registry.yarnpkg.com/@intlify/shared/-/shared-11.2.8.tgz#30815afda2acd859cefdbb97cf59e7f819f32611"
+  integrity sha512-l6e4NZyUgv8VyXXH4DbuucFOBmxLF56C/mqh2tvApbzl2Hrhi1aTDcuv5TKdxzfHYmpO3UB0Cz04fgDT9vszfw==
 
 "@intlify/shared@9.14.0", "@intlify/shared@^9.1.0":
   version "9.14.0"
@@ -6280,13 +6293,13 @@ vue-eslint-parser@^9.4.3:
     lodash "^4.17.21"
     semver "^7.3.6"
 
-vue-i18n@^9.2.2:
-  version "9.14.0"
-  resolved "https://registry.yarnpkg.com/vue-i18n/-/vue-i18n-9.14.0.tgz#d6f1b3d95bfc4f40e630ff9456c78ab5becfd933"
-  integrity sha512-LxmpRuCt2rI8gqU+kxeflRZMQn4D5+4M3oP3PWZdowW/ePJraHqhF7p4CuaME52mUxdw3Mmy2yAUKgfZYgCRjA==
+vue-i18n@^11.2.8:
+  version "11.2.8"
+  resolved "https://registry.yarnpkg.com/vue-i18n/-/vue-i18n-11.2.8.tgz#f431b583134776dcf59e59250c5231e4eaed8404"
+  integrity sha512-vJ123v/PXCZntd6Qj5Jumy7UBmIuE92VrtdX+AXr+1WzdBHojiBxnAxdfctUFL+/JIN+VQH4BhsfTtiGsvVObg==
   dependencies:
-    "@intlify/core-base" "9.14.0"
-    "@intlify/shared" "9.14.0"
+    "@intlify/core-base" "11.2.8"
+    "@intlify/shared" "11.2.8"
     "@vue/devtools-api" "^6.5.0"
 
 vue-router@^4.0.0:
