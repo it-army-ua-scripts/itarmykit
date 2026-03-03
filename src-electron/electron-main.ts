@@ -7,6 +7,18 @@ import { handle } from './handlers'
 // needed in case process is undefined under Linux
 const platform = process.platform || os.platform()
 
+// Ensure platform-specific notification/app identity is not resolved as Electron defaults.
+const APP_DISPLAY_NAME = 'IT Army Kit'
+const APP_ID = 'itarmykit'
+app.setName(APP_DISPLAY_NAME)
+if (platform === 'win32') {
+  app.setAppUserModelId(APP_ID)
+} else if (platform === 'linux') {
+  app.setDesktopName(`${APP_ID}.desktop`)
+} else if (platform === 'darwin') {
+  app.setName(APP_DISPLAY_NAME)
+}
+
 try {
   if (platform === 'win32' && nativeTheme.shouldUseDarkColors === true) {
     require('fs').unlinkSync(

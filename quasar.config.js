@@ -229,6 +229,10 @@ module.exports = configure(function (/* ctx */) {
 
         linux: {
           icon: 'src-electron/icons/icon.icns',
+          desktop: {
+            Name: 'IT Army Kit',
+            StartupWMClass: 'itarmykit'
+          },
           target: [
             {
               target: 'deb',
