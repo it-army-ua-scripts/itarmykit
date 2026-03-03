@@ -21,9 +21,38 @@ export interface TopData {
     }
 }
 
+function emptyPeriodTopData(): PeriodTopData {
+    return {
+        items: [],
+        start_date: '',
+        end_data: ''
+    }
+}
+
 async function getTopData(): Promise<TopData> {
-    const response = await fetch("https://itarmy.com.ua/leaderboard/json/leaderboard.json")
-    return await response.json() as TopData
+    try {
+        const response = await fetch("https://itarmy.com.ua/leaderboard/json/leaderboard.json")
+        if (response.status !== 200) {
+            return {
+                success: false,
+                error: `Bad status code: ${response.status}`,
+                data: {
+                    week_stats: emptyPeriodTopData(),
+                    month_stats: emptyPeriodTopData()
+                }
+            }
+        }
+        return await response.json() as TopData
+    } catch (err) {
+        return {
+            success: false,
+            error: String(err),
+            data: {
+                week_stats: emptyPeriodTopData(),
+                month_stats: emptyPeriodTopData()
+            }
+        }
+    }
 }
 
 export function handleTop () {

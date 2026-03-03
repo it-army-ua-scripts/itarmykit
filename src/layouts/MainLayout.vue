@@ -89,6 +89,9 @@
             </div>
           </div>
         </div>
+        <div class="q-pa-sm">
+          <SystemControlStatusComponent />
+        </div>
       </q-list>
     </q-drawer>
 
@@ -111,6 +114,7 @@ import SnowEffectComponent from "./snowEffect/SnowEffectComponent.vue";
 import MurkaDialog from "./snowEffect/MurkaDialog.vue";
 
 import ShortStatisticsComponent from "./ShortStatisticsComponent.vue";
+import SystemControlStatusComponent from "src/pages/dashboard/SystemControlStatusComponent.vue";
 import { useMatrixStore } from "./matrix.store";
 
 const pages = [

@@ -26,27 +26,28 @@ export interface Contributor {
 let contributorsCache: Contributor[] | null = null
 let contributorsCacheTime: Date | null = null
 
+async function fetchContributors(repo: string): Promise<Contributor[]> {
+    try {
+        const response = await fetch(`https://api.github.com/repos/${repo}/contributors?per_page=100`)
+        if (response.status !== 200) {
+            console.warn(`[developers] Failed to load contributors for ${repo}. Status: ${response.status}`)
+            return []
+        }
+        const contributors = await response.json() as Contributor[]
+        contributors.sort((a, b) => b.contributions - a.contributions)
+        return contributors
+    } catch (err) {
+        console.warn(`[developers] Failed to load contributors for ${repo}`, err)
+        return []
+    }
+}
 
 async function getDevelopersFromGithub(): Promise<Contributor[]> {
-    const itkitResponse = await fetch("https://api.github.com/repos/it-army-ua-scripts/itarmykit/contributors?per_page=100")
-    const itkitContributors = await itkitResponse.json() as Contributor[]
-    itkitContributors.sort((a, b) => b.contributions - a.contributions)
-
-    const db1000nResponse = await fetch("https://api.github.com/repos/arriven/db1000n/contributors?per_page=100")
-    const db1000nContributors = await db1000nResponse.json() as Contributor[]
-    db1000nContributors.sort((a, b) => b.contributions - a.contributions)
-
-    const mhddos_proxyResponse = await fetch("https://api.github.com/repos/porthole-ascend-cinnamon/mhddos_proxy_releases/contributors?per_page=100")
-    const mhddos_proxyContributors = await mhddos_proxyResponse.json() as Contributor[]
-    mhddos_proxyContributors.sort((a, b) => b.contributions - a.contributions)
-
-    const distressResponse = await fetch("https://api.github.com/repos/Yneth/distress-releases/contributors?per_page=100")
-    const distressContributors = await distressResponse.json() as Contributor[]
-    distressContributors.sort((a, b) => b.contributions - a.contributions)
-	
-    const ADSSResponse = await fetch("https://api.github.com/repos/it-army-ua-scripts/ADSS/contributors?per_page=100")
-    const ADSSContributors = await ADSSResponse.json() as Contributor[]
-    ADSSContributors.sort((a, b) => b.contributions - a.contributions)
+    const itkitContributors = await fetchContributors('it-army-ua-scripts/itarmykit')
+    const db1000nContributors = await fetchContributors('arriven/db1000n')
+    const mhddos_proxyContributors = await fetchContributors('porthole-ascend-cinnamon/mhddos_proxy_releases')
+    const distressContributors = await fetchContributors('Yneth/distress-releases')
+    const ADSSContributors = await fetchContributors('it-army-ua-scripts/ADSS')
 
     let contributors = itkitContributors
     contributors.sort((a, b) => b.contributions - a.contributions)
@@ -87,6 +88,7 @@ async function getDevelopersFromGithub(): Promise<Contributor[]> {
         }
     }
 
+    contributors.sort((a, b) => b.contributions - a.contributions)
     contributorsCache = contributors
     contributorsCacheTime = new Date()
     return contributors

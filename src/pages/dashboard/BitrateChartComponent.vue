@@ -1,5 +1,5 @@
 <template>
-  <div class="chart-wrap">
+  <div class="chart-wrap" @mouseenter="freezeLiveUpdates" @mouseleave="resumeLiveUpdates">
     <div class="chart-top q-mb-sm">
       <div class="chart-metrics">
         <div class="metric-card">
@@ -112,6 +112,9 @@ const chartHeight = computed(() => (isCompact.value ? 280 : 320));
 const nowTs = ref(Date.now());
 const rangeStartTs = computed(() => nowTs.value - selectedRangeMs.value);
 let chartTick: number | undefined;
+const isFrozen = ref(false);
+const pendingStatistics = ref<ModuleExecutionStatisticsEventData[]>([]);
+const pendingExecutionEvents = ref<ExecutionLogEntry[]>([]);
 
 function humanBytesString(bytes: number, dp = 1) {
   const thresh = 1024;
@@ -406,6 +409,10 @@ async function loadInitialState() {
 }
 
 function onStatisticsUpdate(_e: IpcRendererEvent, data: ModuleExecutionStatisticsEventData) {
+  if (isFrozen.value) {
+    pendingStatistics.value.push(data);
+    return;
+  }
   nowTs.value = Date.now();
   rawPoints.value.push([data.timestamp || Date.now(), Math.round(data.currentSendBitrate)]);
   pruneOldData();
@@ -415,14 +422,40 @@ function onExecutionLogUpdate(_e: IpcRendererEvent, data: ExecutionLogEntry) {
   if (data.type !== "STARTED" && data.type !== "STOPPED" && data.type !== "ERROR") {
     return;
   }
+  if (isFrozen.value) {
+    pendingExecutionEvents.value.push(data);
+    return;
+  }
   executionEvents.value.push(data);
+  pruneOldData();
+}
+
+function freezeLiveUpdates() {
+  isFrozen.value = true;
+}
+
+function resumeLiveUpdates() {
+  isFrozen.value = false;
+  if (pendingStatistics.value.length > 0) {
+    for (const stat of pendingStatistics.value) {
+      rawPoints.value.push([stat.timestamp || Date.now(), Math.round(stat.currentSendBitrate)]);
+    }
+    pendingStatistics.value = [];
+  }
+  if (pendingExecutionEvents.value.length > 0) {
+    executionEvents.value.push(...pendingExecutionEvents.value);
+    pendingExecutionEvents.value = [];
+  }
+  nowTs.value = Date.now();
   pruneOldData();
 }
 
 onMounted(async () => {
   await loadInitialState();
   chartTick = window.setInterval(() => {
-    nowTs.value = Date.now();
+    if (!isFrozen.value) {
+      nowTs.value = Date.now();
+    }
   }, 1000);
   await window.executionEngineAPI.listenForStatistics(onStatisticsUpdate);
   await window.executionEngineAPI.listenForExecutionLog(onExecutionLogUpdate);

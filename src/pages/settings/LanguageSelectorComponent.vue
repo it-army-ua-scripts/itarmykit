@@ -36,7 +36,7 @@ interface Language {
 
 const languages: Language[] = [
   {
-    name: 'Ukrainian',
+    name: 'Українська',
     symbol: 'ua-UA'
   },
   {

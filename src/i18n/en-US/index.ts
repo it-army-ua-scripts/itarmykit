@@ -34,7 +34,10 @@ export default {
       fri: 'Fri',
       sat: 'Sat'
     },
-    close: 'Close'
+    close: 'Close',
+    autoSaveHint: 'Changes are saved automatically.',
+    overlapError: 'Intervals must not overlap.',
+    saveFailed: 'Failed to save schedule. Error: {error}'
   },
   modules: {
     menu: {
@@ -224,6 +227,12 @@ export default {
 	bytes: "Sent / Traffic / Total",
   bytesHint: "Statistics of send traffic may be not accurate. It depends on the module and the way it works. Total statistics is always precise and shows aggregated information from all the running tools.",
 	moduleStatus: "Module Status",
+	control: "System Control",
+	autostart: "Autostart",
+	scheduler: "Scheduler",
+	on: "ON",
+	off: "OFF",
+	intervals: "Intervals",
 	updates: "KIT Version",
 	latest: "Current",
   chart: {

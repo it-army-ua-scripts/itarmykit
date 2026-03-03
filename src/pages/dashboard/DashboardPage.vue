@@ -47,7 +47,6 @@
 import { useQuasar } from "quasar";
 import ModuleStatusComponent from "./ModuleStatusComponent.vue";
 import BytesSendComponent from "./BytesSendComponent.vue";
-import UpdateComponent from "./UpdateComponent.vue";
 import ItArmyIDComponent from "./ItArmyIDComponent.vue";
 import BitrateChartComponent from "./BitrateChartComponent.vue";
 import CombinedLogOutputComponent from "../modules/CombinedLogOutputComponent.vue";

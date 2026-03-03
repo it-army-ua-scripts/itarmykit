@@ -34,7 +34,10 @@ export default {
       fri: 'Fr',
       sat: 'Sa'
     },
-    close: 'Schließen'
+    close: 'Schließen',
+    autoSaveHint: 'Änderungen werden automatisch gespeichert.',
+    overlapError: 'Intervalle dürfen sich nicht überschneiden.',
+    saveFailed: 'Zeitplan konnte nicht gespeichert werden. Fehler: {error}'
   },
   modules: {
     menu: {
@@ -223,6 +226,12 @@ export default {
 	bytes: "Gesendet / Datenverkehr / Insgesamt",
     bytesHint: "Die Statistiken zum gesendeten Datenverkehr können ungenau sein. Dies hängt vom Modul und seiner Funktionsweise ab. Die Gesamtstatistik ist immer präzise und zeigt aggregierte Informationen aus allen laufenden Tools an.",
 	moduleStatus: "Modul-Status",
+	control: "Systemsteuerung",
+	autostart: "Autostart",
+	scheduler: "Scheduler",
+	on: "AN",
+	off: "AUS",
+	intervals: "Intervalle",
 	updates: "KIT Version",
 	latest: "Aktuell",
   chart: {

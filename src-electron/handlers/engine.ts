@@ -379,16 +379,24 @@ export class ExecutionEngine {
 
 export function handleExecutionEngine(modules: Array<Distress | MHDDOSProxy>, settings: Settings): ExecutionEngine {
     const engine = new ExecutionEngine(modules, settings)
+    const disableSchedulerForManualControl = async () => {
+        const currentSettings = await settings.getData()
+        if (currentSettings.schedule.enabled) {
+            await settings.setScheduleEnabled(false)
+        }
+    }
 
     app.on('before-quit', async () => {
         await engine.dispose()
     })
 
     ipcMain.handle('executionEngine:startModule', async () => {
+        await disableSchedulerForManualControl()
         await engine.startModule()
     })
 
     ipcMain.handle('executionEngine:stopModule', async () => {
+        await disableSchedulerForManualControl()
         await engine.stopModule()
     })
 
@@ -397,6 +405,7 @@ export function handleExecutionEngine(modules: Array<Distress | MHDDOSProxy>, se
     })
 
     ipcMain.handle('executionEngine:setModuleToRun', async (_e, module?: ModuleName) => {
+        await disableSchedulerForManualControl()
         await engine.setModuleToRun(module)
     })
 

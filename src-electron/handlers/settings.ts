@@ -1,6 +1,6 @@
 import { join as joinPath }from 'path'
 import { app, ipcMain } from 'electron'
-import { promises as fsPromises, readFileSync, existsSync } from 'fs'
+import { promises as fsPromises, readFileSync, existsSync, mkdirSync, writeFileSync } from 'fs'
 import EventEmitter from 'events';
 import { SID } from 'app/lib/activeness/api';
 
@@ -45,6 +45,67 @@ export interface SettingsData {
 
 
 export type SettingsChangedEventHandler = (newData: SettingsData) => void
+
+function parseTimeToMinutes(time: string): number | null {
+    const parts = time.split(':')
+    if (parts.length !== 2) {
+        return null
+    }
+    const hours = Number(parts[0])
+    const minutes = Number(parts[1])
+    if (!Number.isInteger(hours) || !Number.isInteger(minutes)) {
+        return null
+    }
+    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+        return null
+    }
+    return hours * 60 + minutes
+}
+
+function validateScheduleIntervalsNoOverlap(intervals: ScheduleInterval[]) {
+    const segmentsByDay = new Map<number, Array<{ start: number, end: number }>>()
+    for (let day = 0; day <= 6; day++) {
+        segmentsByDay.set(day, [])
+    }
+
+    for (const interval of intervals) {
+        const start = parseTimeToMinutes(interval.startTime)
+        const end = parseTimeToMinutes(interval.endTime)
+        if (start === null || end === null) {
+            throw new Error(`Invalid interval time format: ${interval.startTime}-${interval.endTime}`)
+        }
+
+        const days = Array.from(new Set((interval.days || []).filter((day) => Number.isInteger(day) && day >= 0 && day <= 6)))
+        for (const day of days) {
+            if (start === end) {
+                segmentsByDay.get(day)?.push({ start: 0, end: 1440 })
+                continue
+            }
+
+            if (start < end) {
+                segmentsByDay.get(day)?.push({ start, end })
+                continue
+            }
+
+            // Cross-midnight interval: split into current and next day.
+            segmentsByDay.get(day)?.push({ start, end: 1440 })
+            const nextDay = (day + 1) % 7
+            segmentsByDay.get(nextDay)?.push({ start: 0, end })
+        }
+    }
+
+    for (let day = 0; day <= 6; day++) {
+        const daySegments = segmentsByDay.get(day) || []
+        daySegments.sort((a, b) => a.start - b.start)
+        for (let i = 1; i < daySegments.length; i++) {
+            const prev = daySegments[i - 1]
+            const current = daySegments[i]
+            if (current.start < prev.end) {
+                throw new Error('Schedule intervals must not overlap')
+            }
+        }
+    }
+}
 
 export class Settings {
     private static settingsFile = joinPath(app.getPath('appData'), 'ITArmyKitProfile', 'settings.json')
@@ -115,6 +176,7 @@ export class Settings {
     }
 
     async save() {
+        await fsPromises.mkdir(joinPath(app.getPath('appData'), 'ITArmyKitProfile'), { recursive: true })
         await fsPromises.writeFile(Settings.settingsFile, JSON.stringify(this.data))
     }
 
@@ -241,7 +303,8 @@ export class Settings {
             this.data = JSON.parse(readFileSync(Settings.settingsFile, 'utf-8'))
             this.applyLoadBackwardsCompatibility()
         } catch (e) {
-            void this.save()
+            mkdirSync(joinPath(app.getPath('appData'), 'ITArmyKitProfile'), { recursive: true })
+            writeFileSync(Settings.settingsFile, JSON.stringify(this.data))
         }
         this.loaded = true
     }
@@ -472,6 +535,7 @@ export class Settings {
             await this.load()
         }
 
+        validateScheduleIntervalsNoOverlap(data)
         this.data.schedule.intervals = data
         await this.save()
         this.settingsChangedEmiter.emit('settingsChanged', this.data)
