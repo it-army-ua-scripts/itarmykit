@@ -118,7 +118,8 @@ export function handleTray(settings: Settings, mainWindow: BrowserWindow) {
   });
 
   const settingsData = settings.getDataSync();
-  if (settingsData.system.hideInTray) {
+  const isBootstrapIncomplete = settingsData.bootstrap.step !== "DONE";
+  if (!isBootstrapIncomplete && settingsData.system.hideInTray) {
     mainWindow.hide();
   } else {
     mainWindow.show();

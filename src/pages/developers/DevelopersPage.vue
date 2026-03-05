@@ -1,12 +1,13 @@
 <template>
-  <q-linear-progress
-    stripe
-    size="5px"
-    :value="biohazardActivationMenu"
-    v-if="biohazardActivationMenu > 0.05"
-  />
-  <div class="row q-pt-lg justify-center">
-    <q-card class="col-12 col-lg-8 bg-transparent" flat>
+  <q-page padding>
+    <q-linear-progress
+      stripe
+      size="5px"
+      :value="biohazardActivationMenu"
+      v-if="biohazardActivationMenu > 0.05"
+    />
+    <div class="row q-pt-lg justify-center">
+      <q-card class="col-12 col-lg-8 bg-transparent" flat>
       <q-card-section class="row">
         <q-btn
           @click="biohazardClick"
@@ -32,17 +33,30 @@
       <q-separator></q-separator>
 
       <q-card-section class="items-center allign-center">
+        <q-btn
+          class="q-pa-sm q-ma-xs"
+          @click="openExternalLink('https://artline.ua/uk')"
+        >
+          <q-avatar
+            class="cursor-pointer partner-avatar partner-avatar--artline"
+            square
+            size="62px"
+          >
+            <img src="./artline.jpg" class="partner-img partner-img--artline" />
+          </q-avatar>
+          <q-tooltip>Інтернет магазин Artline</q-tooltip>
+        </q-btn>
 
         <q-btn
           class="q-pa-sm q-ma-xs"
           @click="openExternalLink('https://www.ukraine.com.ua/')"
         >
           <q-avatar
-            style="outline: 2px solid #555"
-            class="cursor-pointer"
+            class="cursor-pointer partner-avatar"
             square
+            size="62px"
           >
-            <img src="./hosting_ukraine.jpg" />
+            <img src="./hosting_ukraine.jpg" class="partner-img" />
           </q-avatar>
           <q-tooltip>Hosting Ukraine</q-tooltip>
         </q-btn>
@@ -52,11 +66,11 @@
           @click="openExternalLink('https://t.me/studentcyberarmy')"
         >
           <q-avatar
-            style="outline: 2px solid #555"
-            class="cursor-pointer"
+            class="cursor-pointer partner-avatar"
             square
+            size="62px"
           >
-            <img src="./SKKO.jpg" />
+            <img src="./SKKO.jpg" class="partner-img" />
           </q-avatar>
           <q-tooltip>СККО</q-tooltip>
         </q-btn>
@@ -103,11 +117,12 @@
           {{ $t("developers.contributorsSubtitle") }}
         </div>
       </q-card-section>
-    </q-card>
-    <q-dialog v-model="showMurkaDialog">
-      <q-img src="../../layouts/snowEffect/murka_the_cat.jpg"></q-img>
-    </q-dialog>
-  </div>
+      </q-card>
+      <q-dialog v-model="showMurkaDialog">
+        <q-img src="../../layouts/snowEffect/murka_the_cat.jpg"></q-img>
+      </q-dialog>
+    </div>
+  </q-page>
 </template>
 
 <script setup lang="ts">
@@ -159,3 +174,28 @@ onUnmounted(() => {
   }
 });
 </script>
+
+<style scoped>
+.partner-avatar {
+  outline: 2px solid #555;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.partner-avatar--artline {
+  outline: 3px solid #19bcc9;
+  box-shadow: 0 0 0 2px rgba(25, 188, 201, 0.18);
+}
+
+.partner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #fff;
+  padding: 4px;
+}
+
+.partner-img--artline {
+  padding: 3px;
+}
+</style>
