@@ -12,6 +12,7 @@ import { handleItArmy } from './itarmy'
 import { handleHelpers } from './helpers'
 import { BrowserWindow } from 'electron'
 import { handleSchedule } from './schedule'
+import { handleSystem } from './system'
 
 interface MainProcessContext {
   settings: Settings
@@ -40,6 +41,7 @@ function initMainProcessContext (): MainProcessContext {
   handleItArmy(settings)
   handleSchedule(settings, engine)
   handleHelpers()
+  handleSystem()
 
   context = { settings }
   return context

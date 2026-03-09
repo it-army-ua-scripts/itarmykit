@@ -230,6 +230,8 @@ export default {
 	control: "System Control",
 	autostart: "Autostart",
 	scheduler: "Scheduler",
+	cpuLoad: "CPU",
+	ramLoad: "RAM",
 	on: "ON",
 	off: "OFF",
 	intervals: "Intervals",

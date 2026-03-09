@@ -34,6 +34,32 @@
         </q-chip>
       </div>
 
+      <div class="q-mt-xs row items-center no-wrap">
+        <div class="text-caption status-label">{{ $t("dashboard.cpuLoad") }}</div>
+        <q-chip
+          dense
+          square
+          :color="usageColor(cpuUsagePercent)"
+          text-color="white"
+          class="q-ml-sm"
+        >
+          {{ formatPercent(cpuUsagePercent) }}
+        </q-chip>
+      </div>
+
+      <div class="q-mt-xs row items-center no-wrap">
+        <div class="text-caption status-label">{{ $t("dashboard.ramLoad") }}</div>
+        <q-chip
+          dense
+          square
+          :color="usageColor(ramUsagePercent)"
+          text-color="white"
+          class="q-ml-sm"
+        >
+          {{ formatPercent(ramUsagePercent) }}
+        </q-chip>
+      </div>
+
       <div class="text-caption text-grey-7 q-mt-xs">
         {{ $t("dashboard.intervals") }}: {{ intervalsCount }}
       </div>
@@ -53,6 +79,22 @@ const autoStartEnabled = ref(false);
 const scheduleEnabled = ref(false);
 const intervalsCount = ref(0);
 const intervalLines = ref<string[]>([]);
+const cpuUsagePercent = ref(0);
+const ramUsagePercent = ref(0);
+
+function formatPercent(value: number) {
+  return `${value.toFixed(1)}%`;
+}
+
+function usageColor(value: number) {
+  if (value >= 90) {
+    return "negative";
+  }
+  if (value >= 70) {
+    return "warning";
+  }
+  return "positive";
+}
 
 async function loadStatus() {
   const settings = await window.settingsAPI.get();
@@ -65,6 +107,10 @@ async function loadStatus() {
   } else {
     intervalLines.value = [];
   }
+
+  const usage = await window.systemAPI.getUsage();
+  cpuUsagePercent.value = usage.cpuPercent;
+  ramUsagePercent.value = usage.ramPercent;
 }
 
 let refreshInterval: ReturnType<typeof setInterval> | undefined;
@@ -73,7 +119,7 @@ onMounted(async () => {
   await loadStatus();
   refreshInterval = setInterval(() => {
     void loadStatus();
-  }, 5000);
+  }, 3000);
 });
 
 onUnmounted(() => {

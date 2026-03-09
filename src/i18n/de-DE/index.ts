@@ -229,6 +229,8 @@ export default {
 	control: "Systemsteuerung",
 	autostart: "Autostart",
 	scheduler: "Scheduler",
+	cpuLoad: "CPU",
+	ramLoad: "RAM",
 	on: "AN",
 	off: "AUS",
 	intervals: "Intervalle",

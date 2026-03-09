@@ -307,6 +307,26 @@ const itArmyAPI = {
 contextBridge.exposeInMainWorld('itArmyAPI', itArmyAPI)
 
 
+export interface SystemUsage {
+  cpuPercent: number
+  ramPercent: number
+}
+
+declare global {
+  interface Window {
+      systemAPI: typeof systemAPI
+  }
+}
+
+const systemAPI = {
+  async getUsage (): Promise<SystemUsage> {
+    return await ipcRenderer.invoke('system:getUsage')
+  },
+}
+
+contextBridge.exposeInMainWorld('systemAPI', systemAPI)
+
+
 declare global {
   interface Window {
       helpersAPI: typeof helpersAPI
