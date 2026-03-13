@@ -1,137 +1,137 @@
-import { SID, Task, getTasksList, GetTasksListResponse, makeTaskDone, MakeTaskDoneResponse, ignoreTask, IgnoreTaskResponse, getStats, Stats, GetStatsResponse, login } from "./api";
+import { SID, Task, getTasksList, GetTasksListResponse, makeTaskDone, MakeTaskDoneResponse, ignoreTask, IgnoreTaskResponse, getStats, Stats, GetStatsResponse, login } from './api'
 
 const TASKS_CACHE_UPDATE_INTERVAL = 1000 * 60 * 2 // 2 minutes
 const STATISTICS_CACHE_UPDATE_INTERVAL = 1000 * 60 * 2 // 2 minutes
 
 /**
- * Client to work with activeness Project. Uses cache to reduce number of requests to the server. 
+ * Client to work with activeness Project. Uses cache to reduce number of requests to the server.
  */
 export class ActivenessClient {
-    protected _sid?: SID
-    protected _score: number
-    
-    protected cachedTasksList?: Array<Task>
-    protected lastTaskListCacheUpdate?: Date
+  protected _sid?: SID
+  protected _score: number
 
-    protected cachedStatistics?: Stats
-    protected lastStatisticsCacheUpdate?: Date
+  protected cachedTasksList?: Array<Task>
+  protected lastTaskListCacheUpdate?: Date
 
-    constructor () {
-        this._score = 0
+  protected cachedStatistics?: Stats
+  protected lastStatisticsCacheUpdate?: Date
+
+  constructor () {
+    this._score = 0
+  }
+
+  get score (): number {
+    return this._score
+  }
+
+  async login (email: string, password: string): Promise<boolean> {
+    const loginResponse = await login({ email, password })
+    if (loginResponse.status === 'ok') {
+      this._sid = loginResponse.sid
+      this._score = loginResponse.score
+      return true
     }
 
-    get score(): number {
-        return this._score
+    return false
+  }
+
+  logout () {
+    this._sid = undefined
+    this._score = 0
+  }
+
+  async loginWithSID (sid: SID): Promise<boolean> {
+    this._sid = sid
+    // TODO: Reload score
+    this._score = 0
+    return true
+  }
+
+  get sid (): SID {
+    if (this._sid === undefined) {
+      throw new Error('Not logged in')
     }
 
-    async login(email: string, password: string): Promise<boolean> {
-        const loginResponse = await login({ email, password })
-        if (loginResponse.status == 'ok') {
-            this._sid = loginResponse.sid
-            this._score = loginResponse.score
-            return true
-        }
+    return this._sid
+  }
 
-        return false
+  get isLoggedIn (): boolean {
+    return this._sid !== undefined
+  }
+
+  async getTasksList (): Promise<GetTasksListResponse> {
+    if (this._sid === undefined) {
+      throw new Error('Not logged in')
     }
 
-    logout() {
-        this._sid = undefined
-        this._score = 0
+    if (this.cachedTasksList && this.lastTaskListCacheUpdate && (Date.now() - this.lastTaskListCacheUpdate.getTime()) < TASKS_CACHE_UPDATE_INTERVAL && this.cachedTasksList.length > 0) {
+      return {
+        status: 'ok',
+        list: JSON.parse(JSON.stringify(this.cachedTasksList)) as Array<Task>
+      }
     }
 
-    async loginWithSID(sid: SID): Promise<boolean> {
-        this._sid = sid
-        //TODO: Reload score
-        this._score = 0
-        return true
+    const requestResponse = await getTasksList({ sid: this._sid })
+    if (requestResponse.status === 'ok') {
+      this.lastTaskListCacheUpdate = new Date()
+      this.cachedTasksList = requestResponse.list
     }
 
-    get sid(): SID {
-        if (this._sid === undefined) {
-            throw new Error('Not logged in')
-        }
-        
-        return this._sid
+    return requestResponse
+  }
+
+  async makeTaskDone (taskId: number): Promise<MakeTaskDoneResponse> {
+    if (this._sid === undefined) {
+      throw new Error('Not logged in')
     }
 
-    get isLoggedIn(): boolean {
-        return this._sid !== undefined
+    const requestResponse = await makeTaskDone({ sid: this._sid, id: taskId })
+    if (requestResponse.status === 'ok') {
+      this._score += 1
+
+      if (this.cachedTasksList) {
+        const taskIndex = this.cachedTasksList.findIndex(task => task.id === taskId)
+        if (taskIndex !== -1) {
+          this.cachedTasksList.splice(taskIndex, 1)
+        }
+      }
     }
 
-    async getTasksList(): Promise<GetTasksListResponse> {
-        if (this._sid === undefined) {
-            throw new Error('Not logged in')
-        }
+    return requestResponse
+  }
 
-        if (this.cachedTasksList && this.lastTaskListCacheUpdate && (Date.now() - this.lastTaskListCacheUpdate.getTime()) < TASKS_CACHE_UPDATE_INTERVAL && this.cachedTasksList.length > 0) {
-            return {
-                status: 'ok',
-                list:  JSON.parse(JSON.stringify(this.cachedTasksList)) as Array<Task>
-            }
-        }
-
-        const requestResponse = await getTasksList({ sid: this._sid })
-        if (requestResponse.status == 'ok') {
-            this.lastTaskListCacheUpdate = new Date()
-            this.cachedTasksList = requestResponse.list
-        }
-
-        return requestResponse
+  async ignoreTask (taskId: number): Promise<IgnoreTaskResponse> {
+    if (this._sid === undefined) {
+      throw new Error('Not logged in')
     }
 
-    async makeTaskDone(taskId: number): Promise<MakeTaskDoneResponse> {
-        if (this._sid === undefined) {
-            throw new Error('Not logged in')
+    const requestResponse = await ignoreTask({ sid: this._sid, id: taskId })
+    if (requestResponse.status === 'ok') {
+      if (this.cachedTasksList) {
+        const taskIndex = this.cachedTasksList.findIndex(task => task.id === taskId)
+        if (taskIndex !== -1) {
+          this.cachedTasksList.splice(taskIndex, 1)
         }
-
-        const requestResponse = await makeTaskDone({ sid: this._sid, id: taskId })
-        if (requestResponse.status == 'ok') {
-            this._score += 1
-            
-            if (this.cachedTasksList) {
-                const taskIndex = this.cachedTasksList.findIndex(task => task.id === taskId)
-                if (taskIndex !== -1) {
-                    this.cachedTasksList.splice(taskIndex, 1)
-                }
-            }
-        }
-
-        return requestResponse
+      }
     }
 
-    async ignoreTask(taskId: number): Promise<IgnoreTaskResponse> {
-        if (this._sid === undefined) {
-            throw new Error('Not logged in')
-        }
+    return requestResponse
+  }
 
-        const requestResponse = await ignoreTask({ sid: this._sid, id: taskId })
-        if (requestResponse.status == 'ok') {
-            if (this.cachedTasksList) {
-                const taskIndex = this.cachedTasksList.findIndex(task => task.id === taskId)
-                if (taskIndex !== -1) {
-                    this.cachedTasksList.splice(taskIndex, 1)
-                }
-            }
-        }
-
-        return requestResponse
+  async getStats (): Promise<GetStatsResponse> {
+    if (this.cachedStatistics && this.lastStatisticsCacheUpdate && (Date.now() - this.lastStatisticsCacheUpdate.getTime()) < STATISTICS_CACHE_UPDATE_INTERVAL) {
+      return {
+        ...JSON.parse(JSON.stringify(this.cachedStatistics)) as Stats,
+        status: 'ok'
+      }
     }
 
-    async getStats(): Promise<GetStatsResponse> {
-        if (this.cachedStatistics && this.lastStatisticsCacheUpdate && (Date.now() - this.lastStatisticsCacheUpdate.getTime()) < STATISTICS_CACHE_UPDATE_INTERVAL) {
-            return {
-                ...JSON.parse(JSON.stringify(this.cachedStatistics)) as Stats,
-                status: 'ok',
-            }
-        }
-
-        const requestResponse = await getStats()
-        if (requestResponse.status == 'ok') {
-            this.lastStatisticsCacheUpdate = new Date()
-            this.cachedStatistics = requestResponse
-        }
-
-        return requestResponse
+    const requestResponse = await getStats()
+    if (requestResponse.status === 'ok') {
+      this.lastStatisticsCacheUpdate = new Date()
+      this.cachedStatistics = requestResponse
     }
+
+    return requestResponse
+  }
 }

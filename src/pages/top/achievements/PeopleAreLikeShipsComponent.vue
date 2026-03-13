@@ -27,18 +27,15 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { ModuleName, Version } from 'app/lib/module/module';
+import { ref } from 'vue'
 
 const flip = ref(false)
 
-const emit = defineEmits<{
-    (event: 'closed'): void,
-}>()
+const emit = defineEmits(['closed'])
 
 const showExplanation = ref(false)
 
-function close() {
-    emit('closed')
+function close () {
+  emit('closed')
 }
 </script>

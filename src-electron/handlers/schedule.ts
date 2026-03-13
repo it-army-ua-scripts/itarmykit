@@ -2,7 +2,7 @@ import { ModuleName } from 'app/lib/module/module'
 import { ExecutionEngine } from './engine'
 import { Settings, ScheduleInterval } from './settings'
 
-function parseTime(time: string): number | null {
+function parseTime (time: string): number | null {
   const parts = time.split(':')
   if (parts.length !== 2) {
     return null
@@ -20,7 +20,7 @@ function parseTime(time: string): number | null {
   return hours * 60 + minutes
 }
 
-function isWithinTimeWindow(nowMinutes: number, startMinutes: number, endMinutes: number): boolean {
+function isWithinTimeWindow (nowMinutes: number, startMinutes: number, endMinutes: number): boolean {
   if (startMinutes === endMinutes) {
     return true
   }
@@ -31,11 +31,11 @@ function isWithinTimeWindow(nowMinutes: number, startMinutes: number, endMinutes
   return nowMinutes >= startMinutes || nowMinutes < endMinutes
 }
 
-function getPreviousWeekDay(day: number): number {
+function getPreviousWeekDay (day: number): number {
   return day === 0 ? 6 : day - 1
 }
 
-function isIntervalActive(now: Date, interval: ScheduleInterval): boolean {
+function isIntervalActive (now: Date, interval: ScheduleInterval): boolean {
   if (process.platform === 'darwin' && interval.module === 'MHDDOS_PROXY') {
     return false
   }
@@ -68,7 +68,7 @@ function isIntervalActive(now: Date, interval: ScheduleInterval): boolean {
   return days.includes(previousDay) && nowMinutes < endMinutes
 }
 
-export function handleSchedule(settings: Settings, executionEngine: ExecutionEngine) {
+export function handleSchedule (settings: Settings, executionEngine: ExecutionEngine) {
   const reconcile = async () => {
     const settingsData = await settings.getData()
     if (settingsData.bootstrap.step !== 'DONE') {

@@ -13,28 +13,28 @@ export const useModulesInstallationStore = defineStore('modulesInstallation', {
     progress: 0,
     errorCode: 'OK' as InstallationErrorCodes,
     errorMessage: '',
-    installingModule: "DISTRESS" as ModuleName,
-    installingTag: ""
+    installingModule: 'DISTRESS' as ModuleName,
+    installingTag: ''
   }),
   getters: {
   },
   actions: {
     supplyProgress (progress: ModuleVersionInstallationProgress) {
-        if (progress.progress.stage === 'DONE') {
-            this.installingTag = "-------------------------------"
-            return 
-        }
+      if (progress.progress.stage === 'DONE') {
+        this.installingTag = '-------------------------------'
+        return
+      }
 
-        this.stage = progress.progress.stage
-        this.progress = progress.progress.progress
-        if (progress.progress.errorCode !== undefined) {
-            this.errorCode = progress.progress.errorCode
-        }
-        if (progress.progress.errorMessage !== undefined) {
-            this.errorMessage = progress.progress.errorMessage
-        }
-        this.installingModule = progress.module
-        this.installingTag = progress.version
+      this.stage = progress.progress.stage
+      this.progress = progress.progress.progress
+      if (progress.progress.errorCode !== undefined) {
+        this.errorCode = progress.progress.errorCode
+      }
+      if (progress.progress.errorMessage !== undefined) {
+        this.errorMessage = progress.progress.errorMessage
+      }
+      this.installingModule = progress.module
+      this.installingTag = progress.version
     }
   }
 })

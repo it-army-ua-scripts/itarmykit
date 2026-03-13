@@ -67,223 +67,223 @@
 </template>
 
 <script lang="ts" setup>
-import { ModuleExecutionStatisticsEventData } from "app/lib/module/module";
-import { IpcRendererEvent } from "electron";
-import { computed, onMounted, onUnmounted, ref } from "vue";
-import VueApexCharts from "vue3-apexcharts";
-import { useQuasar } from "quasar";
-import { useI18n } from "vue-i18n";
+import { ModuleExecutionStatisticsEventData } from 'app/lib/module/module'
+import { IpcRendererEvent } from 'electron'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import VueApexCharts from 'vue3-apexcharts'
+import { useQuasar } from 'quasar'
+import { useI18n } from 'vue-i18n'
 
-const $q = useQuasar();
-const { t } = useI18n();
-const MAX_RETENTION_MS = 1000 * 60 * 60 * 12; // 12h local retention
-const BITRATE_SMOOTH_ALPHA = 0.55; // higher = closer to raw value
+const $q = useQuasar()
+const { t } = useI18n()
+const MAX_RETENTION_MS = 1000 * 60 * 60 * 12 // 12h local retention
+const BITRATE_SMOOTH_ALPHA = 0.55 // higher = closer to raw value
 
 interface ExecutionLogEntry {
-  type: "STARTED" | "STOPPED" | "ERROR";
-  moduleName: "DISTRESS" | "MHDDOS_PROXY";
+  type: 'STARTED' | 'STOPPED' | 'ERROR';
+  moduleName: 'DISTRESS' | 'MHDDOS_PROXY';
   timestamp: number;
 }
 
-const eventLabelMap: Record<ExecutionLogEntry["type"], string> = {
-  STARTED: "dashboard.chart.events.started",
-  STOPPED: "dashboard.chart.events.stopped",
-  ERROR: "dashboard.chart.events.error",
-};
-
-type ChartRangeKey = "5m" | "15m" | "1h" | "6h";
-const rangeToMs: Record<ChartRangeKey, number> = {
-  "5m": 1000 * 60 * 5,
-  "15m": 1000 * 60 * 15,
-  "1h": 1000 * 60 * 60,
-  "6h": 1000 * 60 * 60 * 6,
-};
-const rangeOptions = computed(() => [
-  { label: t("dashboard.chart.ranges.m5"), value: "5m" as ChartRangeKey },
-  { label: t("dashboard.chart.ranges.m15"), value: "15m" as ChartRangeKey },
-  { label: t("dashboard.chart.ranges.h1"), value: "1h" as ChartRangeKey },
-  { label: t("dashboard.chart.ranges.h6"), value: "6h" as ChartRangeKey },
-]);
-const selectedRange = ref<ChartRangeKey>("15m");
-const showPeakMarker = ref(true);
-const selectedRangeMs = computed(() => rangeToMs[selectedRange.value]);
-const isCompact = computed(() => $q.screen.lt.md);
-const chartHeight = computed(() => (isCompact.value ? 280 : 320));
-const nowTs = ref(Date.now());
-const rangeStartTs = computed(() => nowTs.value - selectedRangeMs.value);
-let chartTick: number | undefined;
-const isFrozen = ref(false);
-const pendingStatistics = ref<ModuleExecutionStatisticsEventData[]>([]);
-const pendingExecutionEvents = ref<ExecutionLogEntry[]>([]);
-
-function humanBytesString(bytes: number, dp = 1) {
-  const thresh = 1024;
-  if (Math.abs(bytes) < thresh) {
-    return `${bytes} B`;
-  }
-
-  const units = ["kB", "MB", "GB", "TB", "PB", "EB"];
-  let u = -1;
-  const r = 10 ** dp;
-
-  do {
-    bytes /= thresh;
-    ++u;
-  } while (Math.round(Math.abs(bytes) * r) / r >= thresh && u < units.length - 1);
-
-  return `${bytes.toFixed(dp)} ${units[u]}`;
+const eventLabelMap: Record<ExecutionLogEntry['type'], string> = {
+  STARTED: 'dashboard.chart.events.started',
+  STOPPED: 'dashboard.chart.events.stopped',
+  ERROR: 'dashboard.chart.events.error'
 }
 
-const rawPoints = ref<Array<[number, number]>>([]);
-const executionEvents = ref<ExecutionLogEntry[]>([]);
+type ChartRangeKey = '5m' | '15m' | '1h' | '6h';
+const rangeToMs: Record<ChartRangeKey, number> = {
+  '5m': 1000 * 60 * 5,
+  '15m': 1000 * 60 * 15,
+  '1h': 1000 * 60 * 60,
+  '6h': 1000 * 60 * 60 * 6
+}
+const rangeOptions = computed(() => [
+  { label: t('dashboard.chart.ranges.m5'), value: '5m' as ChartRangeKey },
+  { label: t('dashboard.chart.ranges.m15'), value: '15m' as ChartRangeKey },
+  { label: t('dashboard.chart.ranges.h1'), value: '1h' as ChartRangeKey },
+  { label: t('dashboard.chart.ranges.h6'), value: '6h' as ChartRangeKey }
+])
+const selectedRange = ref<ChartRangeKey>('15m')
+const showPeakMarker = ref(true)
+const selectedRangeMs = computed(() => rangeToMs[selectedRange.value])
+const isCompact = computed(() => $q.screen.lt.md)
+const chartHeight = computed(() => (isCompact.value ? 280 : 320))
+const nowTs = ref(Date.now())
+const rangeStartTs = computed(() => nowTs.value - selectedRangeMs.value)
+let chartTick: number | undefined
+const isFrozen = ref(false)
+const pendingStatistics = ref<ModuleExecutionStatisticsEventData[]>([])
+const pendingExecutionEvents = ref<ExecutionLogEntry[]>([])
+
+function humanBytesString (bytes: number, dp = 1) {
+  const thresh = 1024
+  if (Math.abs(bytes) < thresh) {
+    return `${bytes} B`
+  }
+
+  const units = ['kB', 'MB', 'GB', 'TB', 'PB', 'EB']
+  let u = -1
+  const r = 10 ** dp
+
+  do {
+    bytes /= thresh
+    ++u
+  } while (Math.round(Math.abs(bytes) * r) / r >= thresh && u < units.length - 1)
+
+  return `${bytes.toFixed(dp)} ${units[u]}`
+}
+
+const rawPoints = ref<Array<[number, number]>>([])
+const executionEvents = ref<ExecutionLogEntry[]>([])
 
 const visiblePoints = computed(() => {
-  return rawPoints.value.filter((point) => point[0] >= rangeStartTs.value && point[0] <= nowTs.value);
-});
+  return rawPoints.value.filter((point) => point[0] >= rangeStartTs.value && point[0] <= nowTs.value)
+})
 
 const smoothedBitratePoints = computed(() => {
-  let ema = 0;
+  let ema = 0
   return visiblePoints.value.map((point, index) => {
-    ema = index === 0 ? point[1] : BITRATE_SMOOTH_ALPHA * point[1] + (1 - BITRATE_SMOOTH_ALPHA) * ema;
-    return [point[0], Math.round(ema)] as [number, number];
-  });
-});
+    ema = index === 0 ? point[1] : BITRATE_SMOOTH_ALPHA * point[1] + (1 - BITRATE_SMOOTH_ALPHA) * ema
+    return [point[0], Math.round(ema)] as [number, number]
+  })
+})
 
 const trendPoints = computed(() => {
-  const alpha = 0.25;
-  let ema = 0;
+  const alpha = 0.25
+  let ema = 0
   return visiblePoints.value.map((point, index) => {
-    ema = index === 0 ? point[1] : alpha * point[1] + (1 - alpha) * ema;
-    return [point[0], Math.round(ema)] as [number, number];
-  });
-});
+    ema = index === 0 ? point[1] : alpha * point[1] + (1 - alpha) * ema
+    return [point[0], Math.round(ema)] as [number, number]
+  })
+})
 
-const displayedBitratePoints = computed(() => smoothedBitratePoints.value);
+const displayedBitratePoints = computed(() => smoothedBitratePoints.value)
 
 const effectiveRangeStartTs = computed(() => {
   if (displayedBitratePoints.value.length === 0) {
-    return rangeStartTs.value;
+    return rangeStartTs.value
   }
-  const firstPointTs = displayedBitratePoints.value[0][0];
-  return Math.max(firstPointTs, rangeStartTs.value);
-});
+  const firstPointTs = displayedBitratePoints.value[0][0]
+  return Math.max(firstPointTs, rangeStartTs.value)
+})
 
 const peakPoint = computed(() => {
   if (displayedBitratePoints.value.length === 0) {
-    return null;
+    return null
   }
-  let peak = displayedBitratePoints.value[0];
+  let peak = displayedBitratePoints.value[0]
   for (const point of displayedBitratePoints.value) {
     if (point[1] > peak[1]) {
-      peak = point;
+      peak = point
     }
   }
-  return peak;
-});
+  return peak
+})
 
 const visibleEvents = computed(() => {
   return executionEvents.value.filter(
     (entry) => entry.timestamp >= rangeStartTs.value && entry.timestamp <= nowTs.value
-  );
-});
+  )
+})
 
 const summary = computed(() => {
   if (visiblePoints.value.length === 0) {
-    return { now: 0, avg: 0, peak: 0 };
+    return { now: 0, avg: 0, peak: 0 }
   }
 
-  const now = visiblePoints.value[visiblePoints.value.length - 1][1];
-  const peak = visiblePoints.value.reduce((max, point) => Math.max(max, point[1]), 0);
+  const now = visiblePoints.value[visiblePoints.value.length - 1][1]
+  const peak = visiblePoints.value.reduce((max, point) => Math.max(max, point[1]), 0)
   const avg =
-    visiblePoints.value.reduce((acc, point) => acc + point[1], 0) / visiblePoints.value.length;
+    visiblePoints.value.reduce((acc, point) => acc + point[1], 0) / visiblePoints.value.length
   return {
     now: Math.round(now),
     avg: Math.round(avg),
-    peak: Math.round(peak),
-  };
-});
+    peak: Math.round(peak)
+  }
+})
 
 const seriesData = computed(() => [
   {
-    name: t("dashboard.chart.bitrate"),
-    data: displayedBitratePoints.value,
+    name: t('dashboard.chart.bitrate'),
+    data: displayedBitratePoints.value
   },
   {
-    name: t("dashboard.chart.trend"),
-    data: trendPoints.value,
-  },
-]);
+    name: t('dashboard.chart.trend'),
+    data: trendPoints.value
+  }
+])
 
 const chartOptions = computed(() => {
-  const textColor = $q.dark.isActive ? "#e5e7eb" : "#1f2937";
-  const mutedText = $q.dark.isActive ? "#9ca3af" : "#6b7280";
-  const gridColor = $q.dark.isActive ? "rgba(148,163,184,0.14)" : "rgba(148,163,184,0.35)";
-  const tooltipTheme = $q.dark.isActive ? "dark" : "light";
-  const chartBg = $q.dark.isActive ? "rgba(17,24,39,0.14)" : "rgba(241,245,249,0.45)";
-  const areaOpacity = $q.dark.isActive ? 0.24 : 0.14;
-  const trendOpacity = $q.dark.isActive ? 0.3 : 0.22;
+  const textColor = $q.dark.isActive ? '#e5e7eb' : '#1f2937'
+  const mutedText = $q.dark.isActive ? '#9ca3af' : '#6b7280'
+  const gridColor = $q.dark.isActive ? 'rgba(148,163,184,0.14)' : 'rgba(148,163,184,0.35)'
+  const tooltipTheme = $q.dark.isActive ? 'dark' : 'light'
+  const chartBg = $q.dark.isActive ? 'rgba(17,24,39,0.14)' : 'rgba(241,245,249,0.45)'
+  const areaOpacity = $q.dark.isActive ? 0.24 : 0.14
+  const trendOpacity = $q.dark.isActive ? 0.3 : 0.22
 
   return {
     chart: {
-      id: "attack-power-datetime",
-      type: "area",
+      id: 'attack-power-datetime',
+      type: 'area',
       animations: {
         enabled: true,
-        easing: "easeinout",
+        easing: 'easeinout',
         speed: 450,
         dynamicAnimation: {
           enabled: true,
-          speed: 450,
-        },
+          speed: 450
+        }
       },
       zoom: {
-        enabled: false,
+        enabled: false
       },
       toolbar: {
-        show: false,
+        show: false
       },
       foreColor: textColor,
-      background: chartBg,
+      background: chartBg
     },
-    colors: ["#f59e0b", "#06b6d4"],
+    colors: ['#f59e0b', '#06b6d4'],
     stroke: {
-      curve: "smooth",
+      curve: 'smooth',
       width: [2.8, 2],
-      dashArray: [0, 6],
+      dashArray: [0, 6]
     },
     dataLabels: {
-      enabled: false,
+      enabled: false
     },
     markers: {
       size: 0,
       hover: {
-        size: 4,
-      },
+        size: 4
+      }
     },
     fill: {
-      type: ["gradient", "solid"],
+      type: ['gradient', 'solid'],
       gradient: {
-        shade: $q.dark.isActive ? "dark" : "light",
+        shade: $q.dark.isActive ? 'dark' : 'light',
         shadeIntensity: 0.45,
         opacityFrom: areaOpacity,
         opacityTo: 0.03,
-        stops: [0, 95],
+        stops: [0, 95]
       },
-      opacity: [1, trendOpacity],
+      opacity: [1, trendOpacity]
     },
     grid: {
       borderColor: gridColor,
       strokeDashArray: 4,
       xaxis: {
         lines: {
-          show: true,
-        },
+          show: true
+        }
       },
       yaxis: {
         lines: {
-          show: true,
-        },
-      },
+          show: true
+        }
+      }
     },
     annotations: {
       points: showPeakMarker.value && peakPoint.value
@@ -293,182 +293,182 @@ const chartOptions = computed(() => {
               y: peakPoint.value[1],
               marker: {
                 size: 5,
-                fillColor: "#f59e0b",
-                strokeColor: $q.dark.isActive ? "#0b1220" : "#ffffff",
-                strokeWidth: 2,
+                fillColor: '#f59e0b',
+                strokeColor: $q.dark.isActive ? '#0b1220' : '#ffffff',
+                strokeWidth: 2
               },
               label: {
-                borderColor: "transparent",
+                borderColor: 'transparent',
                 offsetY: -8,
                 style: {
-                  color: "#fff",
-                  background: "#f59e0b",
-                  fontSize: "11px",
+                  color: '#fff',
+                  background: '#f59e0b',
+                  fontSize: '11px'
                 },
-                text: `${t("dashboard.chart.peak")}: ${humanBytesString(peakPoint.value[1])}/s`,
-              },
-            },
+                text: `${t('dashboard.chart.peak')}: ${humanBytesString(peakPoint.value[1])}/s`
+              }
+            }
           ]
         : [],
       xaxis: visibleEvents.value.map((event) => ({
         x: event.timestamp,
-        borderColor: event.type === "ERROR" ? "#ef4444" : "rgba(100,116,139,0.55)",
+        borderColor: event.type === 'ERROR' ? '#ef4444' : 'rgba(100,116,139,0.55)',
         strokeDashArray: 4,
         label: {
-          show: event.type === "ERROR",
-          borderColor: "transparent",
+          show: event.type === 'ERROR',
+          borderColor: 'transparent',
           style: {
-            color: "#fff",
-            background: event.type === "ERROR" ? "#ef4444" : "#64748b",
-            fontSize: "10px",
+            color: '#fff',
+            background: event.type === 'ERROR' ? '#ef4444' : '#64748b',
+            fontSize: '10px'
           },
-          text: t(eventLabelMap[event.type]),
-        },
-      })),
+          text: t(eventLabelMap[event.type])
+        }
+      }))
     },
     xaxis: {
-      type: "datetime",
+      type: 'datetime',
       min: effectiveRangeStartTs.value,
       max: nowTs.value,
       labels: {
         datetimeUTC: false,
         style: {
-          colors: mutedText,
-        },
+          colors: mutedText
+        }
       },
       axisBorder: {
-        color: gridColor,
+        color: gridColor
       },
       axisTicks: {
-        color: gridColor,
-      },
+        color: gridColor
+      }
     },
     yaxis: {
       labels: {
         formatter: (val: number) => `${humanBytesString(Math.max(0, val))}/s`,
         style: {
-          colors: mutedText,
-        },
-      },
+          colors: mutedText
+        }
+      }
     },
     tooltip: {
       theme: tooltipTheme,
       x: {
         formatter: (value: number) =>
           new Date(value).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-          }),
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          })
       },
       y: {
-        formatter: (value: number, ctx: any) => {
-          const current = Math.max(0, value);
+        formatter: (value: number, ctx: { seriesIndex?: number, dataPointIndex?: number }) => {
+          const current = Math.max(0, value)
           if (ctx?.seriesIndex === 0) {
-            const i = ctx?.dataPointIndex ?? -1;
-            const prev = i > 0 ? displayedBitratePoints.value[i - 1]?.[1] ?? current : current;
-            const delta = current - prev;
-            const sign = delta > 0 ? "+" : "";
-            return `${humanBytesString(current)}/s (${sign}${humanBytesString(delta)}/s)`;
+            const i = ctx?.dataPointIndex ?? -1
+            const prev = i > 0 ? displayedBitratePoints.value[i - 1]?.[1] ?? current : current
+            const delta = current - prev
+            const sign = delta > 0 ? '+' : ''
+            return `${humanBytesString(current)}/s (${sign}${humanBytesString(delta)}/s)`
           }
-          return `${humanBytesString(current)}/s`;
-        },
-      },
+          return `${humanBytesString(current)}/s`
+        }
+      }
     },
     legend: {
-      show: false,
+      show: false
     },
     noData: {
-      text: t("dashboard.chart.noData"),
-      align: "center",
-      verticalAlign: "middle",
+      text: t('dashboard.chart.noData'),
+      align: 'center',
+      verticalAlign: 'middle',
       style: {
-        color: mutedText,
-      },
+        color: mutedText
+      }
     },
     theme: {
-      mode: $q.dark.isActive ? "dark" : "light",
-    },
-  };
-});
+      mode: $q.dark.isActive ? 'dark' : 'light'
+    }
+  }
+})
 
-function pruneOldData() {
-  const minTs = nowTs.value - MAX_RETENTION_MS;
-  rawPoints.value = rawPoints.value.filter((point) => point[0] >= minTs);
-  executionEvents.value = executionEvents.value.filter((entry) => entry.timestamp >= minTs);
+function pruneOldData () {
+  const minTs = nowTs.value - MAX_RETENTION_MS
+  rawPoints.value = rawPoints.value.filter((point) => point[0] >= minTs)
+  executionEvents.value = executionEvents.value.filter((entry) => entry.timestamp >= minTs)
 }
 
-async function loadInitialState() {
-  const state = await window.executionEngineAPI.getState();
-  state.statistics.sort((a, b) => a.timestamp - b.timestamp);
-  rawPoints.value = state.statistics.map((s) => [s.timestamp, Math.round(s.currentSendBitrate)]);
+async function loadInitialState () {
+  const state = await window.executionEngineAPI.getState()
+  state.statistics.sort((a, b) => a.timestamp - b.timestamp)
+  rawPoints.value = state.statistics.map((s) => [s.timestamp, Math.round(s.currentSendBitrate)])
   executionEvents.value = state.executionLog
-    .filter((entry) => entry.type === "STARTED" || entry.type === "STOPPED" || entry.type === "ERROR")
-    .sort((a, b) => a.timestamp - b.timestamp);
-  pruneOldData();
+    .filter((entry) => entry.type === 'STARTED' || entry.type === 'STOPPED' || entry.type === 'ERROR')
+    .sort((a, b) => a.timestamp - b.timestamp)
+  pruneOldData()
 }
 
-function onStatisticsUpdate(_e: IpcRendererEvent, data: ModuleExecutionStatisticsEventData) {
+function onStatisticsUpdate (_e: IpcRendererEvent, data: ModuleExecutionStatisticsEventData) {
   if (isFrozen.value) {
-    pendingStatistics.value.push(data);
-    return;
+    pendingStatistics.value.push(data)
+    return
   }
-  nowTs.value = Date.now();
-  rawPoints.value.push([data.timestamp || Date.now(), Math.round(data.currentSendBitrate)]);
-  pruneOldData();
+  nowTs.value = Date.now()
+  rawPoints.value.push([data.timestamp || Date.now(), Math.round(data.currentSendBitrate)])
+  pruneOldData()
 }
 
-function onExecutionLogUpdate(_e: IpcRendererEvent, data: ExecutionLogEntry) {
-  if (data.type !== "STARTED" && data.type !== "STOPPED" && data.type !== "ERROR") {
-    return;
+function onExecutionLogUpdate (_e: IpcRendererEvent, data: ExecutionLogEntry) {
+  if (data.type !== 'STARTED' && data.type !== 'STOPPED' && data.type !== 'ERROR') {
+    return
   }
   if (isFrozen.value) {
-    pendingExecutionEvents.value.push(data);
-    return;
+    pendingExecutionEvents.value.push(data)
+    return
   }
-  executionEvents.value.push(data);
-  pruneOldData();
+  executionEvents.value.push(data)
+  pruneOldData()
 }
 
-function freezeLiveUpdates() {
-  isFrozen.value = true;
+function freezeLiveUpdates () {
+  isFrozen.value = true
 }
 
-function resumeLiveUpdates() {
-  isFrozen.value = false;
+function resumeLiveUpdates () {
+  isFrozen.value = false
   if (pendingStatistics.value.length > 0) {
     for (const stat of pendingStatistics.value) {
-      rawPoints.value.push([stat.timestamp || Date.now(), Math.round(stat.currentSendBitrate)]);
+      rawPoints.value.push([stat.timestamp || Date.now(), Math.round(stat.currentSendBitrate)])
     }
-    pendingStatistics.value = [];
+    pendingStatistics.value = []
   }
   if (pendingExecutionEvents.value.length > 0) {
-    executionEvents.value.push(...pendingExecutionEvents.value);
-    pendingExecutionEvents.value = [];
+    executionEvents.value.push(...pendingExecutionEvents.value)
+    pendingExecutionEvents.value = []
   }
-  nowTs.value = Date.now();
-  pruneOldData();
+  nowTs.value = Date.now()
+  pruneOldData()
 }
 
 onMounted(async () => {
-  await loadInitialState();
+  await loadInitialState()
   chartTick = window.setInterval(() => {
     if (!isFrozen.value) {
-      nowTs.value = Date.now();
+      nowTs.value = Date.now()
     }
-  }, 1000);
-  await window.executionEngineAPI.listenForStatistics(onStatisticsUpdate);
-  await window.executionEngineAPI.listenForExecutionLog(onExecutionLogUpdate);
-});
+  }, 1000)
+  await window.executionEngineAPI.listenForStatistics(onStatisticsUpdate)
+  await window.executionEngineAPI.listenForExecutionLog(onExecutionLogUpdate)
+})
 
 onUnmounted(() => {
   if (chartTick !== undefined) {
-    clearInterval(chartTick);
-    chartTick = undefined;
+    clearInterval(chartTick)
+    chartTick = undefined
   }
-  void window.executionEngineAPI.stopListeningForStatistics(onStatisticsUpdate);
-  void window.executionEngineAPI.stopListeningForExecutionLog(onExecutionLogUpdate);
-});
+  void window.executionEngineAPI.stopListeningForStatistics(onStatisticsUpdate)
+  void window.executionEngineAPI.stopListeningForExecutionLog(onExecutionLogUpdate)
+})
 </script>
 
 <style scoped>

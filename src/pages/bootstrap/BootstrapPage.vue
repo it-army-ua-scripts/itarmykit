@@ -150,83 +150,79 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
-import LanguageSelectorComponent from '../settings/LanguageSelectorComponent.vue';
-import { Preset } from './moduleConfig';
-import ModuleInstallationComponent from './ModuleInstallationComponent.vue';
-import { useQuasar } from 'quasar';
+import LanguageSelectorComponent from '../settings/LanguageSelectorComponent.vue'
+import { Preset } from './moduleConfig'
+import ModuleInstallationComponent from './ModuleInstallationComponent.vue'
+import { useQuasar } from 'quasar'
 
-import BoostrapDoneDialog from './BoostrapDoneDialog.vue';
+import BoostrapDoneDialog from './BoostrapDoneDialog.vue'
 
-const step = ref(1);
-const router = useRouter();
-const quasar = useQuasar();
-const doneDialog = ref(false);
+const step = ref(1)
+const router = useRouter()
+const quasar = useQuasar()
+const doneDialog = ref(false)
 
-const dataFolder = ref("")
+const dataFolder = ref('')
 
-async function finishLanguageStep() {
-    await window.settingsAPI.bootstrap.setStep("DATA_FOLDER")
-    step.value = 2;
+async function finishLanguageStep () {
+  await window.settingsAPI.bootstrap.setStep('DATA_FOLDER')
+  step.value = 2
 }
 
-async function openDataFodler() {
-    await window.settingsAPI.modules.openDataFolder()
+async function changeDataFolder () {
+  await window.settingsAPI.modules.promptForDataPath()
+  await loadSettings()
 }
 
-async function changeDataFolder() {
-    await window.settingsAPI.modules.promptForDataPath()
-    await loadSettings()
+async function finishDataStep () {
+  await window.settingsAPI.bootstrap.setStep('ITARMY_UUID')
+  step.value = 3
 }
 
-async function finishDataStep() {
-    await window.settingsAPI.bootstrap.setStep("ITARMY_UUID")
-    step.value = 3;
+const itArmyUUID = ref('')
+async function setItArmyUUID (newValue: string | number | null) {
+  await window.settingsAPI.itarmy.setUUID(String(newValue))
 }
 
-const itArmyUUID = ref("")
-async function setItArmyUUID(newValue: string | number | null) {
-    await window.settingsAPI.itarmy.setUUID(String(newValue))
-}
-
-async function finishItArmyStep() {
-    await window.settingsAPI.bootstrap.setStep("MODULES_CONFIGURATION")
-    step.value = 4;
+async function finishItArmyStep () {
+  await window.settingsAPI.bootstrap.setStep('MODULES_CONFIGURATION')
+  step.value = 4
 }
 
 const presetToInstall = ref<Preset | null>(Preset.NORMAL)
 const moduleInstallationDialog = ref(false)
-async function finishModuleStep() {
-    if (presetToInstall.value === null) {
-        await window.settingsAPI.bootstrap.setStep("DONE")
-        await router.push({ name: "dashboard" }) //For expert mode will will not show notification that he need to wait several minutes, because he must do everything by himselve.
-    } else {
-        moduleInstallationDialog.value = true
-    }
+async function finishModuleStep () {
+  if (presetToInstall.value === null) {
+    await window.settingsAPI.bootstrap.setStep('DONE')
+    await router.push({ name: 'dashboard' }) // For expert mode will will not show notification that he need to wait several minutes, because he must do everything by himselve.
+  } else {
+    moduleInstallationDialog.value = true
+  }
 }
-async function moduleInstallationError(error: string) {
-    quasar.notify({
-        message: error,
-        type: "negative",
-        timeout: 5000
-    })
-    moduleInstallationDialog.value = false
+async function moduleInstallationError (error: string) {
+  quasar.notify({
+    message: error,
+    type: 'negative',
+    timeout: 5000
+  })
+  moduleInstallationDialog.value = false
 }
-async function moduleInstalledSuccessfully() {
-    moduleInstallationDialog.value = false
-    await window.settingsAPI.bootstrap.setStep("DONE")
-    doneDialog.value = true
+async function moduleInstalledSuccessfully () {
+  moduleInstallationDialog.value = false
+  await window.settingsAPI.bootstrap.setStep('DONE')
+  doneDialog.value = true
 }
 
-async function loadSettings() {
-    const settings = await window.settingsAPI.get()
-    dataFolder.value = settings.modules.dataPath
-    itArmyUUID.value = settings.itarmy.uuid
+async function loadSettings () {
+  const settings = await window.settingsAPI.get()
+  dataFolder.value = settings.modules.dataPath
+  itArmyUUID.value = settings.itarmy.uuid
 }
 
 onMounted(async () => {
-    await loadSettings()
+  await loadSettings()
 })
 </script>

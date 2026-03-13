@@ -83,38 +83,37 @@
 </template>
 
 <script setup lang="ts">
-import { UserStat } from "app/lib/activeness/api";
-import { useQuasar } from "quasar";
-import { ref, onMounted } from "vue";
-import { useI18n } from "vue-i18n";
+import { UserStat } from 'app/lib/activeness/api'
+import { useQuasar } from 'quasar'
+import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 
-const $q = useQuasar();
-const $i18n = useI18n();
+const $q = useQuasar()
+const $i18n = useI18n()
 
-const activeTab = ref("weekly");
+const activeTab = ref('weekly')
 
-function humanBytesString(bytes: number, dp = 1) {
-  const thresh = 1024; // 1024 instead of 1000 to be consistent with other places
+function humanBytesString (bytes: number, dp = 1) {
+  const thresh = 1024 // 1024 instead of 1000 to be consistent with other places
 
   if (Math.abs(bytes) < thresh) {
-    return bytes + " B";
+    return bytes + ' B'
   }
 
-  const units = ["kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
-  let u = -1;
-  const r = 10 ** dp;
+  const units = ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+  let u = -1
+  const r = 10 ** dp
 
   do {
-    bytes /= thresh;
-    ++u;
+    bytes /= thresh
+    ++u
   } while (
     Math.round(Math.abs(bytes) * r) / r >= thresh &&
     u < units.length - 1
-  );
+  )
 
-  return bytes.toFixed(dp) + " " + units[u];
+  return bytes.toFixed(dp) + ' ' + units[u]
 }
-
 
 const topWeek = ref(
   [] as Array<{
@@ -122,7 +121,7 @@ const topWeek = ref(
     name: string;
     servers: number;
   }>
-);
+)
 
 const topMonth = ref(
   [] as Array<{
@@ -130,49 +129,49 @@ const topMonth = ref(
     name: string;
     servers: number;
   }>
-);
+)
 
-async function loadTop() {
-  const weeklyTop = await window.topAPI.getWeeklyTop();
-  topWeek.value = [];
+async function loadTop () {
+  const weeklyTop = await window.topAPI.getWeeklyTop()
+  topWeek.value = []
   for (const entry of weeklyTop.data.week_stats.items) {
     topWeek.value.push({
       traffic: entry.traffic,
       name: entry.user_name,
-      servers: entry.servers_count,
-    });
+      servers: entry.servers_count
+    })
   }
-  topMonth.value = [];
+  topMonth.value = []
   for (const entry of weeklyTop.data.month_stats.items) {
     topMonth.value.push({
       traffic: entry.traffic,
       name: entry.user_name,
-      servers: entry.servers_count,
-    });
+      servers: entry.servers_count
+    })
   }
 }
 
-const activenessTop10 = ref<UserStat[]>([]);
-async function loadActiveness() {
-  const stats = await window.activenessAPI.getStats();
-  if (stats.status != "ok") {
+const activenessTop10 = ref<UserStat[]>([])
+async function loadActiveness () {
+  const stats = await window.activenessAPI.getStats()
+  if (stats.status !== 'ok') {
     $q.notify({
-      message: $i18n.t("top.activenessData.notifyLoadFailed", {
-        error: JSON.stringify(stats),
+      message: $i18n.t('top.activenessData.notifyLoadFailed', {
+        error: JSON.stringify(stats)
       }),
-      type: "negative",
-      timeout: 5000,
-    });
-    return;
+      type: 'negative',
+      timeout: 5000
+    })
+    return
   }
 
-  activenessTop10.value = stats.top10;
+  activenessTop10.value = stats.top10
 }
 
 onMounted(async () => {
-  await loadTop();
-  await loadActiveness();
-});
+  await loadTop()
+  await loadActiveness()
+})
 </script>
 
 <style scoped>

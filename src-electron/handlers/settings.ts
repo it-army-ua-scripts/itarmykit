@@ -1,646 +1,665 @@
-import { join as joinPath }from 'path'
+import { join as joinPath } from 'path'
 import { app, ipcMain } from 'electron'
 import { promises as fsPromises, readFileSync, existsSync, mkdirSync, writeFileSync } from 'fs'
-import EventEmitter from 'events';
-import { SID } from 'app/lib/activeness/api';
+import EventEmitter from 'events'
+import { SID } from 'app/lib/activeness/api'
+import { writeFileAtomicWithBackup } from 'app/lib/utils/atomicFile'
 
-export interface SettingsData {
-    system: {
-        autoUpdate: boolean
-        hideInTray: boolean
-        startOnBoot: boolean,
-        language: 'en-US' | 'ua-UA' | 'de-DE'
-    },
-    modules: {
-        dataPath: string;
-    },
-    schedule: {
-        enabled: boolean;
-        startTime: string;
-        endTime: string;
-        activity: 'DO_NOTHING' | 'MINIMAL'
-        modules: Array<'DISTRESS' | 'MHDDOS_PROXY'>
-        intervals: ScheduleInterval[]
-    },
-    itarmy: {
-        uuid: string,
-        apiKey: string
-    },
-    bootstrap: {
-        step: 'LANGUAGE' | 'DATA_FOLDER' | 'MODULES_CONFIGURATION' | 'ITARMY_UUID' | 'DONE'
-        selectedModulesConfig: 'NONE' | 'GOVERNMENT_AGENCY' | 'WORK' | 'HOME'
-    },
-    gui: {
-        darkMode: boolean
-        matrixMode: boolean
-        matrixModeUnlocked: boolean
-    },
-    activeness: {
-        sid?: SID
-    }
-    execution: {
-        moduleToRun?: 'DISTRESS' | 'MHDDOS_PROXY'
-    }
+export interface ScheduleInterval {
+  startTime: string
+  endTime: string
+  days: number[]
+  module: 'DISTRESS' | 'MHDDOS_PROXY'
 }
 
+export interface SettingsData {
+  system: {
+    autoUpdate: boolean
+    hideInTray: boolean
+    startOnBoot: boolean
+    language: 'en-US' | 'ua-UA' | 'de-DE'
+  }
+  modules: {
+    dataPath: string
+  }
+  schedule: {
+    enabled: boolean
+    startTime: string
+    endTime: string
+    activity: 'DO_NOTHING' | 'MINIMAL'
+    modules: Array<'DISTRESS' | 'MHDDOS_PROXY'>
+    intervals: ScheduleInterval[]
+  }
+  itarmy: {
+    uuid: string
+    apiKey: string
+  }
+  bootstrap: {
+    step: 'LANGUAGE' | 'DATA_FOLDER' | 'MODULES_CONFIGURATION' | 'ITARMY_UUID' | 'DONE'
+    selectedModulesConfig: 'NONE' | 'GOVERNMENT_AGENCY' | 'WORK' | 'HOME'
+  }
+  gui: {
+    darkMode: boolean
+    matrixMode: boolean
+    matrixModeUnlocked: boolean
+  }
+  activeness: {
+    sid?: SID
+  }
+  execution: {
+    moduleToRun?: 'DISTRESS' | 'MHDDOS_PROXY'
+  }
+}
 
 export type SettingsChangedEventHandler = (newData: SettingsData) => void
 
-function parseTimeToMinutes(time: string): number | null {
-    const parts = time.split(':')
-    if (parts.length !== 2) {
-        return null
-    }
-    const hours = Number(parts[0])
-    const minutes = Number(parts[1])
-    if (!Number.isInteger(hours) || !Number.isInteger(minutes)) {
-        return null
-    }
-    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
-        return null
-    }
-    return hours * 60 + minutes
+function parseTimeToMinutes (time: string): number | null {
+  const parts = time.split(':')
+  if (parts.length !== 2) {
+    return null
+  }
+  const hours = Number(parts[0])
+  const minutes = Number(parts[1])
+  if (!Number.isInteger(hours) || !Number.isInteger(minutes)) {
+    return null
+  }
+  if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+    return null
+  }
+  return hours * 60 + minutes
 }
 
-function validateScheduleIntervalsNoOverlap(intervals: ScheduleInterval[]) {
-    const segmentsByDay = new Map<number, Array<{ start: number, end: number }>>()
-    for (let day = 0; day <= 6; day++) {
-        segmentsByDay.set(day, [])
+function validateScheduleIntervalsNoOverlap (intervals: ScheduleInterval[]) {
+  const segmentsByDay = new Map<number, Array<{ start: number, end: number }>>()
+  for (let day = 0; day <= 6; day++) {
+    segmentsByDay.set(day, [])
+  }
+
+  for (const interval of intervals) {
+    const start = parseTimeToMinutes(interval.startTime)
+    const end = parseTimeToMinutes(interval.endTime)
+    if (start === null || end === null) {
+      throw new Error(`Invalid interval time format: ${interval.startTime}-${interval.endTime}`)
     }
 
-    for (const interval of intervals) {
-        const start = parseTimeToMinutes(interval.startTime)
-        const end = parseTimeToMinutes(interval.endTime)
-        if (start === null || end === null) {
-            throw new Error(`Invalid interval time format: ${interval.startTime}-${interval.endTime}`)
-        }
+    const days = Array.from(new Set((interval.days || []).filter((day) => Number.isInteger(day) && day >= 0 && day <= 6)))
+    for (const day of days) {
+      if (start === end) {
+        segmentsByDay.get(day)?.push({ start: 0, end: 1440 })
+        continue
+      }
 
-        const days = Array.from(new Set((interval.days || []).filter((day) => Number.isInteger(day) && day >= 0 && day <= 6)))
-        for (const day of days) {
-            if (start === end) {
-                segmentsByDay.get(day)?.push({ start: 0, end: 1440 })
-                continue
-            }
+      if (start < end) {
+        segmentsByDay.get(day)?.push({ start, end })
+        continue
+      }
 
-            if (start < end) {
-                segmentsByDay.get(day)?.push({ start, end })
-                continue
-            }
-
-            // Cross-midnight interval: split into current and next day.
-            segmentsByDay.get(day)?.push({ start, end: 1440 })
-            const nextDay = (day + 1) % 7
-            segmentsByDay.get(nextDay)?.push({ start: 0, end })
-        }
+      segmentsByDay.get(day)?.push({ start, end: 1440 })
+      const nextDay = (day + 1) % 7
+      segmentsByDay.get(nextDay)?.push({ start: 0, end })
     }
+  }
 
-    for (let day = 0; day <= 6; day++) {
-        const daySegments = segmentsByDay.get(day) || []
-        daySegments.sort((a, b) => a.start - b.start)
-        for (let i = 1; i < daySegments.length; i++) {
-            const prev = daySegments[i - 1]
-            const current = daySegments[i]
-            if (current.start < prev.end) {
-                throw new Error('Schedule intervals must not overlap')
-            }
-        }
+  for (let day = 0; day <= 6; day++) {
+    const daySegments = segmentsByDay.get(day) || []
+    daySegments.sort((a, b) => a.start - b.start)
+    for (let i = 1; i < daySegments.length; i++) {
+      const prev = daySegments[i - 1]
+      const current = daySegments[i]
+      if (current.start < prev.end) {
+        throw new Error('Schedule intervals must not overlap')
+      }
     }
+  }
 }
 
 export class Settings {
-    private static settingsFile = joinPath(app.getPath('appData'), 'ITArmyKitProfile', 'settings.json')
-    private data: SettingsData = {
-        system: {
-            autoUpdate: true,
-            hideInTray: false,
-            startOnBoot: false,
-            language: 'en-US'
-        },
-        modules: {
-            dataPath: joinPath(app.getPath('appData'), 'ITArmyKitProfile', 'modules')
-        },
-        schedule: {
-            enabled: false,
+  private static profileDir = joinPath(app.getPath('appData'), 'ITArmyKitProfile')
+  private static settingsFile = joinPath(Settings.profileDir, 'settings.json')
+  private static settingsBackupFile = joinPath(Settings.profileDir, 'settings.json.bak')
+  private static settingsTempFile = joinPath(Settings.profileDir, 'settings.json.tmp')
+
+  private data: SettingsData = {
+    system: {
+      autoUpdate: true,
+      hideInTray: false,
+      startOnBoot: false,
+      language: 'en-US'
+    },
+    modules: {
+      dataPath: joinPath(app.getPath('appData'), 'ITArmyKitProfile', 'modules')
+    },
+    schedule: {
+      enabled: false,
+      startTime: '07:30',
+      endTime: '17:30',
+      activity: 'DO_NOTHING',
+      modules: ['DISTRESS'],
+      intervals: [
+        {
+          startTime: '07:30',
+          endTime: '17:30',
+          days: [0, 1, 2, 3, 4, 5, 6],
+          module: 'DISTRESS'
+        }
+      ]
+    },
+    itarmy: {
+      uuid: '',
+      apiKey: ''
+    },
+    bootstrap: {
+      step: 'LANGUAGE',
+      selectedModulesConfig: 'NONE'
+    },
+    gui: {
+      darkMode: false,
+      matrixMode: false,
+      matrixModeUnlocked: false
+    },
+    activeness: {},
+    execution: {}
+  }
+
+  private loaded = false
+
+  private settingsChangedEmiter = new EventEmitter()
+
+  async getData () {
+    if (!this.loaded) {
+      await this.load()
+    }
+    return this.data
+  }
+
+  getDataSync () {
+    if (!this.loaded) {
+      this.loadSync()
+    }
+    return this.data
+  }
+
+  async deleteData () {
+    await this.deleteModulesData()
+    if (existsSync(Settings.profileDir)) {
+      await fsPromises.rm(Settings.profileDir, { recursive: true, force: true })
+    }
+  }
+
+  async save () {
+    await writeFileAtomicWithBackup({
+      targetPath: Settings.settingsFile,
+      tempPath: Settings.settingsTempFile,
+      backupPath: Settings.settingsBackupFile,
+      data: JSON.stringify(this.data)
+    })
+  }
+
+  private applyLoadBackwardsCompatibility () {
+    if (this.data.itarmy === undefined) {
+      this.data.itarmy = {
+        uuid: '',
+        apiKey: ''
+      }
+    }
+
+    if (this.data.itarmy.apiKey === undefined) {
+      this.data.itarmy.apiKey = ''
+    }
+
+    if (this.data.system.language === undefined) {
+      this.data.system.language = 'en-US'
+    }
+    if (!['en-US', 'ua-UA', 'de-DE'].includes(this.data.system.language)) {
+      this.data.system.language = 'en-US'
+    }
+
+    if (this.data.bootstrap === undefined) {
+      this.data.bootstrap = {
+        step: 'DONE',
+        selectedModulesConfig: 'NONE'
+      }
+    }
+
+    if (this.data.gui === undefined) {
+      this.data.gui = {
+        darkMode: false,
+        matrixMode: false,
+        matrixModeUnlocked: false
+      }
+    }
+
+    if (this.data.schedule === undefined) {
+      this.data.schedule = {
+        enabled: false,
+        startTime: '07:30',
+        endTime: '17:30',
+        activity: 'DO_NOTHING',
+        modules: ['DISTRESS'],
+        intervals: [
+          {
             startTime: '07:30',
             endTime: '17:30',
-            activity: 'DO_NOTHING',
-            modules: ['DISTRESS'],
-            intervals: [
-                {
-                    startTime: '07:30',
-                    endTime: '17:30',
-                    days: [0, 1, 2, 3, 4, 5, 6],
-                    module: 'DISTRESS'
-                }
-            ]
-        },
-        itarmy: {
-            uuid: '',
-            apiKey: ''
-        },
-        bootstrap: {
-            step: 'LANGUAGE',
-            selectedModulesConfig: 'NONE'
-        },
-        gui: {
-            darkMode: false,
-            matrixMode: false,
-            matrixModeUnlocked: false
-        },
-        activeness: {},
-        execution: {}
+            days: [0, 1, 2, 3, 4, 5, 6],
+            module: 'DISTRESS'
+          }
+        ]
+      }
     }
-    private loaded = false
-    private settingsChangedEmiter = new EventEmitter()
-
-    async getData() {
-        if (!this.loaded) {
-            await this.load()
-        }
-        return this.data
+    if (typeof this.data.schedule.enabled !== 'boolean') {
+      this.data.schedule.enabled = false
+    }
+    if (typeof this.data.schedule.startTime !== 'string') {
+      this.data.schedule.startTime = '07:30'
+    }
+    if (typeof this.data.schedule.endTime !== 'string') {
+      this.data.schedule.endTime = '17:30'
+    }
+    if (this.data.schedule.activity !== 'DO_NOTHING' && this.data.schedule.activity !== 'MINIMAL') {
+      this.data.schedule.activity = 'DO_NOTHING'
     }
 
-    getDataSync() {
-        if (!this.loaded) {
-            this.loadSync()
+    if (!Array.isArray(this.data.schedule.modules)) {
+      this.data.schedule.modules = ['DISTRESS']
+    }
+    if (!Array.isArray(this.data.schedule.intervals)) {
+      this.data.schedule.intervals = []
+    }
+    if (this.data.schedule.intervals.length === 0) {
+      this.data.schedule.intervals = [
+        {
+          startTime: this.data.schedule.startTime || '07:30',
+          endTime: this.data.schedule.endTime || '17:30',
+          days: [0, 1, 2, 3, 4, 5, 6],
+          module: 'DISTRESS'
         }
-        return this.data
+      ]
+    }
+    this.data.schedule.intervals = this.data.schedule.intervals
+      .filter((interval: unknown) => Boolean(interval) && typeof interval === 'object')
+      .map((interval: unknown) => {
+        const typedInterval = interval as Partial<ScheduleInterval>
+        const startTime = typeof typedInterval.startTime === 'string' ? typedInterval.startTime : '07:30'
+        const endTime = typeof typedInterval.endTime === 'string' ? typedInterval.endTime : '17:30'
+        const days = Array.isArray(typedInterval.days)
+          ? typedInterval.days
+            .map((day) => Number(day))
+            .filter((day) => Number.isInteger(day) && day >= 0 && day <= 6)
+          : [0, 1, 2, 3, 4, 5, 6]
+        const module = typedInterval.module === 'MHDDOS_PROXY' ? 'MHDDOS_PROXY' : 'DISTRESS'
+        return {
+          startTime,
+          endTime,
+          days: Array.from(new Set(days)),
+          module
+        }
+      })
+
+    if (this.data.activeness === undefined) {
+      this.data.activeness = {}
     }
 
-    async deleteData() {
-        this.deleteModulesData()
-        const p = joinPath(app.getPath('appData'), 'ITArmyKitProfile')
-        if (existsSync(p)) {
-            await fsPromises.rm(p, { recursive: true, force: true })
-        }
+    if (this.data.execution === undefined) {
+      this.data.execution = {}
     }
+  }
 
-    async save() {
-        await fsPromises.mkdir(joinPath(app.getPath('appData'), 'ITArmyKitProfile'), { recursive: true })
-        await fsPromises.writeFile(Settings.settingsFile, JSON.stringify(this.data))
-    }
-
-    private applyLoadBackwardsCompatibility() {
-        if (this.data.itarmy === undefined) {
-            this.data.itarmy = {
-                uuid: '',
-                apiKey: ''
-            }
-        }
-
-        if (this.data.itarmy.apiKey === undefined) {
-            this.data.itarmy.apiKey = ''
-        }
-
-        if (this.data.system.language === undefined) {
-            this.data.system.language = 'en-US'
-        }
-        if (!['en-US', 'ua-UA', 'de-DE'].includes(this.data.system.language)) {
-            this.data.system.language = 'en-US'
-        }
-
-        if (this.data.bootstrap === undefined) {
-            this.data.bootstrap = {
-                step: 'DONE',
-                selectedModulesConfig: 'NONE'
-            }
-        }
-
-        if (this.data.gui === undefined) {
-            this.data.gui = {
-                darkMode: false,
-                matrixMode: false,
-                matrixModeUnlocked: false
-            }
-        }
-
-        if (this.data.schedule === undefined) {
-            this.data.schedule = {
-                enabled: false,
-                startTime: '07:30',
-                endTime: '17:30',
-                activity: 'DO_NOTHING',
-                modules: ['DISTRESS'],
-                intervals: [
-                    {
-                        startTime: '07:30',
-                        endTime: '17:30',
-                        days: [0, 1, 2, 3, 4, 5, 6],
-                        module: 'DISTRESS'
-                    }
-                ]
-            }
-        }
-        if (typeof this.data.schedule.enabled !== 'boolean') {
-            this.data.schedule.enabled = false
-        }
-        if (typeof this.data.schedule.startTime !== 'string') {
-            this.data.schedule.startTime = '07:30'
-        }
-        if (typeof this.data.schedule.endTime !== 'string') {
-            this.data.schedule.endTime = '17:30'
-        }
-        if (this.data.schedule.activity !== 'DO_NOTHING' && this.data.schedule.activity !== 'MINIMAL') {
-            this.data.schedule.activity = 'DO_NOTHING'
-        }
-
-        if (!Array.isArray(this.data.schedule.modules)) {
-            this.data.schedule.modules = ['DISTRESS']
-        }
-        if (!Array.isArray(this.data.schedule.intervals)) {
-            this.data.schedule.intervals = []
-        }
-        if (this.data.schedule.intervals.length === 0) {
-            this.data.schedule.intervals = [
-                {
-                    startTime: this.data.schedule.startTime || '07:30',
-                    endTime: this.data.schedule.endTime || '17:30',
-                    days: [0, 1, 2, 3, 4, 5, 6],
-                    module: 'DISTRESS'
-                }
-            ]
-        }
-        this.data.schedule.intervals = this.data.schedule.intervals
-            .filter((interval: any) => interval && typeof interval === 'object')
-            .map((interval: any) => {
-                const startTime = typeof interval.startTime === 'string' ? interval.startTime : '07:30'
-                const endTime = typeof interval.endTime === 'string' ? interval.endTime : '17:30'
-                const days = Array.isArray(interval.days)
-                    ? interval.days
-                        .map((day: any) => Number(day))
-                        .filter((day: number) => Number.isInteger(day) && day >= 0 && day <= 6)
-                    : [0, 1, 2, 3, 4, 5, 6]
-                const module = interval.module === 'MHDDOS_PROXY' ? 'MHDDOS_PROXY' : 'DISTRESS'
-                return {
-                    startTime,
-                    endTime,
-                    days: Array.from(new Set(days)),
-                    module
-                }
-            })
-
-        if (this.data.activeness === undefined) {
-            this.data.activeness = {}
-        }
-
-        if (this.data.execution === undefined) {
-            this.data.execution = {}
-        }
-    }
-
-    async load() {
-        try {
-            this.data = JSON.parse(await fsPromises.readFile(Settings.settingsFile, 'utf-8'))
-            this.applyLoadBackwardsCompatibility()
-        } catch (e) {
-            await this.save()
-        }
-        this.loaded = true
-    }
-
-    loadSync() {
-        try {
-            this.data = JSON.parse(readFileSync(Settings.settingsFile, 'utf-8'))
-            this.applyLoadBackwardsCompatibility()
-        } catch (e) {
-            mkdirSync(joinPath(app.getPath('appData'), 'ITArmyKitProfile'), { recursive: true })
-            writeFileSync(Settings.settingsFile, JSON.stringify(this.data))
-        }
-        this.loaded = true
-    }
-
-
-    onSettingsChanged(handler: SettingsChangedEventHandler) {
-        this.settingsChangedEmiter.on('settingsChanged', handler)
-    }
-
-    async setSystemAutoUpdate(data: SettingsData['system']['autoUpdate']) {
-        if (!this.loaded) {
-            await this.load()
-        }
-
-        this.data.system.autoUpdate = data
+  async load () {
+    try {
+      this.data = JSON.parse(await fsPromises.readFile(Settings.settingsFile, 'utf-8'))
+      this.applyLoadBackwardsCompatibility()
+    } catch {
+      try {
+        this.data = JSON.parse(await fsPromises.readFile(Settings.settingsBackupFile, 'utf-8'))
+        this.applyLoadBackwardsCompatibility()
         await this.save()
-        this.settingsChangedEmiter.emit('settingsChanged', this.data)
-    }
-
-    async setSystemHideInTray(data: SettingsData['system']['hideInTray']) {
-        if (!this.loaded) {
-            await this.load()
-        }
-
-        this.data.system.hideInTray = data
+      } catch {
         await this.save()
-        this.settingsChangedEmiter.emit('settingsChanged', this.data)
+      }
+    }
+    this.loaded = true
+  }
+
+  loadSync () {
+    try {
+      this.data = JSON.parse(readFileSync(Settings.settingsFile, 'utf-8'))
+      this.applyLoadBackwardsCompatibility()
+    } catch {
+      try {
+        this.data = JSON.parse(readFileSync(Settings.settingsBackupFile, 'utf-8'))
+        this.applyLoadBackwardsCompatibility()
+        mkdirSync(Settings.profileDir, { recursive: true })
+        writeFileSync(Settings.settingsFile, JSON.stringify(this.data))
+      } catch {
+        mkdirSync(Settings.profileDir, { recursive: true })
+        writeFileSync(Settings.settingsFile, JSON.stringify(this.data))
+      }
+    }
+    this.loaded = true
+  }
+
+  onSettingsChanged (handler: SettingsChangedEventHandler) {
+    this.settingsChangedEmiter.on('settingsChanged', handler)
+  }
+
+  async setSystemAutoUpdate (data: SettingsData['system']['autoUpdate']) {
+    if (!this.loaded) {
+      await this.load()
     }
 
-    async setSystemStartOnBoot(data: SettingsData['system']['startOnBoot']) {
-        if (!this.loaded) {
-            await this.load()
-        }
+    this.data.system.autoUpdate = data
+    await this.save()
+    this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  }
 
-        app.setLoginItemSettings({
-            openAtLogin: data,
-        })
-
-        this.data.system.startOnBoot = data
-        await this.save()
-        this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  async setSystemHideInTray (data: SettingsData['system']['hideInTray']) {
+    if (!this.loaded) {
+      await this.load()
     }
 
-    async setSystemLanguage(data: SettingsData['system']['language']) {
-        if (!this.loaded) {
-            await this.load()
-        }
+    this.data.system.hideInTray = data
+    await this.save()
+    this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  }
 
-        this.data.system.language = data
-        await this.save()
-        this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  async setSystemStartOnBoot (data: SettingsData['system']['startOnBoot']) {
+    if (!this.loaded) {
+      await this.load()
     }
 
-    async setModulesDataPath(data: SettingsData['modules']['dataPath']) {
-        if (!this.loaded) {
-            await this.load()
-        }
+    app.setLoginItemSettings({
+      openAtLogin: data
+    })
 
-        this.data.modules.dataPath = data
-        await this.save()
-        this.settingsChangedEmiter.emit('settingsChanged', this.data)
+    this.data.system.startOnBoot = data
+    await this.save()
+    this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  }
+
+  async setSystemLanguage (data: SettingsData['system']['language']) {
+    if (!this.loaded) {
+      await this.load()
     }
 
-    async promptForModulesDataPath() {
-        const dialog = (await import('electron')).dialog
-        const { canceled, filePaths } = await dialog.showOpenDialog({
-            properties: ['openDirectory']
-        })
-        if (canceled) {
-            return
-        }
+    this.data.system.language = data
+    await this.save()
+    this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  }
 
-        const newFolderPath = filePaths[0]
-        await this.setModulesDataPath(newFolderPath)
+  async setModulesDataPath (data: SettingsData['modules']['dataPath']) {
+    if (!this.loaded) {
+      await this.load()
     }
 
-    async openModulesDataFolder() {
-        if (!this.loaded) {
-            await this.load()
-        }
-        
-        const { shell } = await import('electron')
-        await shell.openPath(this.data.modules.dataPath)
+    this.data.modules.dataPath = data
+    await this.save()
+    this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  }
+
+  async promptForModulesDataPath () {
+    const dialog = (await import('electron')).dialog
+    const { canceled, filePaths } = await dialog.showOpenDialog({
+      properties: ['openDirectory']
+    })
+    if (canceled) {
+      return
     }
 
-    async deleteModulesData() {
-        if (existsSync(this.data.modules.dataPath)) {
-            await fsPromises.rm(this.data.modules.dataPath, { recursive: true, force: true })
-        }
+    const newFolderPath = filePaths[0]
+    await this.setModulesDataPath(newFolderPath)
+  }
+
+  async openModulesDataFolder () {
+    if (!this.loaded) {
+      await this.load()
     }
 
-    async setItArmyUUID(data: SettingsData['itarmy']['uuid']) {
-        if (!this.loaded) {
-            await this.load()
-        }
+    const { shell } = await import('electron')
+    await shell.openPath(this.data.modules.dataPath)
+  }
 
-        this.data.itarmy.uuid = data
-        await this.save()
-        this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  async deleteModulesData () {
+    if (existsSync(this.data.modules.dataPath)) {
+      await fsPromises.rm(this.data.modules.dataPath, { recursive: true, force: true })
+    }
+  }
+
+  async setItArmyUUID (data: SettingsData['itarmy']['uuid']) {
+    if (!this.loaded) {
+      await this.load()
     }
 
-    async setItArmyApiKey(data: SettingsData['itarmy']['apiKey']) {
-        if (!this.loaded) {
-            await this.load()
-        }
+    this.data.itarmy.uuid = data
+    await this.save()
+    this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  }
 
-        this.data.itarmy.apiKey = data
-        await this.save()
-        this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  async setItArmyApiKey (data: SettingsData['itarmy']['apiKey']) {
+    if (!this.loaded) {
+      await this.load()
     }
 
-    async setBootstrapStep(data: SettingsData['bootstrap']['step']) {
-        if (!this.loaded) {
-            await this.load()
-        }
+    this.data.itarmy.apiKey = data
+    await this.save()
+    this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  }
 
-        this.data.bootstrap.step = data
-        await this.save()
-        this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  async setBootstrapStep (data: SettingsData['bootstrap']['step']) {
+    if (!this.loaded) {
+      await this.load()
     }
 
-    async setBootstrapSelectedModulesConfig(data: SettingsData['bootstrap']['selectedModulesConfig']) {
-        if (!this.loaded) {
-            await this.load()
-        }
+    this.data.bootstrap.step = data
+    await this.save()
+    this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  }
 
-        this.data.bootstrap.selectedModulesConfig = data
-        await this.save()
-        this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  async setBootstrapSelectedModulesConfig (data: SettingsData['bootstrap']['selectedModulesConfig']) {
+    if (!this.loaded) {
+      await this.load()
     }
 
-    async setGuiDarkMode(data: SettingsData['gui']['darkMode']) {
-        if (!this.loaded) {
-            await this.load()
-        }
+    this.data.bootstrap.selectedModulesConfig = data
+    await this.save()
+    this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  }
 
-        this.data.gui.darkMode = data
-        await this.save()
-        this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  async setGuiDarkMode (data: SettingsData['gui']['darkMode']) {
+    if (!this.loaded) {
+      await this.load()
     }
 
-    async setGuiMatrixMode(data: SettingsData['gui']['matrixMode']) {
-        if (!this.loaded) {
-            await this.load()
-        }
+    this.data.gui.darkMode = data
+    await this.save()
+    this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  }
 
-        this.data.gui.matrixMode = data
-        await this.save()
-        this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  async setGuiMatrixMode (data: SettingsData['gui']['matrixMode']) {
+    if (!this.loaded) {
+      await this.load()
     }
 
-    async setGuiMatrixModeUnlocked(data: SettingsData['gui']['matrixModeUnlocked']) {
-        if (!this.loaded) {
-            await this.load()
-        }
+    this.data.gui.matrixMode = data
+    await this.save()
+    this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  }
 
-        this.data.gui.matrixModeUnlocked = data
-        await this.save()
-        this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  async setGuiMatrixModeUnlocked (data: SettingsData['gui']['matrixModeUnlocked']) {
+    if (!this.loaded) {
+      await this.load()
     }
 
-    async setActivenessSID(data: SettingsData['activeness']['sid']) {
-        if (!this.loaded) {
-            await this.load()
-        }
+    this.data.gui.matrixModeUnlocked = data
+    await this.save()
+    this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  }
 
-        if (data === undefined) {
-            delete this.data.activeness.sid
-        } else {
-            this.data.activeness.sid = data
-        }
-        await this.save()
-        this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  async setActivenessSID (data: SettingsData['activeness']['sid']) {
+    if (!this.loaded) {
+      await this.load()
     }
 
-    async setExecutionModuleToRun(data: SettingsData['execution']['moduleToRun']) {
-        if (!this.loaded) {
-            await this.load()
-        }
+    if (data === undefined) {
+      delete this.data.activeness.sid
+    } else {
+      this.data.activeness.sid = data
+    }
+    await this.save()
+    this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  }
 
-        this.data.execution.moduleToRun = data
-        await this.save()
-        this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  async setExecutionModuleToRun (data: SettingsData['execution']['moduleToRun']) {
+    if (!this.loaded) {
+      await this.load()
     }
 
-    async setScheduleEnabled(data: SettingsData['schedule']['enabled']) {
-        if (!this.loaded) {
-            await this.load()
-        }
+    this.data.execution.moduleToRun = data
+    await this.save()
+    this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  }
 
-        this.data.schedule.enabled = data
-        await this.save()
-        this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  async setScheduleEnabled (data: SettingsData['schedule']['enabled']) {
+    if (!this.loaded) {
+      await this.load()
     }
 
-    async setScheduleStartTime(data: SettingsData['schedule']['startTime']) {
-        if (!this.loaded) {
-            await this.load()
-        }
+    this.data.schedule.enabled = data
+    await this.save()
+    this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  }
 
-        this.data.schedule.startTime = data
-        await this.save()
-        this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  async setScheduleStartTime (data: SettingsData['schedule']['startTime']) {
+    if (!this.loaded) {
+      await this.load()
     }
 
-    async setScheduleEndTime(data: SettingsData['schedule']['endTime']) {
-        if (!this.loaded) {
-            await this.load()
-        }
+    this.data.schedule.startTime = data
+    await this.save()
+    this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  }
 
-        this.data.schedule.endTime = data
-        await this.save()
-        this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  async setScheduleEndTime (data: SettingsData['schedule']['endTime']) {
+    if (!this.loaded) {
+      await this.load()
     }
 
-    async setScheduleModules(data: SettingsData['schedule']['modules']) {
-        if (!this.loaded) {
-            await this.load()
-        }
+    this.data.schedule.endTime = data
+    await this.save()
+    this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  }
 
-        this.data.schedule.modules = data
-        await this.save()
-        this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  async setScheduleModules (data: SettingsData['schedule']['modules']) {
+    if (!this.loaded) {
+      await this.load()
     }
 
-    async setScheduleIntervals(data: SettingsData['schedule']['intervals']) {
-        if (!this.loaded) {
-            await this.load()
-        }
+    this.data.schedule.modules = data
+    await this.save()
+    this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  }
 
-        validateScheduleIntervalsNoOverlap(data)
-        this.data.schedule.intervals = data
-        await this.save()
-        this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  async setScheduleIntervals (data: SettingsData['schedule']['intervals']) {
+    if (!this.loaded) {
+      await this.load()
     }
 
+    validateScheduleIntervalsNoOverlap(data)
+    this.data.schedule.intervals = data
+    await this.save()
+    this.settingsChangedEmiter.emit('settingsChanged', this.data)
+  }
 }
 
-export function handleSettings(settings: Settings) {
-    ipcMain.handle('settings:get', async () => {
-        return await settings.getData()
-    })
+export function handleSettings (settings: Settings) {
+  ipcMain.handle('settings:get', async () => {
+    return await settings.getData()
+  })
 
-    ipcMain.handle('settings:deleteData', async () => {
-        await settings.deleteData()
-        app.relaunch()
-        app.exit()
-    })
+  ipcMain.handle('settings:deleteData', async () => {
+    await settings.deleteData()
+    app.relaunch()
+    app.exit()
+  })
 
-    ipcMain.handle('settings:system:autoUpdate', async (_e, data: SettingsData['system']['autoUpdate']) => {
-        await settings.setSystemAutoUpdate(data)
-    })
+  ipcMain.handle('settings:system:autoUpdate', async (_e, data: SettingsData['system']['autoUpdate']) => {
+    await settings.setSystemAutoUpdate(data)
+  })
 
-    
-    ipcMain.handle('settings:system:hideInTray', async (_e, data: SettingsData['system']['hideInTray']) => {
-        await settings.setSystemHideInTray(data)
-    })
+  ipcMain.handle('settings:system:hideInTray', async (_e, data: SettingsData['system']['hideInTray']) => {
+    await settings.setSystemHideInTray(data)
+  })
 
-    ipcMain.handle('settings:system:startOnBoot', async (_e, data: SettingsData['system']['startOnBoot']) => {
-        await settings.setSystemStartOnBoot(data)
-    })
+  ipcMain.handle('settings:system:startOnBoot', async (_e, data: SettingsData['system']['startOnBoot']) => {
+    await settings.setSystemStartOnBoot(data)
+  })
 
-    ipcMain.handle('settings:system:language', async (_e, data: SettingsData['system']['language']) => {
-        await settings.setSystemLanguage(data)
-    })
+  ipcMain.handle('settings:system:language', async (_e, data: SettingsData['system']['language']) => {
+    await settings.setSystemLanguage(data)
+  })
 
-    ipcMain.handle('settings:modules:dataPath', async (_e, data: SettingsData['modules']['dataPath']) => {
-        await settings.setModulesDataPath(data)
-    })
+  ipcMain.handle('settings:modules:dataPath', async (_e, data: SettingsData['modules']['dataPath']) => {
+    await settings.setModulesDataPath(data)
+  })
 
-    ipcMain.handle('settings:modules:promptForDataPath', async () => {
-        await settings.promptForModulesDataPath()
-    })
+  ipcMain.handle('settings:modules:promptForDataPath', async () => {
+    await settings.promptForModulesDataPath()
+  })
 
-    ipcMain.handle('settings:modules:openDataFolder', async () => {
-        await settings.openModulesDataFolder()
-    })
+  ipcMain.handle('settings:modules:openDataFolder', async () => {
+    await settings.openModulesDataFolder()
+  })
 
-    ipcMain.handle('settings:modules:deleteData', async () => {
-        await settings.deleteModulesData()
-        app.relaunch()
-        app.exit()
-    })
+  ipcMain.handle('settings:modules:deleteData', async () => {
+    await settings.deleteModulesData()
+    app.relaunch()
+    app.exit()
+  })
 
-    ipcMain.handle('settings:itarmy:uuid', async (_e, data: SettingsData['itarmy']['uuid']) => {
-        await settings.setItArmyUUID(data)
-    })
+  ipcMain.handle('settings:itarmy:uuid', async (_e, data: SettingsData['itarmy']['uuid']) => {
+    await settings.setItArmyUUID(data)
+  })
 
-    ipcMain.handle('settings:itarmy:apiKey', async (_e, data: SettingsData['itarmy']['apiKey']) => {
-        await settings.setItArmyApiKey(data)
-    })
+  ipcMain.handle('settings:itarmy:apiKey', async (_e, data: SettingsData['itarmy']['apiKey']) => {
+    await settings.setItArmyApiKey(data)
+  })
 
-    ipcMain.handle('settings:bootstrap:step', async (_e, data: SettingsData['bootstrap']['step']) => {
-        await settings.setBootstrapStep(data)
-    })
+  ipcMain.handle('settings:bootstrap:step', async (_e, data: SettingsData['bootstrap']['step']) => {
+    await settings.setBootstrapStep(data)
+  })
 
-    ipcMain.handle('settings:bootstrap:selectedModulesConfig', async (_e, data: SettingsData['bootstrap']['selectedModulesConfig']) => {
-        await settings.setBootstrapSelectedModulesConfig(data)
-    })
+  ipcMain.handle('settings:bootstrap:selectedModulesConfig', async (_e, data: SettingsData['bootstrap']['selectedModulesConfig']) => {
+    await settings.setBootstrapSelectedModulesConfig(data)
+  })
 
-    ipcMain.handle('settings:gui:darkMode', async (_e, data: SettingsData['gui']['darkMode']) => {
-        await settings.setGuiDarkMode(data)
-    })
+  ipcMain.handle('settings:gui:darkMode', async (_e, data: SettingsData['gui']['darkMode']) => {
+    await settings.setGuiDarkMode(data)
+  })
 
-    ipcMain.handle('settings:gui:matrixMode', async (_e, data: SettingsData['gui']['matrixMode']) => {
-        await settings.setGuiMatrixMode(data)
-    })
+  ipcMain.handle('settings:gui:matrixMode', async (_e, data: SettingsData['gui']['matrixMode']) => {
+    await settings.setGuiMatrixMode(data)
+  })
 
-    ipcMain.handle('settings:gui:matrixModeUnlocked', async (_e, data: SettingsData['gui']['matrixModeUnlocked']) => {
-        await settings.setGuiMatrixModeUnlocked(data)
-    })
+  ipcMain.handle('settings:gui:matrixModeUnlocked', async (_e, data: SettingsData['gui']['matrixModeUnlocked']) => {
+    await settings.setGuiMatrixModeUnlocked(data)
+  })
 
-    ipcMain.handle('settings:schedule:enabled', async (_e, data: SettingsData['schedule']['enabled']) => {
-        await settings.setScheduleEnabled(data)
-    })
+  ipcMain.handle('settings:schedule:enabled', async (_e, data: SettingsData['schedule']['enabled']) => {
+    await settings.setScheduleEnabled(data)
+  })
 
-    ipcMain.handle('settings:schedule:startTime', async (_e, data: SettingsData['schedule']['startTime']) => {
-        await settings.setScheduleStartTime(data)
-    })
+  ipcMain.handle('settings:schedule:startTime', async (_e, data: SettingsData['schedule']['startTime']) => {
+    await settings.setScheduleStartTime(data)
+  })
 
-    ipcMain.handle('settings:schedule:endTime', async (_e, data: SettingsData['schedule']['endTime']) => {
-        await settings.setScheduleEndTime(data)
-    })
+  ipcMain.handle('settings:schedule:endTime', async (_e, data: SettingsData['schedule']['endTime']) => {
+    await settings.setScheduleEndTime(data)
+  })
 
-    ipcMain.handle('settings:schedule:modules', async (_e, data: SettingsData['schedule']['modules']) => {
-        await settings.setScheduleModules(data)
-    })
+  ipcMain.handle('settings:schedule:modules', async (_e, data: SettingsData['schedule']['modules']) => {
+    await settings.setScheduleModules(data)
+  })
 
-    ipcMain.handle('settings:schedule:intervals', async (_e, data: SettingsData['schedule']['intervals']) => {
-        await settings.setScheduleIntervals(data)
-    })
-}
-
-export interface ScheduleInterval {
-    startTime: string
-    endTime: string
-    days: number[]
-    module: 'DISTRESS' | 'MHDDOS_PROXY'
+  ipcMain.handle('settings:schedule:intervals', async (_e, data: SettingsData['schedule']['intervals']) => {
+    await settings.setScheduleIntervals(data)
+  })
 }

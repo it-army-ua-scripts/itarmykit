@@ -103,77 +103,76 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { useRouter } from "vue-router";
-import { version } from "../../package.json";
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { version } from '../../package.json'
 
-const router = useRouter();
+const router = useRouter()
 
-import MatrixCanvas from "./MatrixCanvas.vue";
-import SnowEffectComponent from "./snowEffect/SnowEffectComponent.vue";
-import MurkaDialog from "./snowEffect/MurkaDialog.vue";
+import MatrixCanvas from './MatrixCanvas.vue'
+import MurkaDialog from './snowEffect/MurkaDialog.vue'
 
-import ShortStatisticsComponent from "./ShortStatisticsComponent.vue";
-import SystemControlStatusComponent from "src/pages/dashboard/SystemControlStatusComponent.vue";
-import { useMatrixStore } from "./matrix.store";
+import ShortStatisticsComponent from './ShortStatisticsComponent.vue'
+import SystemControlStatusComponent from 'src/pages/dashboard/SystemControlStatusComponent.vue'
+import { useMatrixStore } from './matrix.store'
 
 const pages = [
   {
-    name: "dashboard",
-    title: "layout.dashboard",
-    page: "dashboard",
-    icon: "dashboard",
+    name: 'dashboard',
+    title: 'layout.dashboard',
+    page: 'dashboard',
+    icon: 'dashboard'
   },
   {
-    name: "modules",
-    title: "layout.modules",
-    page: "modules_active",
-    icon: "fa-solid fa-layer-group",
+    name: 'modules',
+    title: 'layout.modules',
+    page: 'modules_active',
+    icon: 'fa-solid fa-layer-group'
   },
   {
-    name: "activeness",
-    title: "layout.activeness",
-    page: "activeness",
-    icon: "fa-solid fa-globe",
+    name: 'activeness',
+    title: 'layout.activeness',
+    page: 'activeness',
+    icon: 'fa-solid fa-globe'
   },
   {
-    name: "settings",
-    title: "layout.settings",
-    page: "settings",
-    icon: "settings",
+    name: 'settings',
+    title: 'layout.settings',
+    page: 'settings',
+    icon: 'settings'
   },
   {
-    name: "schedule",
-    title: "layout.schedule",
-    page: "schedule",
-    icon: "schedule",
+    name: 'schedule',
+    title: 'layout.schedule',
+    page: 'schedule',
+    icon: 'schedule'
   },
-  { name: "top", title: "layout.top", page: "top", icon: "leaderboard" },
+  { name: 'top', title: 'layout.top', page: 'top', icon: 'leaderboard' },
   {
-    name: "developers",
-    title: "layout.developers",
-    page: "developers",
-    icon: "person",
-  },
+    name: 'developers',
+    title: 'layout.developers',
+    page: 'developers',
+    icon: 'person'
+  }
 ] as Array<{
   name: string;
   title: string;
   page: string;
   icon: string;
-}>;
+}>
 
-const leftDrawerOpen = ref(false);
-const matrixStore = useMatrixStore();
+const leftDrawerOpen = ref(false)
+const matrixStore = useMatrixStore()
 
-function toggleLeftDrawer() {
-  leftDrawerOpen.value = !leftDrawerOpen.value;
+function toggleLeftDrawer () {
+  leftDrawerOpen.value = !leftDrawerOpen.value
 }
 
-async function goToPage(page: string) {
-  await router.push({ name: page });
+async function goToPage (page: string) {
+  await router.push({ name: page })
 }
 
-const showMurkaDialog = ref(false);
+const showMurkaDialog = ref(false)
 </script>
 
 <style lang="scss" scoped>

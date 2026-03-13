@@ -63,82 +63,80 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from "vue";
-import { debounce } from "quasar";
-import MenuComponent from "./MenuComponent.vue";
-import { ModuleName } from "app/lib/module/module";
-import { IpcRendererEvent } from "electron";
+import { onMounted, onUnmounted, ref } from 'vue'
+import MenuComponent from './MenuComponent.vue'
+import { ModuleName } from 'app/lib/module/module'
+import { IpcRendererEvent } from 'electron'
 
-const moduleEnabled = ref(false);
-const selectedModule = ref(null as ModuleName | null);
-const availableModules = ref(["DISTRESS", "MHDDOS_PROXY"] as ModuleName[]);
+const moduleEnabled = ref(false)
+const selectedModule = ref(null as ModuleName | null)
+const availableModules = ref(['DISTRESS', 'MHDDOS_PROXY'] as ModuleName[])
 
-const executionLog = ref("");
-const stdOUT = ref("");
-const stdERR = ref("");
+const executionLog = ref('')
+const stdOUT = ref('')
+const stdERR = ref('')
 
-async function loadState() {
-  const executionEngineState = await window.executionEngineAPI.getState();
-  moduleEnabled.value = executionEngineState.run;
-  selectedModule.value = executionEngineState.moduleToRun || null;
+async function loadState () {
+  const executionEngineState = await window.executionEngineAPI.getState()
+  moduleEnabled.value = executionEngineState.run
+  selectedModule.value = executionEngineState.moduleToRun || null
 
   executionLog.value = executionEngineState.executionLog
-    .map((e) => JSON.stringify(e) + "\n")
-    .join("");
-  stdOUT.value = executionEngineState.stdOut.join("");
-  stdERR.value = executionEngineState.stdErr.join("");
+    .map((e) => JSON.stringify(e) + '\n')
+    .join('')
+  stdOUT.value = executionEngineState.stdOut.join('')
+  stdERR.value = executionEngineState.stdErr.join('')
 }
 
-const setConfigDebounce = debounce(setConfig, 1000);
-async function setConfig() {
+async function setConfig () {
   await window.executionEngineAPI.setModuleToRun(
     selectedModule.value || undefined
-  );
+  )
 }
 
-async function setModuleEnabled(enable: boolean) {
-  moduleEnabled.value = enable;
+async function setModuleEnabled (enable: boolean) {
+  moduleEnabled.value = enable
   if (enable) {
-    await window.executionEngineAPI.startModule();
-    stdOUT.value = "";
-    stdERR.value = "";
+    await window.executionEngineAPI.startModule()
+    stdOUT.value = ''
+    stdERR.value = ''
   } else {
-    await window.executionEngineAPI.stopModule();
+    await window.executionEngineAPI.stopModule()
   }
 }
 
-function onExecutionLog(_e: IpcRendererEvent, data: any) {
-  data = JSON.stringify(data) + "\n";
-  executionLog.value += data;
+function onExecutionLog (_e: IpcRendererEvent, data: unknown) {
+  data = JSON.stringify(data) + '\n'
+  executionLog.value += data
   while (executionLog.value.length > 10000) {
-    executionLog.value = executionLog.value.slice(1000);
+    executionLog.value = executionLog.value.slice(1000)
   }
 }
 
-function onStdOut(_e: IpcRendererEvent, data: string) {
-  stdOUT.value += data;
+function onStdOut (_e: IpcRendererEvent, data: string) {
+  stdOUT.value += data
   while (stdOUT.value.length > 10000) {
-    stdOUT.value = stdOUT.value.slice(1000);
+    stdOUT.value = stdOUT.value.slice(1000)
   }
 }
 
-function onStdErr(_e: IpcRendererEvent, data: string) {
-  stdERR.value += data;
+function onStdErr (_e: IpcRendererEvent, data: string) {
+  stdERR.value += data
   while (stdERR.value.length > 10000) {
-    stdERR.value = stdERR.value.slice(1000);
+    stdERR.value = stdERR.value.slice(1000)
   }
 }
 
 onMounted(async () => {
-  window.executionEngineAPI.listenForExecutionLog(onExecutionLog);
-  window.executionEngineAPI.listenForStdOut(onStdOut);
-  window.executionEngineAPI.listenForStdErr(onStdErr);
-  await loadState();
-});
+  window.executionEngineAPI.listenForExecutionLog(onExecutionLog)
+  window.executionEngineAPI.listenForStdOut(onStdOut)
+  window.executionEngineAPI.listenForStdErr(onStdErr)
+  await loadState()
+})
 
 onUnmounted(() => {
-  window.executionEngineAPI.stopListeningForExecutionLog(onExecutionLog);
-  window.executionEngineAPI.stopListeningForStdOut(onStdOut);
-  window.executionEngineAPI.stopListeningForStdErr(onStdErr);
-});
+  window.executionEngineAPI.stopListeningForExecutionLog(onExecutionLog)
+  window.executionEngineAPI.stopListeningForStdOut(onStdOut)
+  window.executionEngineAPI.stopListeningForStdErr(onStdErr)
+})
 </script>

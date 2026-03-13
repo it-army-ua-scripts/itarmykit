@@ -9,7 +9,7 @@ export interface SystemUsage {
 let previousCpuSnapshot = getCpuSnapshot()
 let previousCpuPercent = 0
 
-function getCpuSnapshot() {
+function getCpuSnapshot () {
   const cpus = os.cpus()
   let idle = 0
   let total = 0
@@ -22,11 +22,11 @@ function getCpuSnapshot() {
   return { idle, total }
 }
 
-function roundToOneDecimal(value: number) {
+function roundToOneDecimal (value: number) {
   return Math.round(value * 10) / 10
 }
 
-function clampPercent(value: number) {
+function clampPercent (value: number) {
   if (!Number.isFinite(value)) {
     return 0
   }
@@ -39,7 +39,7 @@ function clampPercent(value: number) {
   return value
 }
 
-function getCpuPercent() {
+function getCpuPercent () {
   const current = getCpuSnapshot()
   const idleDelta = current.idle - previousCpuSnapshot.idle
   const totalDelta = current.total - previousCpuSnapshot.total
@@ -55,7 +55,7 @@ function getCpuPercent() {
   return previousCpuPercent
 }
 
-function getRamPercent() {
+function getRamPercent () {
   const totalMem = os.totalmem()
   const freeMem = os.freemem()
   if (totalMem <= 0) {
@@ -65,7 +65,7 @@ function getRamPercent() {
   return roundToOneDecimal(clampPercent(used))
 }
 
-export function handleSystem() {
+export function handleSystem () {
   ipcMain.handle('system:getUsage', async (): Promise<SystemUsage> => {
     return {
       cpuPercent: getCpuPercent(),

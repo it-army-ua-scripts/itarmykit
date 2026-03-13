@@ -126,53 +126,53 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from "vue";
+import { onMounted, onUnmounted, ref } from 'vue'
 
-import { Contributor } from "app/src-electron/handlers/developers";
+import { Contributor } from 'app/src-electron/handlers/developers'
 
-const contributors = ref([] as Contributor[]);
+const contributors = ref([] as Contributor[])
 
-async function loadContributors() {
-  contributors.value = await window.developersAPI.getContributors();
+async function loadContributors () {
+  contributors.value = await window.developersAPI.getContributors()
 }
 
-const biohazardActivationMenu = ref(0);
-function biohazardClick() {
-  biohazardActivationMenu.value += 0.1;
+const biohazardActivationMenu = ref(0)
+function biohazardClick () {
+  biohazardActivationMenu.value += 0.1
   if (biohazardActivationMenu.value >= 1) {
-    if (window.location.pathname == "/") {
+    if (window.location.pathname === '/') {
       // DEV
-      window.location.pathname = "/hazard/index.html";
+      window.location.pathname = '/hazard/index.html'
     } else {
       window.location.pathname =
-        window.location.pathname.split("index.html")[0] + "hazard/index.html";
+        window.location.pathname.split('index.html')[0] + 'hazard/index.html'
     }
   }
 }
-function openContributorPage(contributor: Contributor) {
-  window.open(contributor.html_url, "_blank");
+function openContributorPage (contributor: Contributor) {
+  window.open(contributor.html_url, '_blank')
 }
 
-function openExternalLink(link: string) {
-  window.open(link, "_blank");
+function openExternalLink (link: string) {
+  window.open(link, '_blank')
 }
 
-let hazardTimeout: NodeJS.Timeout | null = null;
+let hazardTimeout: ReturnType<typeof setInterval> | null = null
 
-const showMurkaDialog = ref(false);
+const showMurkaDialog = ref(false)
 
 onMounted(async () => {
   hazardTimeout = setInterval(() => {
-    biohazardActivationMenu.value *= 0.8;
-  }, 300);
-  await loadContributors();
-  console.log(contributors.value);
-});
+    biohazardActivationMenu.value *= 0.8
+  }, 300)
+  await loadContributors()
+  console.log(contributors.value)
+})
 onUnmounted(() => {
   if (hazardTimeout) {
-    clearInterval(hazardTimeout);
+    clearInterval(hazardTimeout)
   }
-});
+})
 </script>
 
 <style scoped>

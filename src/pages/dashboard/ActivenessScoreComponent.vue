@@ -13,15 +13,15 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { onMounted, ref } from 'vue'
 
-const score = ref(0);
-async function loadActivenessScore() {
-  const response = await window.activenessAPI.getMyStats();
-  score.value = response.score;
+const score = ref(0)
+async function loadActivenessScore () {
+  const response = await window.activenessAPI.getMyStats()
+  score.value = response.score
 }
 
 onMounted(async () => {
-  await loadActivenessScore();
-});
+  await loadActivenessScore()
+})
 </script>

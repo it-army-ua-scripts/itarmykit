@@ -12,12 +12,12 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
+import { useRouter } from 'vue-router'
 
-const $router = useRouter();
+const $router = useRouter()
 
-async function finish() {
-    await $router.push({ name: 'dashboard' });
+async function finish () {
+  await $router.push({ name: 'dashboard' })
 }
 
 </script>

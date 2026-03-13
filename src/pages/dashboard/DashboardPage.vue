@@ -44,15 +44,15 @@
 </template>
 
 <script lang="ts" setup>
-import { useQuasar } from "quasar";
-import ModuleStatusComponent from "./ModuleStatusComponent.vue";
-import BytesSendComponent from "./BytesSendComponent.vue";
-import ItArmyIDComponent from "./ItArmyIDComponent.vue";
-import BitrateChartComponent from "./BitrateChartComponent.vue";
-import CombinedLogOutputComponent from "../modules/CombinedLogOutputComponent.vue";
-import ActivenessScoreComponent from "./ActivenessScoreComponent.vue";
+import { useQuasar } from 'quasar'
+import ModuleStatusComponent from './ModuleStatusComponent.vue'
+import BytesSendComponent from './BytesSendComponent.vue'
+import ItArmyIDComponent from './ItArmyIDComponent.vue'
+import BitrateChartComponent from './BitrateChartComponent.vue'
+import CombinedLogOutputComponent from '../modules/CombinedLogOutputComponent.vue'
+import ActivenessScoreComponent from './ActivenessScoreComponent.vue'
 
-const $q = useQuasar();
+const $q = useQuasar()
 </script>
 
 <style scoped>

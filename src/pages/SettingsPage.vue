@@ -234,6 +234,32 @@
           @click="deleteAllDataDialog = true"
         />
       </q-card-section>
+      <q-card-section>
+        <div class="text-subtitle1 text-weight-medium">{{ $t("settings.diagnostics.title") }}</div>
+        <div class="text-caption text-grey-7 q-mt-xs">
+          {{ $t("settings.diagnostics.description") }}
+        </div>
+        <div class="row q-gutter-sm q-mt-sm">
+          <q-btn
+            outline
+            dense
+            no-caps
+            size="sm"
+            icon="folder_open"
+            :label="$t('settings.diagnostics.openProfileFolder')"
+            @click="openProfileFolder"
+          />
+          <q-btn
+            outline
+            dense
+            no-caps
+            size="sm"
+            icon="description"
+            :label="$t('settings.diagnostics.openStabilityLog')"
+            @click="openStabilityLog"
+          />
+        </div>
+      </q-card-section>
     </q-card>
   </q-page>
 
@@ -299,120 +325,110 @@
 </template>
 
 <script lang="ts" setup>
-import { useQuasar } from "quasar";
-import LanguageSelectorComponent from "./settings/LanguageSelectorComponent.vue";
+import { useQuasar } from 'quasar'
+import LanguageSelectorComponent from './settings/LanguageSelectorComponent.vue'
 
-import { onMounted, ref } from "vue";
+import { onMounted, ref } from 'vue'
 
-import { useMatrixStore } from "src/layouts/matrix.store";
-import MatrixModeQuizDialog from "./settings/MatrixModeQuizDialog.vue";
+import { useMatrixStore } from 'src/layouts/matrix.store'
+import MatrixModeQuizDialog from './settings/MatrixModeQuizDialog.vue'
 
-const $q = useQuasar();
-const matrixStore = useMatrixStore();
+const $q = useQuasar()
+const matrixStore = useMatrixStore()
 
-const systemAutoUpdate = ref(true);
-async function setSystemAutoUpdate(newValue: boolean) {
-  await window.settingsAPI.system.setAutoUpdate(newValue);
-  systemAutoUpdate.value = newValue;
+const systemAutoUpdate = ref(true)
+async function setSystemAutoUpdate (newValue: boolean) {
+  await window.settingsAPI.system.setAutoUpdate(newValue)
+  systemAutoUpdate.value = newValue
 }
 
-const systemAutoStartup = ref(true);
-async function setSystemAutoStartup(newValue: boolean) {
-  await window.settingsAPI.system.setStartOnBoot(newValue);
-  systemAutoStartup.value = newValue;
+const systemAutoStartup = ref(true)
+async function setSystemAutoStartup (newValue: boolean) {
+  await window.settingsAPI.system.setStartOnBoot(newValue)
+  systemAutoStartup.value = newValue
 }
 
-const systemHideInTray = ref(true);
-async function setSystemHideInTray(newValue: boolean) {
-  await window.settingsAPI.system.setHideInTray(newValue);
-  systemHideInTray.value = newValue;
+const systemHideInTray = ref(true)
+async function setSystemHideInTray (newValue: boolean) {
+  await window.settingsAPI.system.setHideInTray(newValue)
+  systemHideInTray.value = newValue
 }
 
-const systemSheduleEnabled = ref(false);
-async function setSystemSheduleEnabled(newValue: boolean) {}
-
-const sheduleStartTime = ref("08:00");
-const sheduleEndTime = ref("16:00");
-const sheduleActivityOptions = ref([
-  { label: "Do nothing", value: "DO_NOTHING" },
-  { label: "Minimal resource usage", value: "MINIMAL_USAGE" },
-]);
-const sheduleActivity = ref("DO_NOTHING");
-async function setSheduleActivity() {}
-
-const modulesDataFolderPath = ref("");
-async function selectFolderForModulesData() {
-  await window.settingsAPI.modules.promptForDataPath();
-  await loadSettings();
+const modulesDataFolderPath = ref('')
+async function selectFolderForModulesData () {
+  await window.settingsAPI.modules.promptForDataPath()
+  await loadSettings()
 }
-async function openModulesDataFolder() {
-  await window.settingsAPI.modules.openDataFolder();
+async function openModulesDataFolder () {
+  await window.settingsAPI.modules.openDataFolder()
 }
 
-const itArmyUUID = ref("");
-async function setItArmyUUID(newValue: string | number | null) {
-  await window.settingsAPI.itarmy.setUUID(String(newValue));
+async function openProfileFolder () {
+  await window.helpersAPI.openProfileFolder()
+}
+async function openStabilityLog () {
+  await window.helpersAPI.openStabilityLog()
+}
+const itArmyUUID = ref('')
+async function setItArmyUUID (newValue: string | number | null) {
+  await window.settingsAPI.itarmy.setUUID(String(newValue))
 }
 
-const itArmyAPIKey = ref("");
-async function setItArmyAPIKey(newValue: string | number | null) {
-  await window.settingsAPI.itarmy.setAPIKey(String(newValue));
+const itArmyAPIKey = ref('')
+async function setItArmyAPIKey (newValue: string | number | null) {
+  await window.settingsAPI.itarmy.setAPIKey(String(newValue))
 }
 
-const deleteStatisticsDialog = ref(false);
-async function deleteStatistics() {
-  await window.executionEngineAPI.deleteStatistics();
-  deleteStatisticsDialog.value = false;
+const deleteStatisticsDialog = ref(false)
+async function deleteStatistics () {
+  await window.executionEngineAPI.deleteStatistics()
+  deleteStatisticsDialog.value = false
 }
 
-const deleteModuelsCacheDialog = ref(false);
-async function deleteModulesCache() {
-  await window.settingsAPI.modules.deleteData();
+const deleteModuelsCacheDialog = ref(false)
+async function deleteModulesCache () {
+  await window.settingsAPI.modules.deleteData()
 }
 
-const deleteAllDataDialog = ref(false);
-async function deleteAllData() {
-  await window.settingsAPI.deleteData();
+const deleteAllDataDialog = ref(false)
+async function deleteAllData () {
+  await window.settingsAPI.deleteData()
 }
 
-const guiDarkMode = ref(false);
-async function setDarkMode(newValue: boolean) {
-  await window.settingsAPI.gui.setDarkMode(newValue);
-  guiDarkMode.value = newValue;
-  $q.dark.set(newValue);
+const guiDarkMode = ref(false)
+async function setDarkMode (newValue: boolean) {
+  await window.settingsAPI.gui.setDarkMode(newValue)
+  guiDarkMode.value = newValue
+  $q.dark.set(newValue)
 
-  if (itArmyUUID && newValue && !matrixModeUnlocked.value) {
-    matrixModeQuizDialog.value = true;
+  if (itArmyUUID.value && newValue && !matrixModeUnlocked.value) {
+    matrixModeQuizDialog.value = true
   }
 }
 
-const guiMatrixMode = ref(false);
-async function setMatrixMode(newValue: boolean) {
-  matrixStore.setEnabled(newValue);
-  guiMatrixMode.value = newValue;
+const guiMatrixMode = ref(false)
+async function setMatrixMode (newValue: boolean) {
+  matrixStore.setEnabled(newValue)
+  guiMatrixMode.value = newValue
 }
 
-const matrixModeUnlocked = ref(false);
-const matrixModeQuizDialog = ref(false);
+const matrixModeUnlocked = ref(false)
+const matrixModeQuizDialog = ref(false)
 
-async function loadSettings() {
-  const settings = await window.settingsAPI.get();
-  systemAutoUpdate.value = settings.system.autoUpdate;
-  systemAutoStartup.value = settings.system.startOnBoot;
-  systemHideInTray.value = settings.system.hideInTray;
-  systemSheduleEnabled.value = settings.schedule.enabled;
-  sheduleStartTime.value = settings.schedule.startTime;
-  sheduleEndTime.value = settings.schedule.endTime;
-  sheduleActivity.value = settings.schedule.activity;
-  modulesDataFolderPath.value = settings.modules.dataPath;
-  itArmyUUID.value = settings.itarmy.uuid;
-  itArmyAPIKey.value = settings.itarmy.apiKey;
-  guiDarkMode.value = settings.gui.darkMode;
-  guiMatrixMode.value = settings.gui.matrixMode;
-  matrixModeUnlocked.value = settings.gui.matrixModeUnlocked;
+async function loadSettings () {
+  const settings = await window.settingsAPI.get()
+  systemAutoUpdate.value = settings.system.autoUpdate
+  systemAutoStartup.value = settings.system.startOnBoot
+  systemHideInTray.value = settings.system.hideInTray
+  modulesDataFolderPath.value = settings.modules.dataPath
+  itArmyUUID.value = settings.itarmy.uuid
+  itArmyAPIKey.value = settings.itarmy.apiKey
+  guiDarkMode.value = settings.gui.darkMode
+  guiMatrixMode.value = settings.gui.matrixMode
+  matrixModeUnlocked.value = settings.gui.matrixModeUnlocked
 }
 
 onMounted(async () => {
-  await loadSettings();
-});
+  await loadSettings()
+})
 </script>

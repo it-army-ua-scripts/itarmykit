@@ -1,78 +1,80 @@
-import { BrowserWindow, Tray, app, Menu, nativeImage, Notification } from "electron";
-import path from "path";
-import { Settings } from "./settings";
+import { BrowserWindow, Tray, app, Menu, nativeImage, Notification } from 'electron'
+import type { Event as ElectronEvent } from 'electron'
+import path from 'path'
+import { Settings } from './settings'
 
-const lang = {
-  "en-US": {
-    open: "Open",
-    exit: "Exit",
+const lang: Record<'en-US' | 'ua-UA' | 'de-DE', { open: string, exit: string }> = {
+  'en-US': {
+    open: 'Open',
+    exit: 'Exit'
   },
-  "ua-UA": {
-    open: "Відкрити",
-    exit: "Вийти",
+  'ua-UA': {
+    open: 'Відкрити',
+    exit: 'Вийти'
   },
-  "de-DE": {
-    open: "Öffnen",
-    exit: "Beenden",
-  },
-} as const;
+  'de-DE': {
+    open: 'Öffnen',
+    exit: 'Beenden'
+  }
+} as const
 
-let tray: Tray | null = null;
-let isQuiting = false;
-let beforeQuitListenerRegistered = false;
-let activeMainWindow: BrowserWindow | null = null;
-let boundCloseWindow: BrowserWindow | null = null;
-let boundCloseListener: ((event: Electron.Event) => void) | null = null;
+let tray: Tray | null = null
+let isQuiting = false
+let beforeQuitListenerRegistered = false
+let activeMainWindow: BrowserWindow | null = null
+let boundCloseWindow: BrowserWindow | null = null
+let boundCloseListener: ((event: ElectronEvent) => void) | null = null
 
-const hiddenInTrayMessageByLocale: Record<"en-US" | "ua-UA" | "de-DE", string> = {
-  "en-US": "Application is hidden in tray. Double-click the tray icon to open it.",
-  "ua-UA": "Застосунок приховано в треї. Подвійний клік по іконці трея відкриє його.",
-  "de-DE": "Die Anwendung wurde im Tray ausgeblendet. Doppelklick auf das Tray-Symbol, um sie zu öffnen.",
-};
+const hiddenInTrayMessageByLocale: Record<'en-US' | 'ua-UA' | 'de-DE', string> = {
+  'en-US': 'Application is hidden in tray. Double-click the tray icon to open it.',
+  'ua-UA': 'Застосунок приховано в треї. Подвійний клік по іконці трея відкриє його.',
+  'de-DE': 'Die Anwendung wurde im Tray ausgeblendet. Doppelklick auf das Tray-Symbol, um sie zu öffnen.'
+}
 
-function showHiddenInTrayNotification(locale: "en-US" | "ua-UA" | "de-DE") {
+function showHiddenInTrayNotification (locale: 'en-US' | 'ua-UA' | 'de-DE') {
   if (!Notification.isSupported()) {
-    return;
+    return
   }
 
   new Notification({
-    title: "IT Army Kit",
+    title: 'IT Army Kit',
     body: hiddenInTrayMessageByLocale[locale],
-    silent: true,
-  }).show();
+    silent: true
+  }).show()
 }
 
-export function handleTray(settings: Settings, mainWindow: BrowserWindow) {
-  activeMainWindow = mainWindow;
+export function handleTray (settings: Settings, mainWindow: BrowserWindow) {
+  activeMainWindow = mainWindow
 
   if (!beforeQuitListenerRegistered) {
-    app.on("before-quit", function () {
-      isQuiting = true;
-    });
-    beforeQuitListenerRegistered = true;
+    app.on('before-quit', () => {
+      isQuiting = true
+    })
+    beforeQuitListenerRegistered = true
   }
 
-  const locale = settings.getDataSync().system.language;
-  let translation = lang["en-US"];
+  const settingsData = settings.getDataSync()
+  const locale = settingsData.system.language
+  let translation = lang['en-US']
   if (locale in lang) {
-    translation = lang[locale as keyof typeof lang];
+    translation = lang[locale as keyof typeof lang]
   }
 
   if (tray === null) {
-    tray = new Tray(nativeImage.createEmpty());
-    const appIcon = nativeImage.createFromPath(path.resolve(__dirname, "icons/trey.png"));
-    tray.setImage(appIcon);
-    tray.setToolTip("IT Army Kit");
-    tray.on("double-click", () => {
-      if (!activeMainWindow) {
-        return;
+    tray = new Tray(nativeImage.createEmpty())
+    const appIcon = nativeImage.createFromPath(path.resolve(__dirname, 'icons/trey.png'))
+    tray.setImage(appIcon)
+    tray.setToolTip('IT Army Kit')
+    tray.on('double-click', () => {
+      if (!activeMainWindow || activeMainWindow.isDestroyed()) {
+        return
       }
       if (activeMainWindow.isVisible()) {
-        activeMainWindow.hide();
+        activeMainWindow.hide()
       } else {
-        activeMainWindow.show();
+        activeMainWindow.show()
       }
-    });
+    })
   }
 
   tray.setContextMenu(
@@ -80,48 +82,49 @@ export function handleTray(settings: Settings, mainWindow: BrowserWindow) {
       {
         label: translation.open,
         click: function () {
-          activeMainWindow?.show();
-        },
+          if (activeMainWindow && !activeMainWindow.isDestroyed()) {
+            activeMainWindow.show()
+          }
+        }
       },
       {
         label: translation.exit,
         click: function () {
-          isQuiting = true;
-          app.quit();
-        },
-      },
+          isQuiting = true
+          app.quit()
+        }
+      }
     ])
-  );
+  )
 
   if (boundCloseWindow && boundCloseListener) {
-    boundCloseWindow.removeListener("close", boundCloseListener);
+    boundCloseWindow.removeListener('close', boundCloseListener)
   }
 
-  boundCloseListener = async function (event) {
-    const settingsData = await settings.getData();
+  boundCloseListener = function (event) {
+    const latestSettingsData = settings.getDataSync()
 
-    if (!isQuiting && settingsData.system.hideInTray) {
-      event.preventDefault();
-      activeMainWindow?.hide();
-      showHiddenInTrayNotification(locale);
+    if (!isQuiting && latestSettingsData.system.hideInTray) {
+      event.preventDefault()
+      if (activeMainWindow && !activeMainWindow.isDestroyed()) {
+        activeMainWindow.hide()
+      }
+      showHiddenInTrayNotification(locale)
     }
+  }
+  mainWindow.on('close', boundCloseListener)
+  boundCloseWindow = mainWindow
 
-    return false;
-  };
-  mainWindow.on("close", boundCloseListener);
-  boundCloseWindow = mainWindow;
-
-  mainWindow.on("closed", () => {
+  mainWindow.on('closed', () => {
     if (activeMainWindow === mainWindow) {
-      activeMainWindow = null;
+      activeMainWindow = null
     }
-  });
+  })
 
-  const settingsData = settings.getDataSync();
-  const isBootstrapIncomplete = settingsData.bootstrap.step !== "DONE";
+  const isBootstrapIncomplete = settingsData.bootstrap.step !== 'DONE'
   if (!isBootstrapIncomplete && settingsData.system.hideInTray) {
-    mainWindow.hide();
+    mainWindow.hide()
   } else {
-    mainWindow.show();
+    mainWindow.show()
   }
 }

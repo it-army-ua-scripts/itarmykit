@@ -2,477 +2,494 @@ import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
 import { EventEmitter } from 'events'
 import { Readable } from 'stream'
 import path from 'path'
-import { app } from 'electron'
 import fs from 'fs'
 import fetch from 'electron-fetch'
 import decompress from 'decompress'
 import { Settings } from '../../src-electron/handlers/settings'
 import { getCPUArchitecture } from './archLib'
+import { writeFileAtomicWithBackup } from '../utils/atomicFile'
+import { terminateChildProcess } from '../utils/processControl'
+import { writeStabilityLog } from '../utils/stabilityLog'
 
 export type ModuleName = 'DISTRESS' | 'MHDDOS_PROXY'
 
 export interface Version {
-    // Unique identifier of the version
-    tag: string;
-    // Human readable name of the version
-    name: string;
-    // Description / cahngelog
-    body: string;
-    // Is this specific version already installed or not
-    installed: boolean;
+  tag: string;
+  name: string;
+  body: string;
+  installed: boolean;
 }
 
 export enum InstallationErrorCodes {
-    OK = 'OK',
-    UNSUPPORTED_PLATFORM = 'UNSUPPORTED_PLATFORM',
-    CANT_FIND_ASSET = 'CANT_FIND_ASSET',
-    UNKNOWN = 'UNKNOWN',
+  OK = 'OK',
+  UNSUPPORTED_PLATFORM = 'UNSUPPORTED_PLATFORM',
+  CANT_FIND_ASSET = 'CANT_FIND_ASSET',
+  UNKNOWN = 'UNKNOWN'
 }
 
 export type InstallationProgressStage = 'DOWNLOADING' | 'EXTRACTING' | 'VALIDATING' | 'DONE' | 'FAILED'
 
 export interface InstallProgress {
-    // Current stage
-    stage: InstallationProgressStage;
-    // Progress in %
-    progress: number;
-    // Error code if stage is FAILED
-    errorCode?: InstallationErrorCodes
-    // Error message if stage is FAILED
-    errorMessage?: string;
+  stage: InstallationProgressStage;
+  progress: number;
+  errorCode?: InstallationErrorCodes
+  errorMessage?: string;
 }
 
 export interface InstallationTarget {
-    arch: 'x64' | 'arm64' | 'ia32';
-    platform: 'linux' | 'win32' | 'darwin';
+  arch: 'x64' | 'arm64' | 'ia32';
+  platform: 'linux' | 'win32' | 'darwin';
 }
 
 export interface BaseConfig {
-    // Automatically update module to the newest version
-    autoUpdate: boolean;
-    // Version of the module to run
-    selectedVersion?: string;
-    // Additional arguments to pass to the executable
-    executableArguments: string[];
+  autoUpdate: boolean;
+  selectedVersion?: string;
+  executableArguments: string[];
 }
 
 export type ModuleExecutionEvent = 'execution:statistics' | 'execution:stdout' | 'execution:stderr' | 'execution:error' | 'execution:started' | 'execution:stopped'
 export interface ModuleExecutionStatisticsEventData {
-    type: 'execution:statistics';
-    // Total number of bytes currently sending per second
-    currentSendBitrate: number
-    // Number of bytes sent since last event
-    bytesSend: number
-    // When the statistics were collected
-    timestamp: number
+  type: 'execution:statistics';
+  currentSendBitrate: number
+  bytesSend: number
+  timestamp: number
 }
 export interface ModuleExecutionStdoutEventData {
-    type: 'execution:stdout';
-    data: string;
+  type: 'execution:stdout';
+  data: string;
 }
 export interface ModuleExecutionStderrEventData {
-    type: 'execution:stderr';
-    data: string;
+  type: 'execution:stderr';
+  data: string;
 }
 export interface ModuleExecutionErrorEventData {
-    type: 'execution:error';
-    error: Error;
+  type: 'execution:error';
+  error: Error;
 }
 export interface ModuleExecutionStartedEventData {
-    type: 'execution:started';
+  type: 'execution:started';
 }
 export interface ModuleExecutionStoppedEventData {
-    type: 'execution:stopped';
-    exitCode: number;
+  type: 'execution:stopped';
+  exitCode: number | null;
 }
 export type ModuleExecutionEventData = ModuleExecutionStatisticsEventData | ModuleExecutionStdoutEventData | ModuleExecutionStderrEventData | ModuleExecutionErrorEventData | ModuleExecutionStartedEventData | ModuleExecutionStoppedEventData
 
 export abstract class Module<ConfigType extends BaseConfig> {
-    // Unique identifier of the module
-    public abstract get name(): ModuleName
-    // URL to the homepage (owner name) of the module
-    public abstract get homeURL(): string
-    // List of supported architectures and platforms
-    public abstract get supportedInstallationTargets(): Array<InstallationTarget>
+  public abstract get name(): ModuleName
+  public abstract get homeURL(): string
+  public abstract get supportedInstallationTargets(): Array<InstallationTarget>
 
-    public async getConfig (): Promise<ConfigType> {
-      if (this._config === undefined) {
-        await this.loadConfig()
-      }
-      if (this._config === undefined) {
-        this._config = this.defaultConfig
-        await this.saveConfig(this._config)
-      }
-      return this._config
+  public async getConfig (): Promise<ConfigType> {
+    if (this._config === undefined) {
+      await this.loadConfig()
     }
-
-    public async setConfig (config: ConfigType): Promise<void> {
-      this._config = config
+    if (this._config === undefined) {
+      this._config = this.defaultConfig
       await this.saveConfig(this._config)
     }
+    return this._config
+  }
 
-    protected settings: Settings
+  public async setConfig (config: ConfigType): Promise<void> {
+    this._config = config
+    await this.saveConfig(this._config)
+  }
 
-    private _config?: ConfigType
-    protected abstract get defaultConfig(): ConfigType
+  protected settings: Settings
+  private _config?: ConfigType
+  protected abstract get defaultConfig(): ConfigType
 
-    private autoupdateInterval?: NodeJS.Timeout
+  private autoupdateInterval?: ReturnType<typeof setInterval>
 
-    protected async getInstallationDirectory () {
-      const settingsData = await this.settings.getData()  
-      return path.join(settingsData.modules.dataPath, this.name)
-    }
-    protected async getCacheDirectory () {
-      // Dont use app.getPath('temp') because on windows you will have to specify multiple folders as exception in windows defender / antivirus
-      const settingsData = await this.settings.getData()  
-      const location = path.join(settingsData.modules.dataPath, "cache")
-      await fs.promises.mkdir(location, { recursive: true })
-      return location
-    }
+  protected async getInstallationDirectory () {
+    const settingsData = await this.settings.getData()
+    return path.join(settingsData.modules.dataPath, this.name)
+  }
 
-    constructor (settings: Settings) {
-      this.settings = settings
-    }
+  protected async getCacheDirectory () {
+    const settingsData = await this.settings.getData()
+    const location = path.join(settingsData.modules.dataPath, 'cache')
+    await fs.promises.mkdir(location, { recursive: true })
+    return location
+  }
 
-    // Start execution of the module
-    abstract start(): Promise<void>
-    // Stop execution of the module
-    abstract stop(): Promise<void>
+  constructor (settings: Settings) {
+    this.settings = settings
+  }
 
-    abstract getAllVersions(): Promise<Version[]>
-    abstract installVersion(versionTag: string): AsyncGenerator<InstallProgress, void, void>
-    public async uninstallVersion (versionTag: string): Promise<void> {
-      const installDirectory = await this.getInstallationDirectory()
-      await fs.promises.rm(path.join(installDirectory, versionTag), { recursive: true, force: true })
-    }
+  abstract start(): Promise<void>
+  abstract stop(): Promise<void>
 
-    public async installLatestVersion (): Promise<boolean> {
-      const versions = await this.getAllVersions()
-      if (versions.length > 0 && !versions[0].installed) {
-        const progressGenerator = this.installVersion(versions[0].tag)
-        for await (const progress of progressGenerator) {
-          if (progress.stage === 'DONE') {
-            const config = await this.getConfig()
-            config.selectedVersion = versions[0].tag
-            await this.setConfig(config)
-            return true
-          }
+  abstract getAllVersions(): Promise<Version[]>
+  abstract installVersion(versionTag: string): AsyncGenerator<InstallProgress, void, void>
+
+  public async uninstallVersion (versionTag: string): Promise<void> {
+    const installDirectory = await this.getInstallationDirectory()
+    await fs.promises.rm(path.join(installDirectory, versionTag), { recursive: true, force: true })
+  }
+
+  public async installLatestVersion (): Promise<boolean> {
+    const versions = await this.getAllVersions()
+    if (versions.length > 0 && !versions[0].installed) {
+      const progressGenerator = this.installVersion(versions[0].tag)
+      for await (const progress of progressGenerator) {
+        if (progress.stage === 'DONE') {
+          const config = await this.getConfig()
+          config.selectedVersion = versions[0].tag
+          await this.setConfig(config)
+          return true
         }
       }
-      return false
+    }
+    return false
+  }
+
+  protected async *installVersionFromGithub (owner: string, repo: string, tag: string, assetMapping: Array<{ name: string, arch: 'x64' | 'arm64' | 'ia32', platform: 'linux' | 'win32' | 'darwin' }>): AsyncGenerator<InstallProgress, void, void> {
+    interface GithubRelease {
+      assets: Array<{ name: string, browser_download_url: string }>
     }
 
-    protected async *installVersionFromGithub (owner: string, repo: string, tag: string, assetMapping: Array<{ name: string, arch: 'x64' | 'arm64' | 'ia32', platform: 'linux' | 'win32' | 'darwin' }>): AsyncGenerator<InstallProgress, void, void> {
-        interface GithubRelease {
-            assets: Array<{ name: string, browser_download_url: string }>
-        }
-
-        let release: GithubRelease
-        try {
-          console.log(`Fetching github release: https://api.github.com/repos/${owner}/${repo}/releases/tags/${tag}`)
-          const releaseResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases/tags/${tag}`)
-          if (releaseResponse.status !== 200) {
-            yield { stage: 'FAILED', progress: 0, errorCode: InstallationErrorCodes.UNKNOWN, errorMessage: `Cant fetch github release: ${await releaseResponse.text()}` }
-            return
-          }
-
-          release = await releaseResponse.json() as GithubRelease
-        } catch (err) {
-          yield { stage: 'FAILED', progress: 0, errorCode: InstallationErrorCodes.UNKNOWN, errorMessage: `Cant fetch github release: ${err}` }
-          return
-        }
-
-        const assetName = assetMapping.find((asset) => asset.platform === process.platform && asset.arch === getCPUArchitecture())?.name
-        if (assetName === undefined) {
-          yield { stage: 'FAILED', progress: 0, errorCode: InstallationErrorCodes.UNSUPPORTED_PLATFORM, errorMessage: `Tour architecture is "${getCPUArchitecture()}" and platform "${process.platform}" which is not supported.` }
-          return
-        }
-
-        const asset = release.assets.find((asset) => asset.name === assetName)
-        if (asset === undefined) {
-          yield { stage: 'FAILED', progress: 0, errorCode: InstallationErrorCodes.CANT_FIND_ASSET, errorMessage: `Cant find asset with name "${assetName}" in github release` }
-          return
-        }
-
-        const installDirectory = await this.getInstallationDirectory()
-        const cacheDirectory = await this.getCacheDirectory()
-        
-        const tempDownoloadPath = path.join(cacheDirectory, assetName)
-        try {
-          for await (const progress of this.downloadFile(asset.browser_download_url, tempDownoloadPath)) {
-            yield { stage: 'DOWNLOADING', progress: progress.progress }
-          }
-        } catch (err) {
-          yield { stage: 'FAILED', progress: 0, errorCode: InstallationErrorCodes.UNKNOWN, errorMessage: `Cant download release asset file: ${err}` }
-          return
-        }
-
-        yield { stage: 'EXTRACTING', progress: 0 }
-        try {
-          
-          await this.extractArchive(tempDownoloadPath, path.join(installDirectory, tag))
-        } catch (err) {
-          yield { stage: 'FAILED', progress: 0, errorCode: InstallationErrorCodes.UNKNOWN, errorMessage: `Cant extract archive: ${err}` }
-          return
-        }
-
-        yield { stage: 'VALIDATING', progress: 0 }
-        yield { stage: 'DONE', progress: 0 }
-
+    let release: GithubRelease
+    try {
+      console.log(`Fetching github release: https://api.github.com/repos/${owner}/${repo}/releases/tags/${tag}`)
+      const releaseResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases/tags/${tag}`)
+      if (releaseResponse.status !== 200) {
+        yield { stage: 'FAILED', progress: 0, errorCode: InstallationErrorCodes.UNKNOWN, errorMessage: `Cant fetch github release: ${await releaseResponse.text()}` }
         return
-    }
-
-    private githubReleaseCache = [] as { tag_name: string, name: string, body: string }[]
-    private githubReleaseCacheTime?: Date
-    protected async loadVersionsFromGithub (owner: string, repo: string): Promise<Version[]> {
-      const installDirectory = await this.getInstallationDirectory()
-
-      const isVersionInstalled = async (tagName: string) => {
-        return await new Promise<boolean>((resolve) => {
-          fs.promises.access(path.join(installDirectory, tagName))
-            .then(() => resolve(true))
-            .catch(() => resolve(false))
-        })
       }
 
-      //Cache github releases for 5 minutes in order to ommit Gihub API rate limit
-      const now = Date.now()
-      const cacheTtlMs = 5 * 60 * 1000
-      if (this.githubReleaseCacheTime === undefined || this.githubReleaseCacheTime.getTime() + cacheTtlMs < now) {
-        console.debug('[Module] Refreshing GitHub releases cache', { owner, repo })
-        const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases`)
-        if (response.status !== 200) {
-          throw new Error(`Cant fetch github releases: ${await response.text()}`)
-        }
-        let newReleasesList = await response.json() as Array<{ tag_name: string, name: string, body: string, prerelease: boolean, draft: boolean }>
-        newReleasesList = newReleasesList.filter((release) => !release.prerelease && !release.draft)
-        this.githubReleaseCache = newReleasesList
-        this.githubReleaseCacheTime = new Date()
+      release = await releaseResponse.json() as GithubRelease
+    } catch (err) {
+      yield { stage: 'FAILED', progress: 0, errorCode: InstallationErrorCodes.UNKNOWN, errorMessage: `Cant fetch github release: ${err}` }
+      return
+    }
+
+    const assetName = assetMapping.find((asset) => asset.platform === process.platform && asset.arch === getCPUArchitecture())?.name
+    if (assetName === undefined) {
+      yield { stage: 'FAILED', progress: 0, errorCode: InstallationErrorCodes.UNSUPPORTED_PLATFORM, errorMessage: `Tour architecture is "${getCPUArchitecture()}" and platform "${process.platform}" which is not supported.` }
+      return
+    }
+
+    const asset = release.assets.find((releaseAsset) => releaseAsset.name === assetName)
+    if (asset === undefined) {
+      yield { stage: 'FAILED', progress: 0, errorCode: InstallationErrorCodes.CANT_FIND_ASSET, errorMessage: `Cant find asset with name "${assetName}" in github release` }
+      return
+    }
+
+    const installDirectory = await this.getInstallationDirectory()
+    const cacheDirectory = await this.getCacheDirectory()
+    const tempDownoloadPath = path.join(cacheDirectory, assetName)
+
+    try {
+      for await (const progress of this.downloadFile(asset.browser_download_url, tempDownoloadPath)) {
+        yield { stage: 'DOWNLOADING', progress: progress.progress }
+      }
+    } catch (err) {
+      yield { stage: 'FAILED', progress: 0, errorCode: InstallationErrorCodes.UNKNOWN, errorMessage: `Cant download release asset file: ${err}` }
+      return
+    }
+
+    yield { stage: 'EXTRACTING', progress: 0 }
+    try {
+      await this.extractArchive(tempDownoloadPath, path.join(installDirectory, tag))
+    } catch (err) {
+      yield { stage: 'FAILED', progress: 0, errorCode: InstallationErrorCodes.UNKNOWN, errorMessage: `Cant extract archive: ${err}` }
+      return
+    }
+
+    yield { stage: 'VALIDATING', progress: 0 }
+    yield { stage: 'DONE', progress: 0 }
+  }
+
+  private githubReleaseCache = [] as { tag_name: string, name: string, body: string }[]
+  private githubReleaseCacheTime?: Date
+  protected async loadVersionsFromGithub (owner: string, repo: string): Promise<Version[]> {
+    const installDirectory = await this.getInstallationDirectory()
+
+    const isVersionInstalled = async (tagName: string) => {
+      return await new Promise<boolean>((resolve) => {
+        fs.promises.access(path.join(installDirectory, tagName))
+          .then(() => resolve(true))
+          .catch(() => resolve(false))
+      })
+    }
+
+    const now = Date.now()
+    const cacheTtlMs = 5 * 60 * 1000
+    if (this.githubReleaseCacheTime === undefined || this.githubReleaseCacheTime.getTime() + cacheTtlMs < now) {
+      console.debug('[Module] Refreshing GitHub releases cache', { owner, repo })
+      const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases`)
+      if (response.status !== 200) {
+        throw new Error(`Cant fetch github releases: ${await response.text()}`)
+      }
+      let newReleasesList = await response.json() as Array<{ tag_name: string, name: string, body: string, prerelease: boolean, draft: boolean }>
+      newReleasesList = newReleasesList.filter((release) => !release.prerelease && !release.draft)
+      this.githubReleaseCache = newReleasesList
+      this.githubReleaseCacheTime = new Date()
+    } else {
+      console.debug('[Module] Using cached GitHub releases', { owner, repo })
+    }
+
+    return await Promise.all(this.githubReleaseCache.map(async (release) => {
+      return {
+        tag: release.tag_name,
+        name: release.name,
+        body: release.body,
+        installed: await isVersionInstalled(release.tag_name)
+      }
+    }))
+  }
+
+  protected async *downloadFile (url: string, outPath: string): AsyncGenerator<{ progress: number }, void, void> {
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw new Error(`Download failed: ${response.status} ${response.statusText}`)
+    }
+
+    const fileStream = fs.createWriteStream(outPath)
+    const contentLengthHeader = response.headers.get('content-length')
+    if (contentLengthHeader == null) {
+      throw new Error('Content length is null')
+    }
+    const contentLength = parseInt(contentLengthHeader, 10)
+    let downloadedBytes = 0
+
+    yield { progress: 0.001 }
+
+    if (response.body == null) {
+      throw new Error('Response body is null')
+    }
+    const body = response.body as Readable
+    body.pipe(fileStream)
+
+    const eventEmitter = new EventEmitter()
+
+    body.on('data', (chunk) => {
+      downloadedBytes += chunk.length
+      eventEmitter.emit('progress', downloadedBytes / contentLength * 100)
+    })
+
+    body.on('error', (err: unknown) => {
+      eventEmitter.emit('err', err)
+    })
+
+    let lastYieldProgress = 0
+    while (true) {
+      const result = await new Promise<{ progress: number }>((resolve, reject) => {
+        eventEmitter.on('progress', (progress: number) => {
+          eventEmitter.removeAllListeners()
+          resolve({ progress })
+        })
+
+        eventEmitter.on('err', (err: unknown) => {
+          eventEmitter.removeAllListeners()
+          reject(err)
+        })
+      })
+      if (result.progress === 100) {
+        await new Promise<void>((resolve, reject) => {
+          fileStream.on('finish', resolve)
+          fileStream.on('error', reject)
+        })
+        return
+      }
+      if (lastYieldProgress + 5 < result.progress || result.progress === 100) {
+        lastYieldProgress = result.progress
+        yield result
+      }
+    }
+  }
+
+  protected async extractArchive (archivePath: string, outPath: string, deleteSource = true): Promise<void> {
+    try {
+      const directoryExist = await new Promise<boolean>((resolve) => {
+        fs.promises.access(outPath)
+          .then(() => resolve(true))
+          .catch(() => resolve(false))
+      })
+      if (!directoryExist) {
+        await fs.promises.mkdir(outPath, { recursive: true })
+      }
+
+      if (archivePath.endsWith('.zip') || archivePath.endsWith('.tar.gz')) {
+        await decompress(archivePath, outPath)
       } else {
-        console.debug('[Module] Using cached GitHub releases', { owner, repo })
-      }
-
-      return await Promise.all(this.githubReleaseCache.map(async (release: any) => {
-        return {
-          tag: release.tag_name,
-          name: release.name,
-          body: release.body,
-          installed: await isVersionInstalled(release.tag_name)
-        }
-      }))
-    }
-
-    protected async *downloadFile (url: string, outPath: string): AsyncGenerator<{progress: number}, void, void> {
-      const response = await fetch(url)
-      if (!response.ok) {
-        throw new Error(`Download failed: ${response.status} ${response.statusText}`)
-      }
-      const fileStream = fs.createWriteStream(outPath)
-      const contentLengthHeader = response.headers.get('content-length')
-      if (contentLengthHeader == null) {
-        throw new Error('Content length is null')
-      }
-      const contentLength = parseInt(contentLengthHeader, 10)
-      let downloadedBytes = 0
-
-      yield { progress: 0.001 }
-
-      if (response.body == null) {
-        throw new Error('Response body is null')
-      }
-      const body = response.body as Readable
-      body.pipe(fileStream)
-
-      const e = new EventEmitter()
-
-      body.on('data', (chunk) => {
-        downloadedBytes += chunk.length
-        e.emit('progress', downloadedBytes / contentLength * 100)
-      })
-
-      body.on('error', (err: any) => {
-        e.emit('err', err)
-      })
-
-      let lastYieldProgress = 0
-      while (true) {
-        const r = await new Promise<{ progress: number }>((resolve, reject) => {
-          e.on('progress', (progress: number) => {
-            e.removeAllListeners()
-            return resolve({ progress })
-          })
- 
-          e.on('err', (err: any) => {
-            e.removeAllListeners()
-            return reject(err)
-          })
-        })
-        if (r.progress == 100) {
-          await new Promise<void>((resolve, reject) => {
-            fileStream.on('finish', resolve)
-            fileStream.on('error', reject)
-          })
-          return
-        }
-        if (lastYieldProgress + 5 < r.progress || r.progress == 100) {
-          lastYieldProgress = r.progress
-          yield r
+        await fs.promises.copyFile(archivePath, path.join(outPath, path.basename(archivePath)))
+        if (process.platform !== 'win32') {
+          await fs.promises.chmod(path.join(outPath, path.basename(archivePath)), '775')
         }
       }
-    }
-
-    protected async extractArchive (archivePath: string, outPath: string, deleteSource = true): Promise<void> {
-      try {
-        const directoryExist = await new Promise<boolean>((resolve) => {
-          fs.promises.access(outPath)
-            .then(() => resolve(true))
-            .catch(() => resolve(false))
-        })
-        if (!directoryExist) {
-          await fs.promises.mkdir(outPath, { recursive: true })
-        }
-
-        if (archivePath.endsWith('.zip') || archivePath.endsWith('.tar.gz')) {
-          await decompress(archivePath, outPath)
-        } else {
-          await fs.promises.copyFile(archivePath, path.join(outPath, path.basename(archivePath)))
-          if (process.platform !== 'win32') {
-            await fs.promises.chmod(path.join(outPath, path.basename(archivePath)), "775") // Make executable
-          }
-        }
-      } finally {
-        if (deleteSource) {
+    } finally {
+      if (deleteSource) {
+        try {
           await fs.promises.unlink(archivePath)
+        } catch {
+          // ignore cleanup errors
         }
       }
     }
+  }
 
-    private executionEventEmitter = new EventEmitter()
-    public on (event: ModuleExecutionEvent, listener: (data: ModuleExecutionEventData) => void) {
-      this.executionEventEmitter.on(event, listener)
-    }
+  private executionEventEmitter = new EventEmitter()
+  public on (event: ModuleExecutionEvent, listener: (data: ModuleExecutionEventData) => void) {
+    this.executionEventEmitter.on(event, listener)
+  }
 
-    public once (event: ModuleExecutionEvent, listener: (data: ModuleExecutionEventData) => void) {
-      this.executionEventEmitter.once(event, listener)
-    }
+  public once (event: ModuleExecutionEvent, listener: (data: ModuleExecutionEventData) => void) {
+    this.executionEventEmitter.once(event, listener)
+  }
 
-    public off (event: ModuleExecutionEvent, listener: (data: ModuleExecutionEventData) => void) {
-      this.executionEventEmitter.off(event, listener)
-    }
+  public off (event: ModuleExecutionEvent, listener: (data: ModuleExecutionEventData) => void) {
+    this.executionEventEmitter.off(event, listener)
+  }
 
-    protected emit (event: ModuleExecutionEvent, data: ModuleExecutionEventData) {
-      this.executionEventEmitter.emit(event, data)
-    }
+  protected emit (event: ModuleExecutionEvent, data: ModuleExecutionEventData) {
+    this.executionEventEmitter.emit(event, data)
+  }
 
-    // Indicates if module is currently running
-    public get isRunning (): boolean {
-      return this.executedProcessHandler !== undefined
-    }
+  public get isRunning (): boolean {
+    return this.executedProcessHandler !== undefined
+  }
 
-    protected executedProcessHandler?: ChildProcessWithoutNullStreams
-    protected executableOutputToString(data: Buffer) {
-      return data.toString()
-    }
-    protected async startExecutable (executableName: string, args: string[]): Promise<ChildProcessWithoutNullStreams> {
-      let config = await this.getConfig()
-      if (config.autoUpdate) {
-        await this.installLatestVersion()
-        config = await this.getConfig()
-      }
+  protected executedProcessHandler?: ChildProcessWithoutNullStreams
 
-      const installDirectory = await this.getInstallationDirectory()
+  protected executableOutputToString (data: Buffer) {
+    return data.toString()
+  }
 
-      if (config.selectedVersion === undefined) {
-        const error = new Error('Failed to start executable. No version selected')
-        this.emit('execution:error', { type: 'execution:error', error })
-        throw error
-      }
-
-      this.autoupdateInterval = setInterval(async () => {
-        const updateConfig = await this.getConfig()
-        if (updateConfig.autoUpdate && await this.installLatestVersion() && this.isRunning) {
-          await this.stop()
-          await this.start()
-        }
-      }, 1000 * 60 * 30) // Try to autoupdate once in 30 minutes
-
-      if (this.executedProcessHandler !== undefined) {
-        throw new Error('Already running')
-      }
-
-      const executablePath = path.join(installDirectory, config.selectedVersion, executableName)
-      const cwd = path.join(installDirectory, config.selectedVersion)
-      this.executedProcessHandler = spawn(executablePath, args, { cwd, shell: false })
-
-      this.emit('execution:started', { type: 'execution:started' })
-
-      this.executedProcessHandler.stdout.on('data', (data: Buffer) => {
-        this.emit('execution:stdout', { type: 'execution:stdout', data: this.executableOutputToString(data) })
-      })
-      this.executedProcessHandler.stderr.on('data', (data: Buffer) => {
-        this.emit('execution:stderr', { type: 'execution:stderr', data: this.executableOutputToString(data) })
-      })
-      this.executedProcessHandler.on('error', (error: Error) => {
-        this.executedProcessHandler = undefined
-        this.emit('execution:error', { type: 'execution:error', error })
-      })
-      this.executedProcessHandler.on('close', (code: number) => {
-        this.executedProcessHandler = undefined
-        this.emit('execution:stopped', { type: 'execution:stopped', exitCode: code })
-      })
-
-      return this.executedProcessHandler
-    }
-
-    protected async stopExecutable (): Promise<void> {
+  protected clearAutoUpdateInterval () {
+    if (this.autoupdateInterval) {
       clearInterval(this.autoupdateInterval)
       this.autoupdateInterval = undefined
+    }
+  }
 
-      const handler = this.executedProcessHandler // Copy handler, because other async task can chenage it in the meantime
+  protected async startExecutable (executableName: string, args: string[]): Promise<ChildProcessWithoutNullStreams> {
+    let config = await this.getConfig()
+    if (config.autoUpdate) {
+      await this.installLatestVersion()
+      config = await this.getConfig()
+    }
 
-      await new Promise<void>((resolve, reject) => {
-        const termTimeout = setTimeout(() => {
-          handler?.kill('SIGTERM')
-        }, 5000) 
+    const installDirectory = await this.getInstallationDirectory()
 
-        const killTimeout = setTimeout(() => {
-          handler?.kill('SIGKILL')
-          resolve()
-        }, 10000)
-        
-        handler?.on('close', () => {
-          clearTimeout(termTimeout)
-          clearTimeout(killTimeout)
-          resolve()
-        })
-        
-        handler?.kill('SIGINT')
-        
-        
-      })
+    if (config.selectedVersion === undefined) {
+      const error = new Error('Failed to start executable. No version selected')
+      writeStabilityLog({ level: 'error', source: `module:${this.name}`, event: 'process-error', details: error })
+      this.emit('execution:error', { type: 'execution:error', error })
+      throw error
+    }
 
+    if (this.executedProcessHandler !== undefined) {
+      throw new Error('Already running')
+    }
+
+    const executablePath = path.join(installDirectory, config.selectedVersion, executableName)
+    const cwd = path.join(installDirectory, config.selectedVersion)
+
+    await fs.promises.access(executablePath, fs.constants.F_OK)
+
+    this.autoupdateInterval = setInterval(() => {
+      void (async () => {
+        try {
+          const updateConfig = await this.getConfig()
+          if (updateConfig.autoUpdate && await this.installLatestVersion() && this.isRunning) {
+            await this.stop()
+            await this.start()
+          }
+        } catch (error) {
+          console.warn(`[Module:${this.name}] Auto-update cycle failed`, error)
+          writeStabilityLog({ level: 'error', source: 'module:' + this.name, event: 'auto-update-cycle-failed', details: error })
+        }
+      })()
+    }, 1000 * 60 * 30)
+
+    writeStabilityLog({
+      level: 'info',
+      source: `module:${this.name}`,
+      event: 'process-spawn',
+      details: { executablePath, args, cwd }
+    })
+
+    const spawnedProcess = spawn(executablePath, args, {
+      cwd,
+      shell: false,
+      windowsHide: true
+    })
+    this.executedProcessHandler = spawnedProcess
+
+    this.emit('execution:started', { type: 'execution:started' })
+
+    spawnedProcess.stdout.on('data', (data: Buffer) => {
+      this.emit('execution:stdout', { type: 'execution:stdout', data: this.executableOutputToString(data) })
+    })
+    spawnedProcess.stderr.on('data', (data: Buffer) => {
+      this.emit('execution:stderr', { type: 'execution:stderr', data: this.executableOutputToString(data) })
+    })
+    spawnedProcess.on('error', (error: Error) => {
+      this.clearAutoUpdateInterval()
+      if (this.executedProcessHandler === spawnedProcess) {
+        this.executedProcessHandler = undefined
+      }
+      writeStabilityLog({ level: 'error', source: `module:${this.name}`, event: 'process-error', details: error })
+      this.emit('execution:error', { type: 'execution:error', error })
+    })
+    spawnedProcess.on('close', (code: number | null) => {
+      this.clearAutoUpdateInterval()
+      if (this.executedProcessHandler === spawnedProcess) {
+        this.executedProcessHandler = undefined
+      }
+      writeStabilityLog({ level: code === 0 ? 'info' : 'warn', source: `module:${this.name}`, event: 'process-close', details: { exitCode: code } })
+      this.emit('execution:stopped', { type: 'execution:stopped', exitCode: code })
+    })
+
+    return spawnedProcess
+  }
+
+  protected async stopExecutable (): Promise<void> {
+    this.clearAutoUpdateInterval()
+
+    const handler = this.executedProcessHandler
+    if (!handler) {
+      return
+    }
+
+    writeStabilityLog({ level: 'info', source: `module:${this.name}`, event: 'process-stop-requested', details: { pid: handler.pid } })
+    await terminateChildProcess(handler)
+
+    if (this.executedProcessHandler === handler) {
       this.executedProcessHandler = undefined
     }
+  }
 
-    protected async loadConfig (): Promise<void> {
-      const installDirectory = await this.getInstallationDirectory()
-      const configFilePath = path.join(installDirectory, 'config.json')
-      try {
-        const configDump = await fs.promises.readFile(configFilePath, { encoding: 'utf-8' })
-        const config = JSON.parse(configDump) as ConfigType
-        this._config = {
-          ...this.defaultConfig, // do this to ensure config backward compatibility in future
-          ...config
-        }
-      } catch (err) {}
+  protected async loadConfig (): Promise<void> {
+    const installDirectory = await this.getInstallationDirectory()
+    const configFilePath = path.join(installDirectory, 'config.json')
+    try {
+      const configDump = await fs.promises.readFile(configFilePath, { encoding: 'utf-8' })
+      const config = JSON.parse(configDump) as ConfigType
+      this._config = {
+        ...this.defaultConfig,
+        ...config
+      }
+    } catch {
+      this._config = undefined
     }
+  }
 
-    protected async saveConfig(config: ConfigType): Promise<void> {
-      const installDirectory = await this.getInstallationDirectory()
-      const configDump = JSON.stringify(config)
-      const configFilePath = path.join(installDirectory, 'config.json')
+  protected async saveConfig (config: ConfigType): Promise<void> {
+    const installDirectory = await this.getInstallationDirectory()
+    const configDump = JSON.stringify(config)
+    const configFilePath = path.join(installDirectory, 'config.json')
+    const tempConfigFilePath = `${configFilePath}.tmp`
 
-      await fs.promises.mkdir(installDirectory, { recursive: true })
-      await fs.promises.writeFile(configFilePath, configDump, { encoding: 'utf-8' })
-    }
+    await fs.promises.mkdir(installDirectory, { recursive: true })
+    await writeFileAtomicWithBackup({
+      targetPath: configFilePath,
+      tempPath: tempConfigFilePath,
+      data: configDump,
+      encoding: 'utf-8'
+    })
+  }
 }

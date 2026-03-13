@@ -19,63 +19,63 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, onUnmounted, ref } from "vue";
-import { ModuleName } from "app/lib/module/module";
-import { IpcRendererEvent } from "electron";
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { ModuleName } from 'app/lib/module/module'
+import { IpcRendererEvent } from 'electron'
 
 interface ExecutionLogEntry {
-  type: "STARTED" | "STOPPED" | "ERROR";
+  type: 'STARTED' | 'STOPPED' | 'ERROR';
   moduleName: ModuleName;
 }
 
-const selectedModule = ref("DISTRESS" as ModuleName | null);
-const moduleEnabled = ref(false);
+const selectedModule = ref('DISTRESS' as ModuleName | null)
+const moduleEnabled = ref(false)
 
 const displayMessage = computed(() => {
   if (selectedModule.value == null) {
-    return "NOT CONFIGURED";
+    return 'NOT CONFIGURED'
   }
   if (moduleEnabled.value) {
-    return "RUNNING | " + selectedModule.value;
+    return 'RUNNING | ' + selectedModule.value
   }
-  return "IDLE | " + selectedModule.value;
-});
+  return 'IDLE | ' + selectedModule.value
+})
 
-async function loadState() {
-  const executionEngineState = await window.executionEngineAPI.getState();
-  moduleEnabled.value = executionEngineState.run;
-  selectedModule.value = executionEngineState.moduleToRun || null;
+async function loadState () {
+  const executionEngineState = await window.executionEngineAPI.getState()
+  moduleEnabled.value = executionEngineState.run
+  selectedModule.value = executionEngineState.moduleToRun || null
 }
 
-async function setModuleEnabled(newValue: boolean) {
-  moduleEnabled.value = newValue;
+async function setModuleEnabled (newValue: boolean) {
+  moduleEnabled.value = newValue
   if (newValue) {
-    await window.executionEngineAPI.startModule();
+    await window.executionEngineAPI.startModule()
   } else {
-    await window.executionEngineAPI.stopModule();
+    await window.executionEngineAPI.stopModule()
   }
 
-  await loadState();
+  await loadState()
 }
 
-function onExecutionLog(_e: IpcRendererEvent, data: ExecutionLogEntry) {
-  if (data.type === "STARTED") {
-    moduleEnabled.value = true;
-    selectedModule.value = data.moduleName;
-    return;
+function onExecutionLog (_e: IpcRendererEvent, data: ExecutionLogEntry) {
+  if (data.type === 'STARTED') {
+    moduleEnabled.value = true
+    selectedModule.value = data.moduleName
+    return
   }
 
-  if (data.type === "STOPPED" || data.type === "ERROR") {
-    moduleEnabled.value = false;
+  if (data.type === 'STOPPED' || data.type === 'ERROR') {
+    moduleEnabled.value = false
   }
 }
 
 onMounted(async () => {
-  await window.executionEngineAPI.listenForExecutionLog(onExecutionLog);
-  await loadState();
-});
+  await window.executionEngineAPI.listenForExecutionLog(onExecutionLog)
+  await loadState()
+})
 
 onUnmounted(() => {
-  void window.executionEngineAPI.stopListeningForExecutionLog(onExecutionLog);
-});
+  void window.executionEngineAPI.stopListeningForExecutionLog(onExecutionLog)
+})
 </script>

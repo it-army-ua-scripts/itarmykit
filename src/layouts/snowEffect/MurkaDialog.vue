@@ -8,11 +8,11 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from "vue";
-import MeaowSound from "./cat_meaow.mp3";
+import { onMounted } from 'vue'
+import MeaowSound from './cat_meaow.mp3'
 
 onMounted(() => {
-  const audio = new Audio(MeaowSound);
-  audio.play();
-});
+  const audio = new Audio(MeaowSound)
+  audio.play()
+})
 </script>

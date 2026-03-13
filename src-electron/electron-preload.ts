@@ -28,10 +28,11 @@
  * }
  */
 
-import { Config as DistressConfig } from 'app/lib/module/distress'
-import { Config as MHDDOSProxyConfig } from 'app/lib/module/mhddosproxy'
-import { InstallProgress, ModuleExecutionStatisticsEventData, ModuleName, Version } from 'app/lib/module/module'
-import { IpcRendererEvent, contextBridge, ipcRenderer } from 'electron'
+import type { Config as DistressConfig } from 'app/lib/module/distress'
+import type { Config as MHDDOSProxyConfig } from 'app/lib/module/mhddosproxy'
+import type { InstallProgress, ModuleExecutionStatisticsEventData, ModuleName, Version } from 'app/lib/module/module'
+import type { IpcRendererEvent } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 
 declare global {
     interface Window {
@@ -45,16 +46,16 @@ const modulesAPI = {
   },
   async installVersion (moduleName: ModuleName, versionTag: string, progressCallback: (progress: InstallProgress) => void): Promise<void> {
     const handleProgress = (_e: IpcRendererEvent, _moduleName: ModuleName, _versionTag: string, progress: InstallProgress) => {
-        if (_moduleName === moduleName && _versionTag === versionTag) {
-            progressCallback(progress)
-        }
+      if (_moduleName === moduleName && _versionTag === versionTag) {
+        progressCallback(progress)
+      }
     }
     ipcRenderer.on('modules:installProgress', handleProgress)
     try {
-        await ipcRenderer.invoke('modules:installVersion', moduleName, versionTag)
-        await new Promise(resolve => setTimeout(resolve, 500)) // wait for the last progress callback
+      await ipcRenderer.invoke('modules:installVersion', moduleName, versionTag)
+      await new Promise(resolve => setTimeout(resolve, 500)) // wait for the last progress callback
     } finally {
-        ipcRenderer.off('modules:installProgress', handleProgress)
+      ipcRenderer.off('modules:installProgress', handleProgress)
     }
   },
   async uninstallVersion (moduleName: ModuleName, versionTag: string): Promise<void> {
@@ -69,8 +70,8 @@ const modulesAPI = {
 }
 contextBridge.exposeInMainWorld('modulesAPI', modulesAPI)
 
-import { State as ExecutionEngineState, ExecutionLogEntry } from './handlers/engine'
-import { TopData } from './handlers/top'
+import type { State as ExecutionEngineState, ExecutionLogEntry } from './handlers/engine'
+import type { TopData } from './handlers/top'
 
 declare global {
   interface Window {
@@ -139,12 +140,12 @@ declare global {
 const topAPI = {
   async getWeeklyTop (): Promise<TopData> {
     return await ipcRenderer.invoke('top:getWeeklyTop')
-  },
+  }
 }
 
 contextBridge.exposeInMainWorld('topAPI', topAPI)
 
-import { SettingsData } from './handlers/settings'
+import type { SettingsData } from './handlers/settings'
 
 declare global {
   interface Window {
@@ -156,7 +157,7 @@ const settingsAPI = {
   async get (): Promise<SettingsData> {
     return await ipcRenderer.invoke('settings:get')
   },
-  async deleteData(): Promise<void> {
+  async deleteData (): Promise<void> {
     return await ipcRenderer.invoke('settings:deleteData')
   },
   system: {
@@ -183,7 +184,7 @@ const settingsAPI = {
     async openDataFolder (): Promise<void> {
       return await ipcRenderer.invoke('settings:modules:openDataFolder')
     },
-    async deleteData(): Promise<void> {
+    async deleteData (): Promise<void> {
       return await ipcRenderer.invoke('settings:modules:deleteData')
     }
   },
@@ -193,7 +194,7 @@ const settingsAPI = {
     },
     async setAPIKey (data: SettingsData['itarmy']['apiKey']): Promise<void> {
       return await ipcRenderer.invoke('settings:itarmy:apiKey', data)
-    },
+    }
   },
   bootstrap: {
     async setStep (data: SettingsData['bootstrap']['step']): Promise<void> {
@@ -235,7 +236,7 @@ const settingsAPI = {
 
 contextBridge.exposeInMainWorld('settingsAPI', settingsAPI)
 
-import { Contributor } from './handlers/developers'
+import type { Contributor } from './handlers/developers'
 
 declare global {
   interface Window {
@@ -251,8 +252,7 @@ const developersAPI = {
 
 contextBridge.exposeInMainWorld('developersAPI', developersAPI)
 
-
-import { GetStatsResponse as GetActivenessStatsResponse, GetTasksListResponse as GetActivenessTasksListResponse, MakeTaskDoneResponse as MakeActivenessTaskDoneResponse, IgnoreTaskResponse as IgnoreActivenessTaskResponse } from '../lib/activeness/api'
+import type { GetStatsResponse as GetActivenessStatsResponse, GetTasksListResponse as GetActivenessTasksListResponse, MakeTaskDoneResponse as MakeActivenessTaskDoneResponse, IgnoreTaskResponse as IgnoreActivenessTaskResponse } from '../lib/activeness/api'
 
 declare global {
   interface Window {
@@ -279,18 +279,17 @@ const activenessAPI = {
   async ignoreTask (id: number): Promise<IgnoreActivenessTaskResponse> {
     return await ipcRenderer.invoke('activeness:ignoreTask', id)
   },
-  async getStats(): Promise<GetActivenessStatsResponse> {
+  async getStats (): Promise<GetActivenessStatsResponse> {
     return await ipcRenderer.invoke('activeness:getStats')
   },
-  async getMyStats(): Promise<{ score: number }> {
+  async getMyStats (): Promise<{ score: number }> {
     return await ipcRenderer.invoke('activeness:getMyStats')
   }
 }
 
 contextBridge.exposeInMainWorld('activenessAPI', activenessAPI)
 
-
-import { GetUserStatsResponse as GetITArmyUserStatsResponse } from '../lib/itarmy/api'
+import type { GetUserStatsResponse as GetITArmyUserStatsResponse } from '../lib/itarmy/api'
 
 declare global {
   interface Window {
@@ -301,11 +300,10 @@ declare global {
 const itArmyAPI = {
   async getStats (): Promise<GetITArmyUserStatsResponse> {
     return await ipcRenderer.invoke('itarmy:getStats')
-  },
+  }
 }
 
 contextBridge.exposeInMainWorld('itArmyAPI', itArmyAPI)
-
 
 export interface SystemUsage {
   cpuPercent: number
@@ -321,11 +319,10 @@ declare global {
 const systemAPI = {
   async getUsage (): Promise<SystemUsage> {
     return await ipcRenderer.invoke('system:getUsage')
-  },
+  }
 }
 
 contextBridge.exposeInMainWorld('systemAPI', systemAPI)
-
 
 declare global {
   interface Window {
@@ -337,6 +334,15 @@ const helpersAPI = {
   async openURLInBrowser (url: string): Promise<void> {
     await ipcRenderer.invoke('helpers:openURLInBrowser', url)
   },
+  async logRendererEvent (event: string, details?: unknown): Promise<void> {
+    await ipcRenderer.invoke('helpers:logRendererEvent', event, details)
+  },
+  async openProfileFolder (): Promise<void> {
+    await ipcRenderer.invoke('helpers:openProfileFolder')
+  },
+  async openStabilityLog (): Promise<void> {
+    await ipcRenderer.invoke('helpers:openStabilityLog')
+  }
 }
 
 contextBridge.exposeInMainWorld('helpersAPI', helpersAPI)

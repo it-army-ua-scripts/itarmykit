@@ -58,8 +58,8 @@ export class Distress extends Module<Config> {
     { name: 'distress_aarch64-apple-darwin', arch: 'arm64', platform: 'darwin' }
   ] as Array<{
       name: string;
-      arch: "x64" | "arm64" | "ia32";
-      platform: "linux" | "win32" | "darwin";
+      arch: 'x64' | 'arm64' | 'ia32';
+      platform: 'linux' | 'win32' | 'darwin';
   }>
 
   override async *installVersion (versionTag: string): AsyncGenerator<InstallProgress, void, void> {
@@ -97,7 +97,7 @@ export class Distress extends Module<Config> {
     if (config.useMyIP > 0 && config.EnablePACKETFlood) {
       args.push('--enable-packet-flood')
     }
-    args.push('--source', "itarmykit")
+    args.push('--source', 'itarmykit')
     args.push(...config.executableArguments.filter(arg => arg !== ''))
 
     let filename = 'distress_x86_64-unknown-linux-musl'
@@ -111,7 +111,6 @@ export class Distress extends Module<Config> {
     const handler = await this.startExecutable(filename, args)
 
     // Process statistics
-    let lastStatisticsEvent = null as Date | null
     let statisticsBuffer = ''
     handler.stdout.on('data', (data: Buffer) => {
       statisticsBuffer += data.toString()
@@ -126,9 +125,9 @@ export class Distress extends Module<Config> {
       for (const line of lines) {
         try {
           const lineJSON = JSON.parse(line)
-          const msg = lineJSON["msg"] as string
+          const msg = lineJSON.msg as string
 
-          if (!msg.includes("active connections") || !msg.includes("bps") || !msg.includes("bytes")) {
+          if (!msg.includes('active connections') || !msg.includes('bps') || !msg.includes('bytes')) {
             continue
           }
 
@@ -137,30 +136,30 @@ export class Distress extends Module<Config> {
 
           const convertToBytes = (value: string): number => {
             value = value.toLowerCase()
-            
-            if (value.includes("kb")) {
-              return Number(value.split("kb")[0]) * 125
-            } else if (value.includes("mb")) {
-              return Number(value.split("mb")[0]) * 125 * 1024
-            } else if (value.includes("gb")) {
-              return Number(value.split("gb")[0]) * 125 * 1024 * 1024
-            } else if (value.includes("tb")) {
-              return Number(value.split("tb")[0]) * 125 * 1024 * 1024 * 1024
-            } else if (value.includes("pb")) {
-              return Number(value.split("pb")[0]) * 125 * 1024 * 1024 * 1024 * 1024
-            } else if (value.includes("eb")) {
-              return Number(value.split("eb")[0]) * 125 * 1024 * 1024 * 1024 * 1024 * 1024
+
+            if (value.includes('kb')) {
+              return Number(value.split('kb')[0]) * 125
+            } else if (value.includes('mb')) {
+              return Number(value.split('mb')[0]) * 125 * 1024
+            } else if (value.includes('gb')) {
+              return Number(value.split('gb')[0]) * 125 * 1024 * 1024
+            } else if (value.includes('tb')) {
+              return Number(value.split('tb')[0]) * 125 * 1024 * 1024 * 1024
+            } else if (value.includes('pb')) {
+              return Number(value.split('pb')[0]) * 125 * 1024 * 1024 * 1024 * 1024
+            } else if (value.includes('eb')) {
+              return Number(value.split('eb')[0]) * 125 * 1024 * 1024 * 1024 * 1024 * 1024
             } else {
-              return Number(value.split("b")[0])
+              return Number(value.split('b')[0])
             }
           }
 
-          const parameters = msg.split(",").map((parameter) => parameter.trim())
+          const parameters = msg.split(',').map((parameter) => parameter.trim())
           for (const parameter of parameters) {
-            if (parameter.includes("bytes")) {
-              bytesSend = convertToBytes(parameter.split("=")[1])
-            } else if (parameter.includes("bps")) {
-              currentSendBitrate = convertToBytes(parameter.split("=")[1])
+            if (parameter.includes('bytes')) {
+              bytesSend = convertToBytes(parameter.split('=')[1])
+            } else if (parameter.includes('bps')) {
+              currentSendBitrate = convertToBytes(parameter.split('=')[1])
             }
           }
 
@@ -176,6 +175,7 @@ export class Distress extends Module<Config> {
       }
     })
   }
+
   override async stop (): Promise<void> {
     await this.stopExecutable()
   }

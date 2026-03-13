@@ -11,7 +11,7 @@
     <template v-slot:option="scope">
       <q-item class="menu-item" v-bind="scope.itemProps">
         <q-item-section>
-          <q-item-label v-text="scope.opt.name" />
+          <q-item-label>{{ scope.opt.name }}</q-item-label>
         </q-item-section>
       </q-item>
     </template>
@@ -36,7 +36,7 @@ interface Language {
 
 const languages: Language[] = [
   {
-    name: 'Українська',
+    name: '\u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430',
     symbol: 'ua-UA'
   },
   {
@@ -48,7 +48,7 @@ const languages: Language[] = [
     symbol: 'de-DE'
   },
   {
-    name: 'Московский',
+    name: '\u041c\u043e\u0441\u043a\u043e\u0432\u0441\u044c\u043a\u0438\u0439',
     symbol: 'ru-RU'
   }
 ]
@@ -56,7 +56,7 @@ const languages: Language[] = [
 const language = ref<Language>(languages[0])
 const showThatRussiaIsTerroistCountry = ref(false)
 
-async function onLanguageSelected(lang: Language) {
+async function onLanguageSelected (lang: Language) {
   if (lang.symbol === 'ru-RU') {
     showThatRussiaIsTerroistCountry.value = true
     await loadSavedLanguage()
@@ -68,7 +68,7 @@ async function onLanguageSelected(lang: Language) {
   language.value = lang
 }
 
-async function loadSavedLanguage() {
+async function loadSavedLanguage () {
   const settings = await window.settingsAPI.get()
   language.value = languages.find((l) => l.symbol === settings.system.language) || languages[0]
 }

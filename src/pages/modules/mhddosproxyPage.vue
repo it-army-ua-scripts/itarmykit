@@ -11,8 +11,7 @@
                 <div class="col-12 q-pt-xs"><span class="text-subtitle2">Repository: <a class="text-primary" href="https://github.com/porthole-ascend-cinnamon/mhddos_proxy_releases" target="_blank">https://github.com/porthole-ascend-cinnamon/mhddos_proxy_releases</a></span> </div>
                 <div class="col-12 q-pt-xs"><span class="text-subtitle2">Support: <a class="text-primary" href="https://t.me/+H6PnjkydZX0xNDky" target="_blank">IT Army Chat</a></span> </div>
 
-                
-                <div class="col-12 q-pt-xs"><span class="text-subtitle2">Author readme: </span> Own proxy database creates the attack from the whole world, which makes it much more difficult to protect against.</div>    
+                <div class="col-12 q-pt-xs"><span class="text-subtitle2">Author readme: </span> Own proxy database creates the attack from the whole world, which makes it much more difficult to protect against.</div>
             </div>
 
             <div class="row text-h5 text-bold q-mt-lg">{{ $t('modules.available.configuration') }}</div>
@@ -70,7 +69,7 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue'
 import { debounce } from 'quasar'
-import MenuComponent from './MenuComponent.vue';
+import MenuComponent from './MenuComponent.vue'
 import VersionsListComponent from './VersionsListComponent.vue'
 import { Config } from 'lib/module/mhddosproxy'
 
@@ -79,38 +78,38 @@ const configAutoUpdate = ref(true)
 const configCopies = ref(1)
 const configThreads = ref(8)
 const configUseMyIP = ref(0)
-const configExecutableArguments = ref("")
+const configExecutableArguments = ref('')
 const configExecutableArgumentsPrefix = computed(() => {
-    return `--no-updates` + (configUseMyIP.value != 0 ? ` --use-my-ip ${configUseMyIP.value}` : "") + (configCopies.value > 0 ? ` --copies ${configCopies.value}` : "") + (configThreads.value > 0 ? ` --threads ${configThreads.value}` : "")
+  return '--no-updates' + (configUseMyIP.value !== 0 ? ` --use-my-ip ${configUseMyIP.value}` : '') + (configCopies.value > 0 ? ` --copies ${configCopies.value}` : '') + (configThreads.value > 0 ? ` --threads ${configThreads.value}` : '')
 })
 
 const installedVersions = ref([] as string[])
 
-async function loadConfig() {
-    const config = await window.modulesAPI.getConfig<Config>('MHDDOS_PROXY')
-    configSelectedVersion.value = config.selectedVersion || null
-    configAutoUpdate.value = config.autoUpdate
-    configCopies.value = Number(config.copies)
-    configThreads.value = Number(config.threads)
-    configUseMyIP.value = Number(config.useMyIP)
-    configExecutableArguments.value = config.executableArguments.join(" ")
+async function loadConfig () {
+  const config = await window.modulesAPI.getConfig<Config>('MHDDOS_PROXY')
+  configSelectedVersion.value = config.selectedVersion || null
+  configAutoUpdate.value = config.autoUpdate
+  configCopies.value = Number(config.copies)
+  configThreads.value = Number(config.threads)
+  configUseMyIP.value = Number(config.useMyIP)
+  configExecutableArguments.value = config.executableArguments.join(' ')
 }
 
 const setConfigDebouced = debounce(setConfig, 1000)
-async function setConfig() {
-    const config = {
-        selectedVersion: configSelectedVersion.value || undefined,
-        autoUpdate: configAutoUpdate.value,
-        copies: Number(configCopies.value),
-        threads: Number(configThreads.value),
-        executableArguments: configExecutableArguments.value.split(" "),
-        useMyIP: Number(configUseMyIP.value),
-    } as Config
+async function setConfig () {
+  const config = {
+    selectedVersion: configSelectedVersion.value || undefined,
+    autoUpdate: configAutoUpdate.value,
+    copies: Number(configCopies.value),
+    threads: Number(configThreads.value),
+    executableArguments: configExecutableArguments.value.split(' '),
+    useMyIP: Number(configUseMyIP.value)
+  } as Config
 
-    await window.modulesAPI.setConfig<Config>('MHDDOS_PROXY', config)
+  await window.modulesAPI.setConfig<Config>('MHDDOS_PROXY', config)
 }
 
 onMounted(async () => {
-    await loadConfig()
+  await loadConfig()
 })
 </script>

@@ -11,45 +11,42 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { Preset, configure } from './moduleConfig';
-import { InstallProgress } from 'app/lib/module/module';
+import { onMounted, ref } from 'vue'
+import { Preset, configure } from './moduleConfig'
+import { InstallProgress } from 'app/lib/module/module'
 
 const props = defineProps<{
     presetName: Preset
 }>()
 
-const emit = defineEmits<{
-    (event: 'configured'): void,
-    (event: 'error', error: string): void
-}>()
+const emit = defineEmits(['configured', 'error'])
 
 const stageProgress = ref(0)
-const stage = ref("")
+const stage = ref('')
 
-function configurationCallback(progress: InstallProgress) {
-    if (progress.errorMessage) {
-        throw progress.errorMessage
-    }
+function configurationCallback (progress: InstallProgress) {
+  if (progress.errorMessage) {
+    throw progress.errorMessage
+  }
 
-    if (progress.stage == 'DONE') {
-        emit('configured')
-        return
-    }
+  if (progress.stage === 'DONE') {
+    emit('configured')
+    return
+  }
 
-    stageProgress.value = progress.progress / 100
-    stage.value = progress.stage
+  stageProgress.value = progress.progress / 100
+  stage.value = progress.stage
 }
 
 onMounted(async () => {
-    try {
-        await configure(props.presetName, configurationCallback)
-        console.log("ended")
-        emit('configured')
-    } catch (e) {
-        console.log(e)
-        emit('error', String(e))
-    }
+  try {
+    await configure(props.presetName, configurationCallback)
+    console.log('ended')
+    emit('configured')
+  } catch (e) {
+    console.log(e)
+    emit('error', String(e))
+  }
 })
 
 </script>

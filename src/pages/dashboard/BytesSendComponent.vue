@@ -26,81 +26,81 @@
 
 <script lang="ts" setup>
 import {
-  ModuleExecutionStatisticsEventData,
-} from "app/lib/module/module";
-import { IpcRendererEvent } from "electron";
-import { onMounted, onUnmounted, ref } from "vue";
+  ModuleExecutionStatisticsEventData
+} from 'app/lib/module/module'
+import { IpcRendererEvent } from 'electron'
+import { onMounted, onUnmounted, ref } from 'vue'
 
-const totalBytesSend = ref(0);
-const bps = ref(0);
+const totalBytesSend = ref(0)
+const bps = ref(0)
 
-function humanBytesString(bytes: number, si = false, dp = 1) {
-  const thresh = 1024; // 1024 instead of 1000 to be consistent with other places
+function humanBytesString (bytes: number, dp = 1) {
+  const thresh = 1024 // 1024 instead of 1000 to be consistent with other places
 
   if (Math.abs(bytes) < thresh) {
-    return bytes + " B";
+    return bytes + ' B'
   }
 
-  const units = ["kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
-  let u = -1;
-  const r = 10 ** dp;
+  const units = ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+  let u = -1
+  const r = 10 ** dp
 
   do {
-    bytes /= thresh;
-    ++u;
+    bytes /= thresh
+    ++u
   } while (
     Math.round(Math.abs(bytes) * r) / r >= thresh &&
     u < units.length - 1
-  );
+  )
 
-  return bytes.toFixed(dp) + " " + units[u];
+  return bytes.toFixed(dp) + ' ' + units[u]
 }
 
-function onStatisticsUpdate(
+function onStatisticsUpdate (
   _e: IpcRendererEvent,
   data: ModuleExecutionStatisticsEventData
 ) {
-  totalBytesSend.value += data.bytesSend;
-  bps.value = data.currentSendBitrate;
+  totalBytesSend.value += data.bytesSend
+  bps.value = data.currentSendBitrate
 }
 
-async function loadLastStatistics() {
-  const state = await window.executionEngineAPI.getState();
-  totalBytesSend.value = state.statisticsTotals.totalBytesSent;
+async function loadLastStatistics () {
+  const state = await window.executionEngineAPI.getState()
+  totalBytesSend.value = state.statisticsTotals.totalBytesSent
   if (state.statistics.length > 0) {
-    const lastStatistics = state.statistics[state.statistics.length - 1];
-    bps.value = lastStatistics.currentSendBitrate;
+    const lastStatistics = state.statistics[state.statistics.length - 1]
+    bps.value = lastStatistics.currentSendBitrate
   }
 }
 
-const totalStatisticsAvailable = ref(false);
-const totalBytesSendFromAllTools = ref(0);
-async function loadTotalBytesSendFromAllTools() {
-  const response = await window.itArmyAPI.getStats();
+const totalStatisticsAvailable = ref(false)
+const totalBytesSendFromAllTools = ref(0)
+async function loadTotalBytesSendFromAllTools () {
+  const response = await window.itArmyAPI.getStats()
   if (response.success) {
-    totalBytesSendFromAllTools.value = response.data.totalTraffic;
-    totalStatisticsAvailable.value = true;
+    totalBytesSendFromAllTools.value = response.data.totalTraffic
+    totalStatisticsAvailable.value = true
   } else {
-    totalStatisticsAvailable.value = false;
+    totalStatisticsAvailable.value = false
   }
 }
 
-let totalTrafficRefreshInterval: ReturnType<typeof setInterval> | undefined;
+let totalTrafficRefreshInterval: ReturnType<typeof setInterval> | undefined
 
 onMounted(async () => {
-  await loadLastStatistics();
-  await loadTotalBytesSendFromAllTools();
-  window.executionEngineAPI.listenForStatistics(onStatisticsUpdate);
+  await loadLastStatistics()
+  await loadTotalBytesSendFromAllTools()
+  window.executionEngineAPI.listenForStatistics(onStatisticsUpdate)
   totalTrafficRefreshInterval = setInterval(() => {
-    void loadTotalBytesSendFromAllTools();
-  }, 5000);
-});
+    void loadTotalBytesSendFromAllTools()
+  }, 5000)
+})
 
 onUnmounted(() => {
-  window.executionEngineAPI.stopListeningForStatistics(onStatisticsUpdate);
+  window.executionEngineAPI.stopListeningForStatistics(onStatisticsUpdate)
   if (totalTrafficRefreshInterval !== undefined) {
-    clearInterval(totalTrafficRefreshInterval);
-    totalTrafficRefreshInterval = undefined;
+    clearInterval(totalTrafficRefreshInterval)
+    totalTrafficRefreshInterval = undefined
   }
-});
+})
 </script>

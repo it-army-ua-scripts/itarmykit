@@ -73,61 +73,61 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, onUnmounted, ref } from "vue";
+import { onMounted, onUnmounted, ref } from 'vue'
 
-const autoStartEnabled = ref(false);
-const scheduleEnabled = ref(false);
-const intervalsCount = ref(0);
-const intervalLines = ref<string[]>([]);
-const cpuUsagePercent = ref(0);
-const ramUsagePercent = ref(0);
+const autoStartEnabled = ref(false)
+const scheduleEnabled = ref(false)
+const intervalsCount = ref(0)
+const intervalLines = ref<string[]>([])
+const cpuUsagePercent = ref(0)
+const ramUsagePercent = ref(0)
 
-function formatPercent(value: number) {
-  return `${value.toFixed(1)}%`;
+function formatPercent (value: number) {
+  return `${value.toFixed(1)}%`
 }
 
-function usageColor(value: number) {
+function usageColor (value: number) {
   if (value >= 90) {
-    return "negative";
+    return 'negative'
   }
   if (value >= 70) {
-    return "warning";
+    return 'warning'
   }
-  return "positive";
+  return 'positive'
 }
 
-async function loadStatus() {
-  const settings = await window.settingsAPI.get();
-  autoStartEnabled.value = settings.system.startOnBoot;
-  scheduleEnabled.value = settings.schedule.enabled;
-  intervalsCount.value = settings.schedule.intervals.length;
+async function loadStatus () {
+  const settings = await window.settingsAPI.get()
+  autoStartEnabled.value = settings.system.startOnBoot
+  scheduleEnabled.value = settings.schedule.enabled
+  intervalsCount.value = settings.schedule.intervals.length
   if (settings.schedule.intervals.length > 0) {
     intervalLines.value = settings.schedule.intervals
-      .map((interval) => `${interval.startTime}-${interval.endTime}`);
+      .map((interval) => `${interval.startTime}-${interval.endTime}`)
   } else {
-    intervalLines.value = [];
+    intervalLines.value = []
   }
 
-  const usage = await window.systemAPI.getUsage();
-  cpuUsagePercent.value = usage.cpuPercent;
-  ramUsagePercent.value = usage.ramPercent;
+  const usage = await window.systemAPI.getUsage()
+  cpuUsagePercent.value = usage.cpuPercent
+  ramUsagePercent.value = usage.ramPercent
 }
 
-let refreshInterval: ReturnType<typeof setInterval> | undefined;
+let refreshInterval: ReturnType<typeof setInterval> | undefined
 
 onMounted(async () => {
-  await loadStatus();
+  await loadStatus()
   refreshInterval = setInterval(() => {
-    void loadStatus();
-  }, 3000);
-});
+    void loadStatus()
+  }, 3000)
+})
 
 onUnmounted(() => {
   if (refreshInterval !== undefined) {
-    clearInterval(refreshInterval);
-    refreshInterval = undefined;
+    clearInterval(refreshInterval)
+    refreshInterval = undefined
   }
-});
+})
 </script>
 
 <style scoped>

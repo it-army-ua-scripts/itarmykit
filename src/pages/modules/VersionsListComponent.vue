@@ -2,7 +2,7 @@
     <q-spinner v-if="loadingVersions" class="full-width q-mt-md q-mb-md" size="xl" color="primary"/>
     <div v-if="versionsLoadingError != ''" class="text-h6 text-negative text-center q-mt-md q-mb-md">{{ versionsLoadingError }}</div>
     <q-list separator>
-        <q-item v-for="version of versions" active-class="bg-teal-1 text-grey-8" dense>
+        <q-item v-for="version of versions" :key="version.tag" active-class="bg-teal-1 text-grey-8" dense>
             <q-item-section style="max-width: 100px;">{{ version.tag }}</q-item-section>
             <q-item-section style="max-width: 125px;" class="text-grey">{{ (installationStore.installingModule == props.moduleName && installationStore.installingTag == version.tag) ? installationStore.stage  : ((version.installed) ? 'INSTALLED' : '') }}</q-item-section>
             <q-item-section class="text-grey" v-if="installationStore.installingModule == props.moduleName && installationStore.installingTag == version.tag">
@@ -20,7 +20,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { ModuleName, Version } from 'app/lib/module/module';
+import { ModuleName, Version } from 'app/lib/module/module'
 import { useModulesInstallationStore } from './installation.store'
 
 const props = defineProps<{
@@ -29,51 +29,48 @@ const props = defineProps<{
     installedVersions: string[]
 }>()
 
-const emit = defineEmits<{
-    (event: 'update:selectedVersion', version: string | null): void,
-    (event: 'update:installedVersions', versions: string[]): void
-}>()
+const emit = defineEmits(['update:selectedVersion', 'update:installedVersions'])
 
 const loadingVersions = ref(false)
 const versions = ref([] as Version[])
-const versionsLoadingError = ref("")
+const versionsLoadingError = ref('')
 
-async function loadVersions() {
-    loadingVersions.value = true
-    try {
-        versions.value = await window.modulesAPI.getAllVersions(props.moduleName)
-        emit('update:installedVersions', versions.value.filter(v => v.installed).map(v => v.tag))
-        versionsLoadingError.value = ""
-    } catch (e) {
-        versionsLoadingError.value = String(e)
-    } finally {
-        loadingVersions.value = false
-    }
+async function loadVersions () {
+  loadingVersions.value = true
+  try {
+    versions.value = await window.modulesAPI.getAllVersions(props.moduleName)
+    emit('update:installedVersions', versions.value.filter(v => v.installed).map(v => v.tag))
+    versionsLoadingError.value = ''
+  } catch (e) {
+    versionsLoadingError.value = String(e)
+  } finally {
+    loadingVersions.value = false
+  }
 }
 
 const installingVersion = ref(false)
 const installationStore = useModulesInstallationStore()
 
-async function installVersion(versionTag: string) {
-    installingVersion.value = true
-    try {
-        await window.modulesAPI.installVersion(props.moduleName, versionTag, (progress) => {
-            console.log(progress)
-            installationStore.supplyProgress({
-                module: props.moduleName,
-                progress:   progress,
-                version:    versionTag
-            })
-        })
-    } catch (e) {
-        console.error(e)
-    } finally {
-        installingVersion.value = false
-        await loadVersions()
-    }
+async function installVersion (versionTag: string) {
+  installingVersion.value = true
+  try {
+    await window.modulesAPI.installVersion(props.moduleName, versionTag, (progress) => {
+      console.log(progress)
+      installationStore.supplyProgress({
+        module: props.moduleName,
+        progress,
+        version: versionTag
+      })
+    })
+  } catch (e) {
+    console.error(e)
+  } finally {
+    installingVersion.value = false
+    await loadVersions()
+  }
 }
 
 onMounted(async () => {
-    await loadVersions()
+  await loadVersions()
 })
 </script>

@@ -255,67 +255,67 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted } from "vue";
-import MenuComponent from "./MenuComponent.vue";
-import VersionsListComponent from "./VersionsListComponent.vue";
-import { debounce } from "quasar";
-import { Config } from "lib/module/distress";
+import { ref, computed, onMounted } from 'vue'
+import MenuComponent from './MenuComponent.vue'
+import VersionsListComponent from './VersionsListComponent.vue'
+import { debounce } from 'quasar'
+import { Config } from 'lib/module/distress'
 
-const configSelectedVersion = ref(null as string | null);
-const configAutoUpdate = ref(true);
-const configDisableUDPFlood = ref(false);
-const configEnableICMPFlood = ref(false);
-const configEnablePACKETFlood = ref(false);
-const configConcurrency = ref(4096);
-const configUseMyIP = ref(0);
-const configTorConnections = ref(0);
-const configExecutableArguments = ref("");
+const configSelectedVersion = ref(null as string | null)
+const configAutoUpdate = ref(true)
+const configDisableUDPFlood = ref(false)
+const configEnableICMPFlood = ref(false)
+const configEnablePACKETFlood = ref(false)
+const configConcurrency = ref(4096)
+const configUseMyIP = ref(0)
+const configTorConnections = ref(0)
+const configExecutableArguments = ref('')
 const configExecutableArgumentsPrefix = computed(() => {
   return (
     `--json-logs --concurrency ${configConcurrency.value}` +
-    (configUseMyIP.value != 0 ? ` --use-my-ip ${configUseMyIP.value}` : "") +
-    (configTorConnections.value != 0
+    (configUseMyIP.value !== 0 ? ` --use-my-ip ${configUseMyIP.value}` : '') +
+    (configTorConnections.value !== 0
       ? ` --use-tor ${configTorConnections.value}`
-      : "") +
-    (configDisableUDPFlood.value ? ` --disable-udp-flood` : "") +
-    (configEnableICMPFlood.value ? ` --enable-icmp-flood` : "") +
-    (configEnablePACKETFlood.value ? ` --enable-packet-flood` : "")
-  );
-});
+      : '') +
+    (configDisableUDPFlood.value ? ' --disable-udp-flood' : '') +
+    (configEnableICMPFlood.value ? ' --enable-icmp-flood' : '') +
+    (configEnablePACKETFlood.value ? ' --enable-packet-flood' : '')
+  )
+})
 
-const installedVersions = ref([] as string[]);
+const installedVersions = ref([] as string[])
 
-async function loadConfig() {
-  const config = await window.modulesAPI.getConfig<Config>("DISTRESS");
-  configSelectedVersion.value = config.selectedVersion || null;
-  configAutoUpdate.value = config.autoUpdate;
-  configDisableUDPFlood.value = config.DisableUDPFlood;
-  configEnableICMPFlood.value = config.EnableICMPFlood;
-  configEnablePACKETFlood.value = config.EnablePACKETFlood;
-  configConcurrency.value = Number(config.concurrency);
-  configUseMyIP.value = Number(config.useMyIP);
-  configTorConnections.value = Number(config.useTor);
-  configExecutableArguments.value = config.executableArguments.join(" ");
+async function loadConfig () {
+  const config = await window.modulesAPI.getConfig<Config>('DISTRESS')
+  configSelectedVersion.value = config.selectedVersion || null
+  configAutoUpdate.value = config.autoUpdate
+  configDisableUDPFlood.value = config.DisableUDPFlood
+  configEnableICMPFlood.value = config.EnableICMPFlood
+  configEnablePACKETFlood.value = config.EnablePACKETFlood
+  configConcurrency.value = Number(config.concurrency)
+  configUseMyIP.value = Number(config.useMyIP)
+  configTorConnections.value = Number(config.useTor)
+  configExecutableArguments.value = config.executableArguments.join(' ')
 }
 
-const setConfigDebouced = debounce(setConfig, 1000);
-async function setConfig() {
+const setConfigDebouced = debounce(setConfig, 1000)
+async function setConfig () {
   const config = {
     selectedVersion: configSelectedVersion.value || undefined,
     autoUpdate: configAutoUpdate.value,
     concurrency: Number(configConcurrency.value),
-    executableArguments: configExecutableArguments.value.split(" "),
+    executableArguments: configExecutableArguments.value.split(' '),
     useMyIP: Number(configUseMyIP.value),
     useTor: Number(configTorConnections.value),
     DisableUDPFlood: configDisableUDPFlood.value,
     EnableICMPFlood: configEnableICMPFlood.value,
-    EnablePACKETFlood: configEnablePACKETFlood.value,
-  } as Config;
+    EnablePACKETFlood: configEnablePACKETFlood.value
+  } as Config
 
-  await window.modulesAPI.setConfig<Config>("DISTRESS", config);
+  await window.modulesAPI.setConfig<Config>('DISTRESS', config)
 }
 
 onMounted(async () => {
-  await loadConfig();
-});
+  await loadConfig()
+})
 </script>

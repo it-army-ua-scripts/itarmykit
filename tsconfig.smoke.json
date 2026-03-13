@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "types": ["node"],
+    "rootDir": ".",
+    "outDir": ".tmp-smoke"
+  },
+  "include": [
+    "scripts/smoke/**/*.ts",
+    "lib/utils/**/*.ts"
+  ]
+}

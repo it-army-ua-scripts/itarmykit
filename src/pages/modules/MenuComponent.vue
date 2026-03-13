@@ -58,18 +58,17 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute, useRouter } from 'vue-router'
 
-const route = useRoute();
-const router = useRouter();
+const route = useRoute()
+const router = useRouter()
 
-function isPageActive(name: string) {
-  return (route.name as string).startsWith(name);
+function isPageActive (name: string) {
+  return (route.name as string).startsWith(name)
 }
 
-function goToPage(name: string) {
-  router.push({ name: name });
+function goToPage (name: string) {
+  router.push({ name })
 }
 </script>
 

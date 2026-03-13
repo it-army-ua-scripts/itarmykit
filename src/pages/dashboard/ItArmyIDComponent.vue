@@ -33,55 +33,55 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, onMounted } from 'vue'
 
-const configDetails = ref("ID + API KEY");
-const name = ref("");
-const uuid = ref("NOT CONFIGURED");
+const configDetails = ref('ID + API KEY')
+const name = ref('')
+const uuid = ref('NOT CONFIGURED')
 
-const ITArmyNameLoadError = ref("");
-const ITArmyAPIKeyEmpty = ref(false);
+const ITArmyNameLoadError = ref('')
+const ITArmyAPIKeyEmpty = ref(false)
 
-async function loadItArmyName() {
-  const response = await window.itArmyAPI.getStats();
+async function loadItArmyName () {
+  const response = await window.itArmyAPI.getStats()
   if (response.success) {
-    name.value = response.data.login;
-    ITArmyAPIKeyEmpty.value = false;
-    ITArmyNameLoadError.value = "";
+    name.value = response.data.login
+    ITArmyAPIKeyEmpty.value = false
+    ITArmyNameLoadError.value = ''
   } else {
-    if (response.error === "EMPTY_API_KEY") {
-      ITArmyAPIKeyEmpty.value = true;
-      ITArmyNameLoadError.value = "";
+    if (response.error === 'EMPTY_API_KEY') {
+      ITArmyAPIKeyEmpty.value = true
+      ITArmyNameLoadError.value = ''
     } else {
-      ITArmyAPIKeyEmpty.value = false;
-      ITArmyNameLoadError.value = JSON.stringify(response);
+      ITArmyAPIKeyEmpty.value = false
+      ITArmyNameLoadError.value = JSON.stringify(response)
     }
   }
 }
 
-async function loadId() {
-  const settings = await window.settingsAPI.get();
-  if (settings.itarmy.uuid != "") {
-    uuid.value = settings.itarmy.uuid;
+async function loadId () {
+  const settings = await window.settingsAPI.get()
+  if (settings.itarmy.uuid !== '') {
+    uuid.value = settings.itarmy.uuid
     uuid.value =
       uuid.value.substr(0, 1) +
-      "..." +
-      uuid.value.substr(uuid.value.length - 3, uuid.value.length);
+      '...' +
+      uuid.value.substr(uuid.value.length - 3, uuid.value.length)
   }
 
-  if (settings.itarmy.uuid != "" && settings.itarmy.apiKey != "") {
-    configDetails.value = "ID + API KEY";
-  } else if (settings.itarmy.uuid != "") {
-    configDetails.value = "ID";
-  } else if (settings.itarmy.apiKey != "") {
-    configDetails.value = "API KEY";
+  if (settings.itarmy.uuid !== '' && settings.itarmy.apiKey !== '') {
+    configDetails.value = 'ID + API KEY'
+  } else if (settings.itarmy.uuid !== '') {
+    configDetails.value = 'ID'
+  } else if (settings.itarmy.apiKey !== '') {
+    configDetails.value = 'API KEY'
   } else {
-    configDetails.value = "NOT CONFIGURED";
+    configDetails.value = 'NOT CONFIGURED'
   }
 }
 
 onMounted(async () => {
-  await loadId();
-  await loadItArmyName();
-});
+  await loadId()
+  await loadItArmyName()
+})
 </script>
