@@ -15,18 +15,19 @@ jobs:
         uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
+          cache: 'yarn'
       - name: Install dependencies
         run: |
           rm -rf dist/
-          npm install -g @quasar/cli yarn --force
-          yarn install
+          corepack enable
+          yarn install --frozen-lockfile
       - name: Build and release Linux binaries
         env:
           EP_GH_IGNORE_TIME: true
           GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
         run: |
-          quasar build --mode electron --publish always -T linux --icon=/src-electron/icons/icon.png
+          yarn quasar build --mode electron --publish always -T linux --icon=/src-electron/icons/icon.png
   build_for_windows_x64:
     name: Build for windows
     runs-on: windows-2022
@@ -35,11 +36,12 @@ jobs:
         uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
+          cache: 'yarn'
       - name: Install dependencies
         run: |
-          npm install -g @quasar/cli yarn --force
-          yarn install
+          corepack enable
+          yarn install --frozen-lockfile
       - name: Download VC++ Redistributables
         shell: powershell
         run: |
@@ -52,7 +54,7 @@ jobs:
           EP_GH_IGNORE_TIME: true
           GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
         run: |
-          quasar build --mode electron --publish always -T win32 --icon=/src-electron/icons/icon.ico
+          yarn quasar build --mode electron --publish always -T win32 --icon=/src-electron/icons/icon.ico
   build_for_macos_14:
     name: Build for MacOS-14
     runs-on: macos-14
@@ -61,12 +63,13 @@ jobs:
         uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
+          cache: 'yarn'
       - name: Install dependencies
         run: |
           rm -rf dist/
-          npm install -g @quasar/cli yarn --force
-          yarn install
+          corepack enable
+          yarn install --frozen-lockfile
       - name: dmg-license add
         run: |
           sudo npm install -g dmg-license
@@ -75,4 +78,5 @@ jobs:
           EP_GH_IGNORE_TIME: true
           GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
         run: |
-          quasar build --mode electron --publish always -T darwin --icon=/src-electron/icons/icon.icns
+          yarn quasar build --mode electron --publish always -T darwin --icon=/src-electron/icons/icon.icns
+

@@ -218,6 +218,7 @@ module.exports = configure(function (/* ctx */) {
           deleteAppDataOnUninstall: true
         },
 
+        // eslint-disable-next-line no-template-curly-in-string
         artifactName: '${name}-${os}-${arch}.${ext}',
         appId: 'itarmykit_x86',
 

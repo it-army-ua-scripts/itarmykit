@@ -3,6 +3,7 @@
 /src-cordova
 /.quasar
 /node_modules
+/public/hazard
 .eslintrc.js
 /src-ssr
 /quasar.config.*.temporary.compiled*
