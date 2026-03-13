@@ -365,6 +365,11 @@ export abstract class Module<ConfigType extends BaseConfig> {
     }
   }
 
+  protected shouldIgnoreProcessClose (code: number | null): boolean {
+    void code
+    return false
+  }
+
   protected async startExecutable (executableName: string, args: string[]): Promise<ChildProcessWithoutNullStreams> {
     let config = await this.getConfig()
     if (config.autoUpdate) {
@@ -436,6 +441,16 @@ export abstract class Module<ConfigType extends BaseConfig> {
       this.emit('execution:error', { type: 'execution:error', error })
     })
     spawnedProcess.on('close', (code: number | null) => {
+      if (this.shouldIgnoreProcessClose(code)) {
+        writeStabilityLog({
+          level: 'info',
+          source: `module:${this.name}`,
+          event: 'process-close-ignored',
+          details: { exitCode: code }
+        })
+        return
+      }
+
       this.clearAutoUpdateInterval()
       if (this.executedProcessHandler === spawnedProcess) {
         this.executedProcessHandler = undefined

@@ -1,4 +1,4 @@
-import { spawn } from 'child_process'
+import { execFileSync, spawn } from 'child_process'
 import { Module, Version, InstallProgress, InstallationTarget, BaseConfig, ModuleName } from './module'
 import { getCPUArchitecture } from './archLib'
 
@@ -9,6 +9,8 @@ export interface Config extends BaseConfig {
 }
 
 export class MHDDOSProxy extends Module<Config> {
+  private workerMonitorInterval?: ReturnType<typeof setInterval>
+
   public override get name (): ModuleName { return 'MHDDOS_PROXY' }
   public override get homeURL (): string { return 'https://github.com/porthole-ascend-cinnamon/mhddos_proxy_releases' }
   public override get supportedInstallationTargets (): Array<InstallationTarget> {
@@ -77,8 +79,59 @@ export class MHDDOSProxy extends Module<Config> {
     })
   }
 
+  private clearWorkerMonitor () {
+    if (this.workerMonitorInterval) {
+      clearInterval(this.workerMonitorInterval)
+      this.workerMonitorInterval = undefined
+    }
+  }
+
+  private hasRunningWindowsWorkers (): boolean {
+    if (process.platform !== 'win32') {
+      return false
+    }
+
+    try {
+      const output = execFileSync(
+        'tasklist',
+        ['/FI', 'IMAGENAME eq mhddos_proxy_win.exe', '/FO', 'CSV', '/NH'],
+        {
+          windowsHide: true,
+          encoding: 'utf8'
+        }
+      )
+
+      return output.trim() !== '' && !output.includes('No tasks are running')
+    } catch {
+      return false
+    }
+  }
+
+  protected override shouldIgnoreProcessClose (code: number | null): boolean {
+    return code !== null && process.platform === 'win32' && this.hasRunningWindowsWorkers()
+  }
+
+  private startWorkerMonitor () {
+    if (process.platform !== 'win32') {
+      return
+    }
+
+    this.clearWorkerMonitor()
+    this.workerMonitorInterval = setInterval(() => {
+      if (!this.hasRunningWindowsWorkers()) {
+        this.clearWorkerMonitor()
+        this.clearAutoUpdateInterval()
+        if (this.executedProcessHandler !== undefined) {
+          this.executedProcessHandler = undefined
+          this.emit('execution:stopped', { type: 'execution:stopped', exitCode: 0 })
+        }
+      }
+    }, 1500)
+  }
+
   protected override async stopExecutable (): Promise<void> {
     if (process.platform === 'win32') {
+      this.clearWorkerMonitor()
       this.clearAutoUpdateInterval()
       await this.killProcessesOnWindows()
       this.executedProcessHandler = undefined
@@ -90,6 +143,7 @@ export class MHDDOSProxy extends Module<Config> {
 
   override async start (): Promise<void> {
     if (process.platform === 'win32') {
+      this.clearWorkerMonitor()
       await this.killProcessesOnWindows()
     }
 
@@ -131,6 +185,9 @@ export class MHDDOSProxy extends Module<Config> {
     }
 
     const handler = await this.startExecutable(filename, args)
+    if (process.platform === 'win32') {
+      this.startWorkerMonitor()
+    }
 
     let lastStatisticsEvent: Date | null = null
     let statisticsBuffer = ''
