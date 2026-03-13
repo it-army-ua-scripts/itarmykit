@@ -3,6 +3,8 @@ import { Settings } from './settings'
 import { ExecutionEngine } from './engine'
 
 export function handleUpdater (settings: Settings, executionEngine: ExecutionEngine) {
+  autoUpdater.allowPrerelease = true
+
   const updateFunction = async () => {
     try {
       const settingsData = await settings.getData()

@@ -234,6 +234,10 @@ module.exports = configure(function (/* ctx */) {
             {
               target: 'dmg',
               arch: ['x64', 'arm64', 'universal']
+            },
+            {
+              target: 'zip',
+              arch: ['x64', 'arm64', 'universal']
             }
           ]
         },
