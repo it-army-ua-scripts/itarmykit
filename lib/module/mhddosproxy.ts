@@ -1,11 +1,116 @@
 import { execFileSync, spawn } from 'child_process'
 import { Module, Version, InstallProgress, InstallationTarget, BaseConfig, ModuleName } from './module'
 import { getCPUArchitecture } from './archLib'
+import { convertTrafficValueToBytes } from '../utils/trafficUnits'
 
 export interface Config extends BaseConfig {
   copies: number;
   threads: number;
   useMyIP: number;
+}
+
+// eslint-disable-next-line no-control-regex
+const ANSI_ESCAPE_PATTERN = /\u001b\[[0-9;]*m/g
+
+const LINE_SIGNATURES = {
+  en: ['traffic', 'connections', 'packets'],
+  ua: ['трафік', 'пакети', 'потужність'],
+  de: ['verkehr', 'verbindungen', 'pakete']
+} as const
+
+const TRAFFIC_LABELS = {
+  en: ['traffic'],
+  ua: ['трафік'],
+  de: ['verkehr']
+} as const
+
+const REQUIRED_METRIC_LABELS = {
+  en: ['traffic', 'connections', 'packets'],
+  ua: ['трафік', 'з\'єднань', 'пакети'],
+  de: ['verkehr', 'verbindungen', 'pakete']
+} as const
+
+function stripAnsiCodes (value: string): string {
+  return value.replace(ANSI_ESCAPE_PATTERN, '')
+}
+
+function normalizeForMatch (value: string): string {
+  return stripAnsiCodes(value).replace(/\r/g, '').toLocaleLowerCase()
+}
+
+function hasLineSignature (line: string, signatures: readonly string[]): boolean {
+  return signatures.every((signature) => line.includes(signature))
+}
+
+function escapeRegExp (value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function extractTrafficValue (rawLine: string, labels: readonly string[]): string | null {
+  for (const label of labels) {
+    const match = rawLine.match(new RegExp(`${escapeRegExp(label)}\\s*:\\s*([^|]+)`, 'i'))
+    if (match?.[1]) {
+      return match[1].trim()
+    }
+  }
+
+  return null
+}
+
+function parseLabeledMetrics (rawLine: string): Map<string, string> {
+  const normalizedLine = normalizeForMatch(rawLine)
+  const metrics = new Map<string, string>()
+
+  for (const segment of normalizedLine.split(',')) {
+    const separatorIndex = segment.indexOf(':')
+    if (separatorIndex === -1) {
+      continue
+    }
+
+    const label = segment.slice(0, separatorIndex).trim()
+    const value = segment.slice(separatorIndex + 1).trim()
+    if (label !== '' && value !== '') {
+      metrics.set(label, value)
+    }
+  }
+
+  return metrics
+}
+
+function hasRequiredMetrics (metrics: Map<string, string>, labels: readonly string[]): boolean {
+  return labels.every((label) => metrics.has(label))
+}
+
+function removeCustomLanguageArguments (args: string[]): string[] {
+  const result: string[] = []
+
+  for (let index = 0; index < args.length; index++) {
+    const arg = args[index]
+    if (arg === '--lang') {
+      index += 1
+      continue
+    }
+
+    if (arg.startsWith('--lang=')) {
+      continue
+    }
+
+    result.push(arg)
+  }
+
+  return result
+}
+
+function resolveModuleLanguage (language: 'en-US' | 'ua-UA' | 'de-DE'): 'en' | 'ua' | 'de' {
+  if (language === 'ua-UA') {
+    return 'ua'
+  }
+
+  if (language === 'de-DE') {
+    return 'de'
+  }
+
+  return 'en'
 }
 
 export class MHDDOSProxy extends Module<Config> {
@@ -148,10 +253,7 @@ export class MHDDOSProxy extends Module<Config> {
     }
 
     const settings = await this.settings.getData()
-    let lang = 'ua'
-    if (settings.system.language === 'en-US') {
-      lang = 'en'
-    }
+    const lang = resolveModuleLanguage(settings.system.language)
 
     const config = await this.getConfig()
 
@@ -173,8 +275,8 @@ export class MHDDOSProxy extends Module<Config> {
       args.push('--use-my-ip', config.useMyIP.toString())
     }
     args.push('--source', 'itarmykit')
+    args.push(...removeCustomLanguageArguments(config.executableArguments.filter((arg) => arg !== '')))
     args.push('--lang', lang)
-    args.push(...config.executableArguments.filter((arg) => arg !== ''))
 
     let filename = 'mhddos_proxy_linux'
     for (const asset of this.assetMapping) {
@@ -194,8 +296,8 @@ export class MHDDOSProxy extends Module<Config> {
     handler.stdout.on('data', (data: Buffer) => {
       statisticsBuffer += data.toString()
 
-      const lines = statisticsBuffer.trimEnd().split('\n')
-      if (statisticsBuffer.endsWith('\n')) {
+      const lines = statisticsBuffer.split(/\r?\n/)
+      if (/\r?\n$/.test(statisticsBuffer)) {
         statisticsBuffer = ''
       } else {
         statisticsBuffer = lines.pop() as string
@@ -203,48 +305,36 @@ export class MHDDOSProxy extends Module<Config> {
 
       for (const line of lines) {
         try {
+          const normalizedLine = normalizeForMatch(line)
+          const metrics = parseLabeledMetrics(line)
           if (lang === 'ua') {
-            if (!line.includes('Трафік') || !line.includes('Пакети') || !line.includes('Потужність')) {
+            if (!hasLineSignature(normalizedLine, LINE_SIGNATURES.ua) || !hasRequiredMetrics(metrics, REQUIRED_METRIC_LABELS.ua)) {
               continue
             }
-          } else {
-            if (!line.includes('Capacity') || !line.includes('Connections') || !line.includes('Packets')) {
+          } else if (lang === 'de') {
+            if (!hasLineSignature(normalizedLine, LINE_SIGNATURES.de) || !hasRequiredMetrics(metrics, REQUIRED_METRIC_LABELS.de)) {
               continue
             }
+          } else if (!hasLineSignature(normalizedLine, LINE_SIGNATURES.en) || !hasRequiredMetrics(metrics, REQUIRED_METRIC_LABELS.en)) {
+            continue
           }
 
           let bytesSend = 0
-          let currentSendBitrate = 0
-
-          const convertToBytes = (value: string): number => {
-            const normalizedValue = value.toLowerCase()
-            const numericPart = Number(normalizedValue.split(' ')[0])
-
-            if (normalizedValue.includes('kb')) {
-              return numericPart * 125
-            } else if (normalizedValue.includes('mb')) {
-              return numericPart * 125 * 1024
-            } else if (normalizedValue.includes('gb')) {
-              return numericPart * 125 * 1024 * 1024
-            } else if (normalizedValue.includes('tb')) {
-              return numericPart * 125 * 1024 * 1024 * 1024
-            } else if (normalizedValue.includes('pb')) {
-              return numericPart * 125 * 1024 * 1024 * 1024 * 1024
-            } else if (normalizedValue.includes('eb')) {
-              return numericPart * 125 * 1024 * 1024 * 1024 * 1024 * 1024
-            }
-            return numericPart
-          }
 
           const msg = lang === 'ua'
-            ? line.split('Трафік:')[1]?.trim()
-            : line.split('Traffic:')[1]?.trim()
+            ? metrics.get(TRAFFIC_LABELS.ua[0]) ?? extractTrafficValue(line, TRAFFIC_LABELS.ua)
+            : lang === 'de'
+              ? metrics.get(TRAFFIC_LABELS.de[0]) ?? extractTrafficValue(line, TRAFFIC_LABELS.de)
+              : metrics.get(TRAFFIC_LABELS.en[0]) ?? extractTrafficValue(line, TRAFFIC_LABELS.en)
 
           if (!msg) {
             continue
           }
 
-          currentSendBitrate = convertToBytes(msg)
+          const currentSendBitrate = convertTrafficValueToBytes(msg)
+          if (currentSendBitrate <= 0) {
+            continue
+          }
 
           if (lastStatisticsEvent != null) {
             const now = new Date()

@@ -2,7 +2,9 @@ import { app, BrowserWindow, dialog, nativeTheme } from 'electron'
 import type { App } from 'electron'
 import path from 'path'
 import os from 'os'
+import fs from 'fs'
 import { execFileSync } from 'child_process'
+import { fileURLToPath } from 'url'
 
 import { handle } from './handlers'
 import { writeStabilityLog } from 'app/lib/utils/stabilityLog'
@@ -33,6 +35,7 @@ try {
 let mainWindow: BrowserWindow | undefined
 let isRecoveringRenderer = false
 let hasShownRuntimeWarning = false
+let isQuitting = false
 
 function logMainProcessEvent (level: 'info' | 'warn' | 'error', origin: string, details?: unknown) {
   if (level === 'error') {
@@ -49,6 +52,19 @@ function logMainProcessEvent (level: 'info' | 'warn' | 'error', origin: string, 
     event: origin,
     details
   })
+}
+
+function getFilePathFromAppUrl (appUrl: string): string | null {
+  if (!appUrl.startsWith('file://')) {
+    return null
+  }
+
+  try {
+    return fileURLToPath(appUrl)
+  } catch (error) {
+    logMainProcessEvent('warn', 'app-url-to-file-path-failed', { appUrl, error })
+    return null
+  }
 }
 
 process.on('uncaughtException', (error) => {
@@ -135,6 +151,15 @@ function createWindow () {
     throw new Error('APP_URL is not defined')
   }
 
+  const filePath = getFilePathFromAppUrl(appUrl)
+  if (filePath) {
+    logMainProcessEvent('info', 'app-url-file-check', {
+      appUrl,
+      filePath,
+      exists: fs.existsSync(filePath)
+    })
+  }
+
   const createdWindow = new BrowserWindow({
     icon: appIcon,
     width: 1400,
@@ -150,8 +175,28 @@ function createWindow () {
   mainWindow = createdWindow
   logMainProcessEvent('info', 'window-created', { bounds: createdWindow.getBounds() })
 
+  createdWindow.webContents.on('did-finish-load', () => {
+    logMainProcessEvent('info', 'did-finish-load', {
+      url: createdWindow.webContents.getURL()
+    })
+  })
+
+  createdWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+    logMainProcessEvent('error', 'did-fail-load', {
+      errorCode,
+      errorDescription,
+      validatedURL,
+      isMainFrame
+    })
+  })
+
   void createdWindow.loadURL(appUrl).catch((error) => {
-    logMainProcessEvent('error', 'loadURL failed', error)
+    logMainProcessEvent('error', 'loadURL failed', {
+      error,
+      appUrl,
+      filePath,
+      fileExists: filePath ? fs.existsSync(filePath) : undefined
+    })
   })
 
   if (process.env.DEBUGGING) {
@@ -167,7 +212,7 @@ function createWindow () {
 
   createdWindow.webContents.on('render-process-gone', (_event, details) => {
     logMainProcessEvent('error', 'render-process-gone', details)
-    if (mainWindow !== createdWindow || createdWindow.isDestroyed() || isRecoveringRenderer) {
+    if (mainWindow !== createdWindow || createdWindow.isDestroyed() || isRecoveringRenderer || isQuitting) {
       return
     }
 
@@ -180,8 +225,21 @@ function createWindow () {
       const recoveredWindow = mainWindow as BrowserWindow | undefined
       if (recoveredWindow) {
         recoveredWindow.setBounds(winBounds)
-        recoveredWindow.show()
-        logMainProcessEvent('warn', 'renderer-recovered', { bounds: winBounds })
+        recoveredWindow.webContents.once('did-finish-load', () => {
+          if (!recoveredWindow.isDestroyed()) {
+            recoveredWindow.show()
+            logMainProcessEvent('warn', 'renderer-recovered', { bounds: winBounds })
+          }
+        })
+        recoveredWindow.webContents.once('did-fail-load', (_event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+          logMainProcessEvent('error', 'renderer-recovery-load-failed', {
+            bounds: winBounds,
+            errorCode,
+            errorDescription,
+            validatedURL,
+            isMainFrame
+          })
+        })
       }
     } catch (error) {
       logMainProcessEvent('error', 'renderer recovery failed', error)
@@ -235,6 +293,7 @@ if (!app.requestSingleInstanceLock()) {
   })
 
   app.on('before-quit', () => {
+    isQuitting = true
     logMainProcessEvent('info', 'before-quit')
   })
 

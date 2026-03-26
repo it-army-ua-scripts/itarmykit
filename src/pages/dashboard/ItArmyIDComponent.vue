@@ -33,7 +33,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { onMounted, ref, watch } from 'vue'
+import { useItArmyStats } from 'src/composables/useItArmyStats'
 
 const configDetails = ref('ID + API KEY')
 const name = ref('')
@@ -41,23 +42,7 @@ const uuid = ref('NOT CONFIGURED')
 
 const ITArmyNameLoadError = ref('')
 const ITArmyAPIKeyEmpty = ref(false)
-
-async function loadItArmyName () {
-  const response = await window.itArmyAPI.getStats()
-  if (response.success) {
-    name.value = response.data.login
-    ITArmyAPIKeyEmpty.value = false
-    ITArmyNameLoadError.value = ''
-  } else {
-    if (response.error === 'EMPTY_API_KEY') {
-      ITArmyAPIKeyEmpty.value = true
-      ITArmyNameLoadError.value = ''
-    } else {
-      ITArmyAPIKeyEmpty.value = false
-      ITArmyNameLoadError.value = JSON.stringify(response)
-    }
-  }
-}
+const { login, error, apiKeyEmpty, hasData } = useItArmyStats()
 
 async function loadId () {
   const settings = await window.settingsAPI.get()
@@ -82,6 +67,27 @@ async function loadId () {
 
 onMounted(async () => {
   await loadId()
-  await loadItArmyName()
 })
+
+watch([login, error, apiKeyEmpty, hasData], () => {
+  if (hasData.value) {
+    name.value = login.value
+    ITArmyAPIKeyEmpty.value = false
+    ITArmyNameLoadError.value = ''
+    return
+  }
+
+  if (apiKeyEmpty.value) {
+    name.value = ''
+    ITArmyAPIKeyEmpty.value = true
+    ITArmyNameLoadError.value = ''
+    return
+  }
+
+  if (error.value !== '') {
+    name.value = ''
+    ITArmyAPIKeyEmpty.value = false
+    ITArmyNameLoadError.value = error.value
+  }
+}, { immediate: true })
 </script>

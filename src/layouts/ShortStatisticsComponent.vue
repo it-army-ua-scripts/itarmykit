@@ -17,13 +17,15 @@
 import { ModuleExecutionStatisticsEventData } from 'app/lib/module/module'
 import { ExecutionLogEntry } from 'app/src-electron/handlers/engine'
 import { IpcRendererEvent } from 'electron/renderer'
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useItArmyStats } from 'src/composables/useItArmyStats'
 
-const userName = ref('')
 const selectedModule = ref('')
 const moduleState = ref('')
 const moduleTraffic = ref('')
-const moduleTotalBytesSend = ref('')
+const { login, totalTraffic, hasData } = useItArmyStats()
+const userName = computed(() => login.value)
+const moduleTotalBytesSend = computed(() => hasData.value ? humanBytesString(totalTraffic.value) : '')
 
 function humanBytesString (bytes: number, dp = 1) {
   const thresh = 1024 // 1024 instead of 1000 to be consistent with other places
@@ -60,11 +62,6 @@ async function loadInitialState () {
       ].currentSendBitrate
   }
   moduleTraffic.value = humanBytesString(bitrate) + '/s'
-
-  const response = await window.itArmyAPI.getStats()
-  if (response.success) {
-    moduleTotalBytesSend.value = humanBytesString(response.data.totalTraffic)
-  }
 }
 
 function onExecutionLog (_e: IpcRendererEvent, data: ExecutionLogEntry) {
@@ -85,27 +82,14 @@ function onStatisticsUpdate (
   moduleTraffic.value = humanBytesString(data.currentSendBitrate) + '/s'
 }
 
-async function updateITArmyData () {
-  const response = await window.itArmyAPI.getStats()
-  if (response.success) {
-    moduleTotalBytesSend.value = humanBytesString(response.data.totalTraffic)
-    userName.value = response.data.login
-  }
-}
-let updateStatisticsInterval: ReturnType<typeof setInterval> | null = null
-
 onMounted(async () => {
   window.executionEngineAPI.listenForStatistics(onStatisticsUpdate)
   window.executionEngineAPI.listenForExecutionLog(onExecutionLog)
   await loadInitialState()
-  updateStatisticsInterval = setInterval(updateITArmyData, 5000)
 })
 
 onUnmounted(() => {
   window.executionEngineAPI.stopListeningForExecutionLog(onExecutionLog)
   window.executionEngineAPI.stopListeningForStatistics(onStatisticsUpdate)
-  if (updateStatisticsInterval) {
-    clearInterval(updateStatisticsInterval)
-  }
 })
 </script>

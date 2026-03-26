@@ -33,276 +33,238 @@ import type { Config as MHDDOSProxyConfig } from 'app/lib/module/mhddosproxy'
 import type { InstallProgress, ModuleExecutionStatisticsEventData, ModuleName, Version } from 'app/lib/module/module'
 import type { IpcRendererEvent } from 'electron'
 import { contextBridge, ipcRenderer } from 'electron'
+import type { State as ExecutionEngineState, ExecutionLogEntry } from './handlers/engine'
+import type { TopData } from './handlers/top'
+import type { SettingsData } from './handlers/settings'
+import type { Contributor } from './handlers/developers'
+import type {
+  GetStatsResponse as GetActivenessStatsResponse,
+  GetTasksListResponse as GetActivenessTasksListResponse,
+  MakeTaskDoneResponse as MakeActivenessTaskDoneResponse,
+  IgnoreTaskResponse as IgnoreActivenessTaskResponse
+} from '../lib/activeness/api'
+import type { GetUserStatsResponse as GetITArmyUserStatsResponse } from '../lib/itarmy/api'
 
-declare global {
-    interface Window {
-        modulesAPI: typeof modulesAPI
-    }
+type ModuleConfig = DistressConfig | MHDDOSProxyConfig
+type RendererListener<T> = (_e: IpcRendererEvent, data: T) => void
+
+async function invoke<TReturn> (channel: string, ...args: unknown[]): Promise<TReturn> {
+  return await ipcRenderer.invoke(channel, ...args) as TReturn
+}
+
+async function startListening<T> (listenChannel: string, eventChannel: string, callback: RendererListener<T>): Promise<void> {
+  await invoke<void>(listenChannel)
+  ipcRenderer.on(eventChannel, callback)
+}
+
+async function stopListening<T> (stopChannel: string, eventChannel: string, callback: RendererListener<T>): Promise<void> {
+  await invoke<void>(stopChannel)
+  ipcRenderer.off(eventChannel, callback)
 }
 
 const modulesAPI = {
   async getAllVersions (moduleName: ModuleName): Promise<Version[]> {
-    return await ipcRenderer.invoke('modules:getAllVersions', moduleName)
+    return await invoke<Version[]>('modules:getAllVersions', moduleName)
   },
   async installVersion (moduleName: ModuleName, versionTag: string, progressCallback: (progress: InstallProgress) => void): Promise<void> {
-    const handleProgress = (_e: IpcRendererEvent, _moduleName: ModuleName, _versionTag: string, progress: InstallProgress) => {
-      if (_moduleName === moduleName && _versionTag === versionTag) {
+    const handleProgress = (_e: IpcRendererEvent, progressModuleName: ModuleName, progressVersionTag: string, progress: InstallProgress) => {
+      if (progressModuleName === moduleName && progressVersionTag === versionTag) {
         progressCallback(progress)
       }
     }
+
     ipcRenderer.on('modules:installProgress', handleProgress)
     try {
-      await ipcRenderer.invoke('modules:installVersion', moduleName, versionTag)
+      await invoke<void>('modules:installVersion', moduleName, versionTag)
       await new Promise(resolve => setTimeout(resolve, 500)) // wait for the last progress callback
     } finally {
       ipcRenderer.off('modules:installProgress', handleProgress)
     }
   },
   async uninstallVersion (moduleName: ModuleName, versionTag: string): Promise<void> {
-    return await ipcRenderer.invoke('modules:uninstallVersion', moduleName, versionTag)
+    await invoke<void>('modules:uninstallVersion', moduleName, versionTag)
   },
-  async getConfig <T = DistressConfig | MHDDOSProxyConfig> (moduleName: ModuleName): Promise<T> {
-    return await ipcRenderer.invoke('modules:getConfig', moduleName)
+  async getConfig<T = ModuleConfig> (moduleName: ModuleName): Promise<T> {
+    return await invoke<T>('modules:getConfig', moduleName)
   },
-  async setConfig <T = DistressConfig | MHDDOSProxyConfig> (moduleName: ModuleName, config: T): Promise<void> {
-    return await ipcRenderer.invoke('modules:setConfig', moduleName, config)
+  async setConfig<T = ModuleConfig> (moduleName: ModuleName, config: T): Promise<void> {
+    await invoke<void>('modules:setConfig', moduleName, config)
   }
 }
 contextBridge.exposeInMainWorld('modulesAPI', modulesAPI)
 
-import type { State as ExecutionEngineState, ExecutionLogEntry } from './handlers/engine'
-import type { TopData } from './handlers/top'
-
-declare global {
-  interface Window {
-      executionEngineAPI: typeof executionEngineAPI
-  }
-}
-
 const executionEngineAPI = {
   async startModule (): Promise<void> {
-    return await ipcRenderer.invoke('executionEngine:startModule')
+    await invoke<void>('executionEngine:startModule')
   },
   async stopModule (): Promise<void> {
-    return await ipcRenderer.invoke('executionEngine:stopModule')
+    await invoke<void>('executionEngine:stopModule')
   },
   async getState (): Promise<ExecutionEngineState> {
-    return await ipcRenderer.invoke('executionEngine:getState')
+    return await invoke<ExecutionEngineState>('executionEngine:getState')
   },
   async setModuleToRun (module?: ModuleName): Promise<void> {
-    return await ipcRenderer.invoke('executionEngine:setModuleToRun', module)
+    await invoke<void>('executionEngine:setModuleToRun', module)
   },
-  async listenForExecutionLog (callback: (_e: IpcRendererEvent, data: ExecutionLogEntry) => void): Promise<void> {
-    await ipcRenderer.invoke('executionEngine:listenForExecutionLog')
-    ipcRenderer.on('executionEngine:executionLog', callback)
+  async listenForExecutionLog (callback: RendererListener<ExecutionLogEntry>): Promise<void> {
+    await startListening('executionEngine:listenForExecutionLog', 'executionEngine:executionLog', callback)
   },
-  async stopListeningForExecutionLog (callback: (_e: IpcRendererEvent, data: ExecutionLogEntry) => void): Promise<void> {
-    await ipcRenderer.invoke('executionEngine:stopListeningForExecutionLog')
-    ipcRenderer.off('executionEngine:executionLog', callback)
+  async stopListeningForExecutionLog (callback: RendererListener<ExecutionLogEntry>): Promise<void> {
+    await stopListening('executionEngine:stopListeningForExecutionLog', 'executionEngine:executionLog', callback)
   },
-  async listenForStdOut (callback: (_e: IpcRendererEvent, data: string) => void): Promise<void> {
-    await ipcRenderer.invoke('executionEngine:listenForStdOut')
-    ipcRenderer.on('executionEngine:stdout', callback)
+  async listenForStdOut (callback: RendererListener<string>): Promise<void> {
+    await startListening('executionEngine:listenForStdOut', 'executionEngine:stdout', callback)
   },
-  async stopListeningForStdOut (callback: (_e: IpcRendererEvent, data: string) => void): Promise<void> {
-    await ipcRenderer.invoke('executionEngine:stopListeningForStdOut')
-    ipcRenderer.off('executionEngine:stdout', callback)
+  async stopListeningForStdOut (callback: RendererListener<string>): Promise<void> {
+    await stopListening('executionEngine:stopListeningForStdOut', 'executionEngine:stdout', callback)
   },
-  async listenForStdErr (callback: (_e: IpcRendererEvent, data: string) => void): Promise<void> {
-    await ipcRenderer.invoke('executionEngine:listenForStdErr')
-    ipcRenderer.on('executionEngine:stderr', callback)
+  async listenForStdErr (callback: RendererListener<string>): Promise<void> {
+    await startListening('executionEngine:listenForStdErr', 'executionEngine:stderr', callback)
   },
-  async stopListeningForStdErr (callback: (_e: IpcRendererEvent, data: string) => void): Promise<void> {
-    await ipcRenderer.invoke('executionEngine:stopListeningForStdErr')
-    ipcRenderer.off('executionEngine:stderr', callback)
+  async stopListeningForStdErr (callback: RendererListener<string>): Promise<void> {
+    await stopListening('executionEngine:stopListeningForStdErr', 'executionEngine:stderr', callback)
   },
-  async listenForStatistics (callback: (_e: IpcRendererEvent, data: ModuleExecutionStatisticsEventData) => void): Promise<void> {
-    await ipcRenderer.invoke('executionEngine:listenForStatistics')
-    ipcRenderer.on('executionEngine:statistics', callback)
+  async listenForStatistics (callback: RendererListener<ModuleExecutionStatisticsEventData>): Promise<void> {
+    await startListening('executionEngine:listenForStatistics', 'executionEngine:statistics', callback)
   },
-  async stopListeningForStatistics (callback: (_e: IpcRendererEvent, data: ModuleExecutionStatisticsEventData) => void): Promise<void> {
-    await ipcRenderer.invoke('executionEngine:stopListeningForStatistics')
-    ipcRenderer.off('executionEngine:statistics', callback)
+  async stopListeningForStatistics (callback: RendererListener<ModuleExecutionStatisticsEventData>): Promise<void> {
+    await stopListening('executionEngine:stopListeningForStatistics', 'executionEngine:statistics', callback)
   },
   async deleteStatistics (): Promise<void> {
-    return await ipcRenderer.invoke('executionEngine:deleteStatistics')
+    await invoke<void>('executionEngine:deleteStatistics')
   }
 }
-
 contextBridge.exposeInMainWorld('executionEngineAPI', executionEngineAPI)
-
-declare global {
-  interface Window {
-      topAPI: typeof topAPI
-  }
-}
 
 const topAPI = {
   async getWeeklyTop (): Promise<TopData> {
-    return await ipcRenderer.invoke('top:getWeeklyTop')
+    return await invoke<TopData>('top:getWeeklyTop')
   }
 }
-
 contextBridge.exposeInMainWorld('topAPI', topAPI)
-
-import type { SettingsData } from './handlers/settings'
-
-declare global {
-  interface Window {
-      settingsAPI: typeof settingsAPI
-  }
-}
 
 const settingsAPI = {
   async get (): Promise<SettingsData> {
-    return await ipcRenderer.invoke('settings:get')
+    return await invoke<SettingsData>('settings:get')
   },
   async deleteData (): Promise<void> {
-    return await ipcRenderer.invoke('settings:deleteData')
+    await invoke<void>('settings:deleteData')
   },
   system: {
     async setAutoUpdate (data: SettingsData['system']['autoUpdate']): Promise<void> {
-      return await ipcRenderer.invoke('settings:system:autoUpdate', data)
+      await invoke<void>('settings:system:autoUpdate', data)
     },
     async setHideInTray (data: SettingsData['system']['hideInTray']): Promise<void> {
-      return await ipcRenderer.invoke('settings:system:hideInTray', data)
+      await invoke<void>('settings:system:hideInTray', data)
     },
     async setStartOnBoot (data: SettingsData['system']['startOnBoot']): Promise<void> {
-      return await ipcRenderer.invoke('settings:system:startOnBoot', data)
+      await invoke<void>('settings:system:startOnBoot', data)
     },
     async setLanguage (data: SettingsData['system']['language']): Promise<void> {
-      return await ipcRenderer.invoke('settings:system:language', data)
+      await invoke<void>('settings:system:language', data)
     }
   },
   modules: {
     async setDataPath (data: SettingsData['modules']['dataPath']): Promise<void> {
-      return await ipcRenderer.invoke('settings:modules:dataPath', data)
+      await invoke<void>('settings:modules:dataPath', data)
     },
     async promptForDataPath (): Promise<void> {
-      return await ipcRenderer.invoke('settings:modules:promptForDataPath')
+      await invoke<void>('settings:modules:promptForDataPath')
     },
     async openDataFolder (): Promise<void> {
-      return await ipcRenderer.invoke('settings:modules:openDataFolder')
+      await invoke<void>('settings:modules:openDataFolder')
     },
     async deleteData (): Promise<void> {
-      return await ipcRenderer.invoke('settings:modules:deleteData')
+      await invoke<void>('settings:modules:deleteData')
     }
   },
   itarmy: {
     async setUUID (data: SettingsData['itarmy']['uuid']): Promise<void> {
-      return await ipcRenderer.invoke('settings:itarmy:uuid', data)
+      await invoke<void>('settings:itarmy:uuid', data)
     },
     async setAPIKey (data: SettingsData['itarmy']['apiKey']): Promise<void> {
-      return await ipcRenderer.invoke('settings:itarmy:apiKey', data)
+      await invoke<void>('settings:itarmy:apiKey', data)
     }
   },
   bootstrap: {
     async setStep (data: SettingsData['bootstrap']['step']): Promise<void> {
-      return await ipcRenderer.invoke('settings:bootstrap:step', data)
+      await invoke<void>('settings:bootstrap:step', data)
     },
     async setSelectedModulesConfig (data: SettingsData['bootstrap']['selectedModulesConfig']): Promise<void> {
-      return await ipcRenderer.invoke('settings:bootstrap:selectedModulesConfig', data)
+      await invoke<void>('settings:bootstrap:selectedModulesConfig', data)
     }
   },
   schedule: {
     async setEnabled (data: SettingsData['schedule']['enabled']): Promise<void> {
-      return await ipcRenderer.invoke('settings:schedule:enabled', data)
+      await invoke<void>('settings:schedule:enabled', data)
     },
     async setStartTime (data: SettingsData['schedule']['startTime']): Promise<void> {
-      return await ipcRenderer.invoke('settings:schedule:startTime', data)
+      await invoke<void>('settings:schedule:startTime', data)
     },
     async setEndTime (data: SettingsData['schedule']['endTime']): Promise<void> {
-      return await ipcRenderer.invoke('settings:schedule:endTime', data)
+      await invoke<void>('settings:schedule:endTime', data)
     },
     async setModules (data: SettingsData['schedule']['modules']): Promise<void> {
-      return await ipcRenderer.invoke('settings:schedule:modules', data)
+      await invoke<void>('settings:schedule:modules', data)
     },
     async setIntervals (data: SettingsData['schedule']['intervals']): Promise<void> {
-      return await ipcRenderer.invoke('settings:schedule:intervals', data)
+      await invoke<void>('settings:schedule:intervals', data)
     }
   },
   gui: {
     async setDarkMode (data: SettingsData['gui']['darkMode']): Promise<void> {
-      return await ipcRenderer.invoke('settings:gui:darkMode', data)
+      await invoke<void>('settings:gui:darkMode', data)
     },
     async setMatrixMode (data: SettingsData['gui']['matrixMode']): Promise<void> {
-      return await ipcRenderer.invoke('settings:gui:matrixMode', data)
+      await invoke<void>('settings:gui:matrixMode', data)
     },
     async setMatrixModeUnlocked (data: SettingsData['gui']['matrixModeUnlocked']): Promise<void> {
-      return await ipcRenderer.invoke('settings:gui:matrixModeUnlocked', data)
+      await invoke<void>('settings:gui:matrixModeUnlocked', data)
     }
   }
 }
-
 contextBridge.exposeInMainWorld('settingsAPI', settingsAPI)
-
-import type { Contributor } from './handlers/developers'
-
-declare global {
-  interface Window {
-      developersAPI: typeof developersAPI
-  }
-}
 
 const developersAPI = {
   async getContributors (): Promise<Contributor[]> {
-    return await ipcRenderer.invoke('developers:getContributors')
+    return await invoke<Contributor[]>('developers:getContributors')
   }
 }
-
 contextBridge.exposeInMainWorld('developersAPI', developersAPI)
-
-import type { GetStatsResponse as GetActivenessStatsResponse, GetTasksListResponse as GetActivenessTasksListResponse, MakeTaskDoneResponse as MakeActivenessTaskDoneResponse, IgnoreTaskResponse as IgnoreActivenessTaskResponse } from '../lib/activeness/api'
-
-declare global {
-  interface Window {
-      activenessAPI: typeof activenessAPI
-  }
-}
 
 const activenessAPI = {
   async isLoggedIn (): Promise<boolean> {
-    return await ipcRenderer.invoke('activeness:isLoggedIn')
+    return await invoke<boolean>('activeness:isLoggedIn')
   },
   async login (email: string, password: string): Promise<boolean> {
-    return await ipcRenderer.invoke('activeness:login', email, password)
+    return await invoke<boolean>('activeness:login', email, password)
   },
   async logout (): Promise<void> {
-    return await ipcRenderer.invoke('activeness:logout')
+    await invoke<void>('activeness:logout')
   },
   async getTasksList (): Promise<GetActivenessTasksListResponse> {
-    return await ipcRenderer.invoke('activeness:getTasksList')
+    return await invoke<GetActivenessTasksListResponse>('activeness:getTasksList')
   },
   async makeTaskDone (id: number): Promise<MakeActivenessTaskDoneResponse> {
-    return await ipcRenderer.invoke('activeness:makeTaskDone', id)
+    return await invoke<MakeActivenessTaskDoneResponse>('activeness:makeTaskDone', id)
   },
   async ignoreTask (id: number): Promise<IgnoreActivenessTaskResponse> {
-    return await ipcRenderer.invoke('activeness:ignoreTask', id)
+    return await invoke<IgnoreActivenessTaskResponse>('activeness:ignoreTask', id)
   },
   async getStats (): Promise<GetActivenessStatsResponse> {
-    return await ipcRenderer.invoke('activeness:getStats')
+    return await invoke<GetActivenessStatsResponse>('activeness:getStats')
   },
   async getMyStats (): Promise<{ score: number }> {
-    return await ipcRenderer.invoke('activeness:getMyStats')
+    return await invoke<{ score: number }>('activeness:getMyStats')
   }
 }
-
 contextBridge.exposeInMainWorld('activenessAPI', activenessAPI)
-
-import type { GetUserStatsResponse as GetITArmyUserStatsResponse } from '../lib/itarmy/api'
-
-declare global {
-  interface Window {
-      itArmyAPI: typeof itArmyAPI
-  }
-}
 
 const itArmyAPI = {
   async getStats (): Promise<GetITArmyUserStatsResponse> {
-    return await ipcRenderer.invoke('itarmy:getStats')
+    return await invoke<GetITArmyUserStatsResponse>('itarmy:getStats')
   }
 }
-
 contextBridge.exposeInMainWorld('itArmyAPI', itArmyAPI)
 
 export interface SystemUsage {
@@ -310,39 +272,39 @@ export interface SystemUsage {
   ramPercent: number
 }
 
-declare global {
-  interface Window {
-      systemAPI: typeof systemAPI
-  }
-}
-
 const systemAPI = {
   async getUsage (): Promise<SystemUsage> {
-    return await ipcRenderer.invoke('system:getUsage')
+    return await invoke<SystemUsage>('system:getUsage')
   }
 }
-
 contextBridge.exposeInMainWorld('systemAPI', systemAPI)
-
-declare global {
-  interface Window {
-      helpersAPI: typeof helpersAPI
-  }
-}
 
 const helpersAPI = {
   async openURLInBrowser (url: string): Promise<void> {
-    await ipcRenderer.invoke('helpers:openURLInBrowser', url)
+    await invoke<void>('helpers:openURLInBrowser', url)
   },
   async logRendererEvent (event: string, details?: unknown): Promise<void> {
-    await ipcRenderer.invoke('helpers:logRendererEvent', event, details)
+    await invoke<void>('helpers:logRendererEvent', event, details)
   },
   async openProfileFolder (): Promise<void> {
-    await ipcRenderer.invoke('helpers:openProfileFolder')
+    await invoke<void>('helpers:openProfileFolder')
   },
   async openStabilityLog (): Promise<void> {
-    await ipcRenderer.invoke('helpers:openStabilityLog')
+    await invoke<void>('helpers:openStabilityLog')
   }
 }
-
 contextBridge.exposeInMainWorld('helpersAPI', helpersAPI)
+
+declare global {
+  interface Window {
+    modulesAPI: typeof modulesAPI
+    executionEngineAPI: typeof executionEngineAPI
+    topAPI: typeof topAPI
+    settingsAPI: typeof settingsAPI
+    developersAPI: typeof developersAPI
+    activenessAPI: typeof activenessAPI
+    itArmyAPI: typeof itArmyAPI
+    systemAPI: typeof systemAPI
+    helpersAPI: typeof helpersAPI
+  }
+}

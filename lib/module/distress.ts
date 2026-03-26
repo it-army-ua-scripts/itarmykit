@@ -1,5 +1,6 @@
 import { Module, Version, InstallProgress, InstallationTarget, BaseConfig, ModuleName } from './module'
 import { getCPUArchitecture } from './archLib'
+import { convertTrafficValueToBytes } from '../utils/trafficUnits'
 
 export interface Config extends BaseConfig {
   // Disable UDP flood or not
@@ -14,6 +15,35 @@ export interface Config extends BaseConfig {
   useTor: number;
   // Percentage of own IP usage
   useMyIP: number;
+}
+
+const REQUIRED_STAT_KEYS = [
+  'active connections',
+  'pps',
+  'bps',
+  'requests',
+  'bytes',
+  'pending connections'
+] as const
+
+function parseStatisticAssignments (message: string): Map<string, string> {
+  const metrics = new Map<string, string>()
+  const normalizedMessage = message.trim().toLocaleLowerCase()
+  const matches = normalizedMessage.matchAll(/(?:^|,\s*)([^=,]+)=([^,]+)/g)
+
+  for (const match of matches) {
+    const key = match[1]?.trim()
+    const value = match[2]?.trim()
+    if (key && value) {
+      metrics.set(key, value)
+    }
+  }
+
+  return metrics
+}
+
+function hasRequiredStatisticKeys (metrics: Map<string, string>): boolean {
+  return REQUIRED_STAT_KEYS.every((key) => metrics.has(key))
 }
 
 export class Distress extends Module<Config> {
@@ -115,8 +145,8 @@ export class Distress extends Module<Config> {
     handler.stdout.on('data', (data: Buffer) => {
       statisticsBuffer += data.toString()
 
-      const lines = statisticsBuffer.trimEnd().split('\n')
-      if (statisticsBuffer.endsWith('\n')) {
+      const lines = statisticsBuffer.split(/\r?\n/)
+      if (/\r?\n$/.test(statisticsBuffer)) {
         statisticsBuffer = ''
       } else {
         statisticsBuffer = lines.pop() as string
@@ -127,40 +157,15 @@ export class Distress extends Module<Config> {
           const lineJSON = JSON.parse(line)
           const msg = lineJSON.msg as string
 
-          if (!msg.includes('active connections') || !msg.includes('bps') || !msg.includes('bytes')) {
+          const metrics = parseStatisticAssignments(msg)
+          if (!hasRequiredStatisticKeys(metrics)) {
             continue
           }
 
-          let bytesSend = 0
-          let currentSendBitrate = 0
-
-          const convertToBytes = (value: string): number => {
-            value = value.toLowerCase()
-
-            if (value.includes('kb')) {
-              return Number(value.split('kb')[0]) * 125
-            } else if (value.includes('mb')) {
-              return Number(value.split('mb')[0]) * 125 * 1024
-            } else if (value.includes('gb')) {
-              return Number(value.split('gb')[0]) * 125 * 1024 * 1024
-            } else if (value.includes('tb')) {
-              return Number(value.split('tb')[0]) * 125 * 1024 * 1024 * 1024
-            } else if (value.includes('pb')) {
-              return Number(value.split('pb')[0]) * 125 * 1024 * 1024 * 1024 * 1024
-            } else if (value.includes('eb')) {
-              return Number(value.split('eb')[0]) * 125 * 1024 * 1024 * 1024 * 1024 * 1024
-            } else {
-              return Number(value.split('b')[0])
-            }
-          }
-
-          const parameters = msg.split(',').map((parameter) => parameter.trim())
-          for (const parameter of parameters) {
-            if (parameter.includes('bytes')) {
-              bytesSend = convertToBytes(parameter.split('=')[1])
-            } else if (parameter.includes('bps')) {
-              currentSendBitrate = convertToBytes(parameter.split('=')[1])
-            }
+          const bytesSend = convertTrafficValueToBytes(metrics.get('bytes') ?? '')
+          const currentSendBitrate = convertTrafficValueToBytes(metrics.get('bps') ?? '')
+          if (bytesSend < 0 || currentSendBitrate < 0) {
+            continue
           }
 
           this.emit('execution:statistics', {

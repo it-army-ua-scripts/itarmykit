@@ -30,6 +30,7 @@ import {
 } from 'app/lib/module/module'
 import { IpcRendererEvent } from 'electron'
 import { onMounted, onUnmounted, ref } from 'vue'
+import { useItArmyStats } from 'src/composables/useItArmyStats'
 
 const totalBytesSend = ref(0)
 const bps = ref(0)
@@ -73,34 +74,17 @@ async function loadLastStatistics () {
   }
 }
 
-const totalStatisticsAvailable = ref(false)
-const totalBytesSendFromAllTools = ref(0)
-async function loadTotalBytesSendFromAllTools () {
-  const response = await window.itArmyAPI.getStats()
-  if (response.success) {
-    totalBytesSendFromAllTools.value = response.data.totalTraffic
-    totalStatisticsAvailable.value = true
-  } else {
-    totalStatisticsAvailable.value = false
-  }
-}
-
-let totalTrafficRefreshInterval: ReturnType<typeof setInterval> | undefined
+const {
+  totalTraffic: totalBytesSendFromAllTools,
+  hasData: totalStatisticsAvailable
+} = useItArmyStats()
 
 onMounted(async () => {
   await loadLastStatistics()
-  await loadTotalBytesSendFromAllTools()
   window.executionEngineAPI.listenForStatistics(onStatisticsUpdate)
-  totalTrafficRefreshInterval = setInterval(() => {
-    void loadTotalBytesSendFromAllTools()
-  }, 5000)
 })
 
 onUnmounted(() => {
   window.executionEngineAPI.stopListeningForStatistics(onStatisticsUpdate)
-  if (totalTrafficRefreshInterval !== undefined) {
-    clearInterval(totalTrafficRefreshInterval)
-    totalTrafficRefreshInterval = undefined
-  }
 })
 </script>
