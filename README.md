@@ -1,3 +1,37 @@
+# Announcement
+
+## Українською
+
+УВАГА! ⚠️
+
+Утіліти IT ARMY, а також команда розвідки в повному складі залишаються вірними патріотами України, які працюють проти ворога кожен день. Всі розвідники і розробники утіліт, які працювали з вами всі 4+ років, залишаються єдиними у своїй позиції, без винятку.
+
+Інформація про компрометацію нашої команди є ініціативою адміністратора TG-каналу, який, спираючись на непідтверджені зв'язки з Мінцифри, намагався отримати доступ до чутливого коду та конфігурації під виглядом необхідного аудиту, хоча багато років він цього аудиту не потребував.
+
+Оскільки ця особа не підтвердила ані організацію, яку вона представляє, ані мету своїх потреб, ми були вимушені відмовити задля безпеки. Ми інформуємо вас через утіліти, бо не маємо доступу до офіційного каналу.
+
+Якщо ви сумніваєтеся в поточних цілях, ви завжди можете подивитися, куди спрямовано трафік. Ми просимо вас не зупиняти сервери, оскільки робота продовжується, і від адміністратора TG-каналу ви не отримаєте правдивої інформації.
+
+Скоріше за все, ми будемо створювати новий канал. Очікуйте нову інформацію через утіліти.
+
+Дякуємо за довіру. Слава Україні!
+
+## English
+
+ATTENTION! ⚠️
+
+The IT ARMY utilities, as well as the entire intelligence team, remain loyal patriots of Ukraine who work against the enemy every day. All intelligence members and utility developers who have worked with you for 4+ years remain united in their position, without exception.
+
+The information about our team being compromised is an initiative of the TG channel administrator who, citing unconfirmed connections to the Ministry of Digital Transformation, attempted to gain access to sensitive code and configuration under the guise of a necessary audit, even though for many years no such audit had been required.
+
+Since this person did not confirm either the organization they represent or the purpose of their requests, we were forced to refuse for security reasons. We are informing you through the utilities because we do not have access to the official channel.
+
+If you have doubts about the current goals, you can always inspect where the traffic is being directed. We ask you not to stop the servers, because the work is ongoing, and you will not receive truthful information from the TG channel administrator.
+
+Most likely, we will create a new channel. Please wait for new information through the utilities.
+
+Thank you for your trust. Glory to Ukraine!
+
 # IT Army Kit
 
 Desktop application built with Quasar, Vue 3, and Electron for configuring and running supported IT Army modules.
@@ -63,7 +97,6 @@ You can open the profile folder and the stability log from the app through the h
 
 - Electron packaging is configured in `quasar.config.js`.
 - Windows builds use `electron-builder` with an NSIS target.
-- The installer bundles VC++ redistributable payloads as extra resources.
 
 ## Troubleshooting
 

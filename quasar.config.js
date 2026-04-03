@@ -218,16 +218,6 @@ module.exports = configure(function (/* ctx */) {
           deleteAppDataOnUninstall: true,
           include: 'build/installer.nsh'
         },
-        extraResources: [
-          {
-            from: 'vc_redist.x64.exe',
-            to: 'vc_redist.x64.exe'
-          },
-          {
-            from: 'vc_redist.arm64.exe',
-            to: 'vc_redist.arm64.exe'
-          }
-        ],
         mac: {
           icon: 'src-electron/icons/icon.icns',
           target: [

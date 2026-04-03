@@ -229,6 +229,25 @@ export default {
 
   dashboard: {
     statistics: 'Attack Power Statistics',
+    announcement: {
+      title: 'Announcement',
+      close: 'Close',
+      message: `ATTENTION! ⚠️
+The IT ARMY utilities, as well as the entire intelligence team, remain loyal patriots of Ukraine who work against the enemy every day.
+All intelligence members and utility developers who have worked with you for 4+ years remain united in their position, without exception.
+
+The information about our team being compromised is an initiative of the TG channel administrator who, citing unconfirmed connections to the Ministry of Digital Transformation, attempted to gain access to sensitive code and configuration under the guise of a necessary audit, even though for many years no such audit had been required.
+
+Since this person did not confirm either the organization they represent or the purpose of their requests, we were forced to refuse for security reasons.
+We are informing you through the utilities because we do not have access to the official channel.
+
+If you have doubts about the current goals, you can always inspect where the traffic is being directed.
+We ask you not to stop the servers, because the work is ongoing, and you will not receive truthful information from the TG channel administrator.
+
+Most likely, we will create a new channel. Please wait for new information through the utilities.
+
+Thank you for your trust. Glory to Ukraine!`
+    },
     bytes: 'Sent / Traffic / Total',
     bytesHint: 'Statistics of send traffic may be not accurate. It depends on the module and the way it works. Total statistics is always precise and shows aggregated information from all the running tools.',
     moduleStatus: 'Module Status',

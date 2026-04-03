@@ -228,6 +228,25 @@ export default {
 
   dashboard: {
     statistics: 'Angriffskraft-Statistiken',
+    announcement: {
+      title: 'Mitteilung',
+      close: 'Schließen',
+      message: `ACHTUNG! ⚠️
+Die IT ARMY-Dienstprogramme sowie das gesamte Aufklärungsteam bleiben loyale Patrioten der Ukraine, die jeden Tag gegen den Feind arbeiten.
+Alle Aufklärungsmitglieder und Entwickler der Dienstprogramme, die seit mehr als 4 Jahren mit Ihnen arbeiten, bleiben ohne Ausnahme in ihrer Position vereint.
+
+Die Information über eine angebliche Kompromittierung unseres Teams ist eine Initiative des Administrators des TG-Kanals, der sich auf unbestätigte Verbindungen zum Ministerium für digitale Transformation berief und versuchte, unter dem Vorwand eines notwendigen Audits Zugang zu sensiblem Code und zu Konfigurationen zu erhalten, obwohl ein solches Audit viele Jahre lang nicht erforderlich war.
+
+Da diese Person weder die Organisation, die sie vertritt, noch den Zweck ihrer Anfragen bestätigte, waren wir aus Sicherheitsgründen gezwungen, dies abzulehnen.
+Wir informieren Sie über die Dienstprogramme, weil wir keinen Zugang zum offiziellen Kanal haben.
+
+Falls Sie Zweifel an den aktuellen Zielen haben, können Sie jederzeit prüfen, wohin der Datenverkehr geleitet wird.
+Wir bitten Sie, die Server nicht zu stoppen, da die Arbeit fortgesetzt wird und Sie vom Administrator des TG-Kanals keine wahrheitsgemäßen Informationen erhalten werden.
+
+Höchstwahrscheinlich werden wir einen neuen Kanal erstellen. Bitte warten Sie auf neue Informationen über die Dienstprogramme.
+
+Vielen Dank für Ihr Vertrauen. Ruhm der Ukraine!`
+    },
     bytes: 'Gesendet / Datenverkehr / Insgesamt',
     bytesHint: 'Die Statistiken zum gesendeten Datenverkehr können ungenau sein. Dies hängt vom Modul und seiner Funktionsweise ab. Die Gesamtstatistik ist immer präzise und zeigt aggregierte Informationen aus allen laufenden Tools an.',
     moduleStatus: 'Modul-Status',
