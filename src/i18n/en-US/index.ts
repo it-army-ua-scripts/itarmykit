@@ -232,32 +232,19 @@ export default {
     announcement: {
       title: 'Announcement',
       close: 'Close',
-      message: `UPD 04.04.26
+      message: `UPD 07.04.26
 
-Hello Community!
+Dear Community!
 
-Remaining faithful to the principle of openness, which has always been the foundation of our work, we have prepared a small audit tool and are making it publicly available. This tool allows anyone to see the current attack targets in real time and monitor their status, meaning every participant can independently control and verify what is happening. No closed rooms, no secrets.
+Unfortunately, within the time allotted by the channel administration, we were unable to find common ground. Our position remains unchanged: we act openly, but we are obliged to understand exactly to whom we are handing over confidential data. Upon receipt of an official request, we are ready to provide all necessary information and access to the duly authorized persons.
 
-It should be emphasized that publishing this tool is a forced measure which, to some extent, will give the enemy the ability to track our strikes, and that is not good. However, the words of the IT Army channel administration left us no choice but to refute them through action. At the same time, it is worth adding that this possibility has always existed, and we are making this decision consciously, with a clear understanding of the risks involved.
+At the same time, we cannot continue working under conditions that fall outside the legal framework of the state and create a threat to all of us.
 
-Technically, the auditor intercepts outgoing traffic from mhddos_proxy, distress, or any other program and displays a table with all IP addresses to which requests are being sent, along with the number of packets and traffic volume. Each IP is a link to ipinfo.io, where you can immediately verify who it belongs to. It can be launched with a single Docker command, and if there are doubts about what happens inside, it is enough to copy the Dockerfile into any LLM and ask for an explanation.
+In this regard, we are temporarily suspending the operation of all tools under our control until the situation is fully resolved.
 
-THE TOOL FOR INDEPENDENT AUDITING OF TARGETS IS AVAILABLE HERE: https://github.com/porthole-ascend-cinnamon/targets_audit
+Thank you for your understanding.
 
-Anyone interested, either independently or with the help of any LLM, can verify that only minimal technical competence is required to carry out this audit. There was never any need to dig into sensitive code, especially for those who obviously do not understand it, because it was precisely the inability to perform this audit independently that prompted the demand for full access. Despite this, the administrator of the IT Army group continued insisting on full access to the technical infrastructure, ignoring all of the arguments presented.
-
-Yes, we formally closed open access to the targets at one point, but we always clearly understood that this would stop only random people. The aforementioned administrator clearly belongs to that category. Technically, it is impossible to hide such things, and that is exactly what we are demonstrating now. Unfortunately, the enemy has long been taking advantage of this.
-
-Who is really behind the operations?
-The development and intelligence team that has been responsible for all operations over the past four years knows of no organizational structure called "IT Army" except for 1-2 chat admins who have always presented themselves as ordinary volunteers. Therefore, statements such as "we cannot verify" collapse against a simple reality: there is no such "we." IT Army has always been a distributed volunteer community. The channel admins have nothing to do with organizing attacks or maintaining the tools.
-
-The channel admin demanded full access to both intelligence and developers without any clear justification. In front of a dozen developers who have been in ITAU from the very beginning, he could not explain his intentions. Instead, he threatened to declare no confidence in us and independently assemble a new team. We believe the community deserves to know this.
-
-Claims of non-transparency are nothing more than fiction. The tool is before you, the targets are before you. The audit is available to everyone right now.
-
-So we encourage everyone to use the auditor and support our ideals. We are waiting for your feedback and comments.
-
-Openness is not weakness. It is our strength.`
+Glory to Ukraine!`
     },
     bytes: 'Sent / Traffic / Total',
     bytesHint: 'Statistics of send traffic may be not accurate. It depends on the module and the way it works. Total statistics is always precise and shows aggregated information from all the running tools.',
