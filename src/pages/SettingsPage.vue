@@ -393,6 +393,8 @@ async function deleteModulesCache () {
 const deleteAllDataDialog = ref(false)
 async function deleteAllData () {
   await window.settingsAPI.deleteData()
+  deleteAllDataDialog.value = false
+  await loadSettings()
 }
 
 const guiDarkMode = ref(false)

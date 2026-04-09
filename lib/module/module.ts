@@ -1,9 +1,9 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
 import { EventEmitter } from 'events'
 import { Readable } from 'stream'
+import type { ReadableStream as WebReadableStream } from 'stream/web'
 import path from 'path'
 import fs from 'fs'
-import fetch from 'electron-fetch'
 import decompress from 'decompress'
 import { Settings } from '../../src-electron/handlers/settings'
 import { getCPUArchitecture } from './archLib'
@@ -260,7 +260,7 @@ export abstract class Module<ConfigType extends BaseConfig> {
     if (response.body == null) {
       throw new Error('Response body is null')
     }
-    const body = response.body as Readable
+    const body = Readable.fromWeb(response.body as unknown as WebReadableStream)
     body.pipe(fileStream)
 
     const eventEmitter = new EventEmitter()

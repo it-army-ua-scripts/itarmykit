@@ -1,5 +1,4 @@
 import { ipcMain } from 'electron'
-import fetch from 'electron-fetch'
 
 export interface Contributor {
     login: string

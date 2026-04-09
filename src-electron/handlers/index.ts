@@ -35,7 +35,7 @@ function initMainProcessContext (): MainProcessContext {
   const engine = handleExecutionEngine(modules, settings)
   handleTop()
   handleUpdater(settings, engine)
-  handleSettings(settings)
+  handleSettings(settings, engine)
   handleDevelopers()
   handleActiveness(settings)
   handleItArmy(settings)

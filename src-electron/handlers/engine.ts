@@ -48,6 +48,8 @@ function createDefaultState (): State {
 }
 
 export class ExecutionEngine {
+  private webContentsDestroyCleanupRegistered = new WeakSet<WebContents>()
+
   private logEvent (level: 'info' | 'warn' | 'error', event: string, details?: unknown) {
     writeStabilityLog({
       level,
@@ -193,11 +195,18 @@ export class ExecutionEngine {
       return
     }
 
+    if (!this.webContentsDestroyCleanupRegistered.has(webContents)) {
+      this.webContentsDestroyCleanupRegistered.add(webContents)
+      webContents.once('destroyed', () => {
+        this.removeListener(this.executionLogListeners, webContents)
+        this.removeListener(this.stdOutListeners, webContents)
+        this.removeListener(this.stdErrListeners, webContents)
+        this.removeListener(this.statisticsListeners, webContents)
+      })
+    }
+
     if (!listeners.includes(webContents)) {
       listeners.push(webContents)
-      webContents.once('destroyed', () => {
-        this.removeListener(listeners, webContents)
-      })
     }
   }
 

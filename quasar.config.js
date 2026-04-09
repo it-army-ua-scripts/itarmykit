@@ -56,7 +56,7 @@ module.exports = configure(function (/* ctx */) {
     build: {
       target: {
         browser: ['es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1'],
-        node: 'node16'
+        node: 'node20'
       },
 
       vueRouterMode: 'hash', // available values: 'hash', 'history'
@@ -189,19 +189,6 @@ module.exports = configure(function (/* ctx */) {
       inspectPort: 5858,
 
       bundler: 'builder', // 'packager' or 'builder'
-
-      packager: {
-        // https://github.com/electron-userland/electron-packager/blob/master/docs/api.md#options
-
-        // OS X / Mac App Store
-        // appBundleId: '',
-        // appCategoryType: '',
-        // osxSign: '',
-        // protocol: 'myapp://path',
-
-        // Windows only
-        // win32metadata: { ... }
-      },
 
       builder: {
         // https://www.electron.build/configuration/configuration

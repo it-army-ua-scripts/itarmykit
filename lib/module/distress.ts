@@ -47,6 +47,8 @@ function hasRequiredStatisticKeys (metrics: Map<string, string>): boolean {
 }
 
 export class Distress extends Module<Config> {
+  private invalidJsonLineCount = 0
+
   public override get name (): ModuleName { return 'DISTRESS' }
   public override get homeURL (): string { return 'https://github.com/Yneth/distress-releases' }
   public override get supportedInstallationTargets (): Array<InstallationTarget> {
@@ -153,8 +155,13 @@ export class Distress extends Module<Config> {
       }
 
       for (const line of lines) {
+        const trimmedLine = line.trim()
+        if (trimmedLine === '' || !trimmedLine.startsWith('{')) {
+          continue
+        }
+
         try {
-          const lineJSON = JSON.parse(line)
+          const lineJSON = JSON.parse(trimmedLine)
           const msg = lineJSON.msg as string
 
           const metrics = parseStatisticAssignments(msg)
@@ -175,7 +182,14 @@ export class Distress extends Module<Config> {
             timestamp: new Date().getTime()
           })
         } catch (e) {
-          console.error(String(e) + '\n' + line)
+          this.invalidJsonLineCount++
+          if (this.invalidJsonLineCount <= 3 || this.invalidJsonLineCount % 50 === 0) {
+            console.warn('[Distress] Skipping malformed JSON log line', {
+              error: String(e),
+              sample: trimmedLine.slice(0, 200),
+              skippedCount: this.invalidJsonLineCount
+            })
+          }
         }
       }
     })

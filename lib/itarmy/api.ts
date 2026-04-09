@@ -1,10 +1,7 @@
-import fetch, { RequestInit } from 'electron-fetch'
+import { withRequestTimeout } from '../utils/fetch'
 
 const BASE_URL = 'https://bl4ck.dev/api'
-const BASE_REQUEST_OPTIONS: RequestInit = {
-  timeout: 10000, // 10 seconds
-  size: 1024 * 1024 * 10 // 10MB
-}
+const BASE_REQUEST_OPTIONS = withRequestTimeout()
 
 export interface UserStats {
     login: string

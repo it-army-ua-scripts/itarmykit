@@ -290,16 +290,17 @@ function createWindow () {
     })
   })
 
-  createdWindow.webContents.on('console-message', (_event, level, message, line, sourceId) => {
-    if (level < 2) {
+  createdWindow.webContents.on('console-message', (details) => {
+    if (details.level === 'info' || details.level === 'debug') {
       return
     }
 
-    logMainProcessEvent(level >= 3 ? 'error' : 'warn', 'renderer-console-message', {
-      level,
-      message,
-      line,
-      sourceId
+    logMainProcessEvent(details.level === 'error' ? 'error' : 'warn', 'renderer-console-message', {
+      level: details.level,
+      message: details.message,
+      line: details.lineNumber,
+      sourceId: details.sourceId,
+      frame: details.frame?.url
     })
   })
 

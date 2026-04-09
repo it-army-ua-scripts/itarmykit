@@ -4,6 +4,7 @@ import { promises as fsPromises, readFileSync, existsSync, mkdirSync, writeFileS
 import EventEmitter from 'events'
 import { SID } from 'app/lib/activeness/api'
 import { writeFileAtomicWithBackup } from 'app/lib/utils/atomicFile'
+import type { ExecutionEngine } from './engine'
 
 export interface ScheduleInterval {
   startTime: string
@@ -119,51 +120,78 @@ export class Settings {
   private static settingsBackupFile = joinPath(Settings.profileDir, 'settings.json.bak')
   private static settingsTempFile = joinPath(Settings.profileDir, 'settings.json.tmp')
 
-  private data: SettingsData = {
-    system: {
-      autoUpdate: true,
-      hideInTray: false,
-      startOnBoot: false,
-      language: 'en-US'
-    },
-    modules: {
-      dataPath: joinPath(app.getPath('appData'), 'ITArmyKitProfile', 'modules')
-    },
-    schedule: {
-      enabled: false,
-      startTime: '07:30',
-      endTime: '17:30',
-      activity: 'DO_NOTHING',
-      modules: ['DISTRESS'],
-      intervals: [
-        {
-          startTime: '07:30',
-          endTime: '17:30',
-          days: [0, 1, 2, 3, 4, 5, 6],
-          module: 'DISTRESS'
-        }
-      ]
-    },
-    itarmy: {
-      uuid: '',
-      apiKey: ''
-    },
-    bootstrap: {
-      step: 'LANGUAGE',
-      selectedModulesConfig: 'NONE'
-    },
-    gui: {
-      darkMode: false,
-      matrixMode: false,
-      matrixModeUnlocked: false
-    },
-    activeness: {},
-    execution: {}
-  }
+  private data: SettingsData = this.createDefaultData()
 
   private loaded = false
 
   private settingsChangedEmiter = new EventEmitter()
+
+  private createDefaultData (): SettingsData {
+    return {
+      system: {
+        autoUpdate: true,
+        hideInTray: false,
+        startOnBoot: false,
+        language: 'en-US'
+      },
+      modules: {
+        dataPath: joinPath(app.getPath('appData'), 'ITArmyKitProfile', 'modules')
+      },
+      schedule: {
+        enabled: false,
+        startTime: '07:30',
+        endTime: '17:30',
+        activity: 'DO_NOTHING',
+        modules: ['DISTRESS'],
+        intervals: [
+          {
+            startTime: '07:30',
+            endTime: '17:30',
+            days: [0, 1, 2, 3, 4, 5, 6],
+            module: 'DISTRESS'
+          }
+        ]
+      },
+      itarmy: {
+        uuid: '',
+        apiKey: ''
+      },
+      bootstrap: {
+        step: 'LANGUAGE',
+        selectedModulesConfig: 'NONE'
+      },
+      gui: {
+        darkMode: false,
+        matrixMode: false,
+        matrixModeUnlocked: false
+      },
+      activeness: {},
+      execution: {}
+    }
+  }
+
+  private async removeProfileArtifacts () {
+    const removablePaths = [
+      Settings.settingsBackupFile,
+      Settings.settingsTempFile,
+      joinPath(Settings.profileDir, 'engine.state.json'),
+      joinPath(Settings.profileDir, 'engine.state.json.bak'),
+      joinPath(Settings.profileDir, 'engine.state.json.tmp'),
+      joinPath(Settings.profileDir, 'stability.log'),
+      joinPath(Settings.profileDir, 'stability.log.1')
+    ]
+
+    for (const targetPath of removablePaths) {
+      try {
+        await fsPromises.rm(targetPath, { force: true })
+      } catch (error) {
+        const code = (error as NodeJS.ErrnoException).code
+        if (code !== 'ENOENT' && code !== 'EBUSY' && code !== 'EPERM') {
+          throw error
+        }
+      }
+    }
+  }
 
   async getData () {
     if (!this.loaded) {
@@ -181,9 +209,15 @@ export class Settings {
 
   async deleteData () {
     await this.deleteModulesData()
-    if (existsSync(Settings.profileDir)) {
-      await fsPromises.rm(Settings.profileDir, { recursive: true, force: true })
-    }
+    app.setLoginItemSettings({
+      openAtLogin: false
+    })
+    this.data = this.createDefaultData()
+    this.loaded = true
+    await fsPromises.mkdir(Settings.profileDir, { recursive: true })
+    await this.removeProfileArtifacts()
+    await this.save()
+    this.settingsChangedEmiter.emit('settingsChanged', this.data)
   }
 
   async save () {
@@ -314,6 +348,7 @@ export class Settings {
         this.applyLoadBackwardsCompatibility()
         await this.save()
       } catch {
+        this.data = this.createDefaultData()
         await this.save()
       }
     }
@@ -331,6 +366,7 @@ export class Settings {
         mkdirSync(Settings.profileDir, { recursive: true })
         writeFileSync(Settings.settingsFile, JSON.stringify(this.data))
       } catch {
+        this.data = this.createDefaultData()
         mkdirSync(Settings.profileDir, { recursive: true })
         writeFileSync(Settings.settingsFile, JSON.stringify(this.data))
       }
@@ -570,12 +606,13 @@ export class Settings {
   }
 }
 
-export function handleSettings (settings: Settings) {
+export function handleSettings (settings: Settings, executionEngine: ExecutionEngine) {
   ipcMain.handle('settings:get', async () => {
     return await settings.getData()
   })
 
   ipcMain.handle('settings:deleteData', async () => {
+    await executionEngine.stopModule()
     await settings.deleteData()
     app.relaunch()
     app.exit()
