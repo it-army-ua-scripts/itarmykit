@@ -37,6 +37,76 @@ let isRecoveringRenderer = false
 let hasShownRuntimeWarning = false
 let isQuitting = false
 
+function serializeErrorForLog (error: unknown) {
+  if (error instanceof Error) {
+    return {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    }
+  }
+
+  return error
+}
+
+function getWindowDiagnostics (window: BrowserWindow) {
+  const webContents = window.webContents
+
+  return {
+    bounds: window.getBounds(),
+    isVisible: window.isVisible(),
+    isFocused: window.isFocused(),
+    isMinimized: window.isMinimized(),
+    isDestroyed: window.isDestroyed(),
+    title: window.getTitle(),
+    webContents: {
+      id: webContents.id,
+      url: webContents.getURL(),
+      isLoading: webContents.isLoading(),
+      isLoadingMainFrame: webContents.isLoadingMainFrame(),
+      isWaitingForResponse: webContents.isWaitingForResponse(),
+      isCrashed: webContents.isCrashed(),
+      isDestroyed: webContents.isDestroyed(),
+      isDevToolsOpened: webContents.isDevToolsOpened(),
+      frameRate: webContents.getFrameRate(),
+      osProcessId: webContents.getOSProcessId()
+    },
+    mainProcess: {
+      pid: process.pid,
+      memoryUsage: process.memoryUsage(),
+      uptimeSeconds: process.uptime()
+    }
+  }
+}
+
+async function captureRendererDiagnostics (
+  window: BrowserWindow,
+  trigger: string,
+  level: 'info' | 'warn' | 'error',
+  details?: unknown
+) {
+  const windowDiagnostics = getWindowDiagnostics(window)
+  const osProcessId = windowDiagnostics.webContents.osProcessId
+
+  let appMetric: unknown
+  try {
+    appMetric = app.getAppMetrics().find((metric) => metric.pid === osProcessId)
+  } catch (error) {
+    appMetric = { failed: true, error: serializeErrorForLog(error) }
+  }
+
+  logMainProcessEvent(level, 'renderer-diagnostics', {
+    trigger,
+    details,
+    diagnostics: {
+      ...windowDiagnostics,
+      rendererProcess: {
+        appMetric
+      }
+    }
+  })
+}
+
 function logMainProcessEvent (level: 'info' | 'warn' | 'error', origin: string, details?: unknown) {
   if (level === 'error') {
     console.error(`[main] ${origin}`, details)
@@ -173,6 +243,7 @@ function createWindow () {
     show: false
   })
   mainWindow = createdWindow
+  const createdAt = Date.now()
   logMainProcessEvent('info', 'window-created', { bounds: createdWindow.getBounds() })
 
   createdWindow.webContents.on('did-finish-load', () => {
@@ -188,6 +259,15 @@ function createWindow () {
       validatedURL,
       isMainFrame
     })
+
+    if (isMainFrame) {
+      void captureRendererDiagnostics(createdWindow, 'did-fail-load', 'error', {
+        errorCode,
+        errorDescription,
+        validatedURL,
+        isMainFrame
+      })
+    }
   })
 
   void createdWindow.loadURL(appUrl).catch((error) => {
@@ -203,8 +283,30 @@ function createWindow () {
     createdWindow.webContents.openDevTools()
   }
 
+  createdWindow.webContents.on('preload-error', (_event, preloadPath, error) => {
+    logMainProcessEvent('error', 'preload-error', {
+      preloadPath,
+      error: serializeErrorForLog(error)
+    })
+  })
+
+  createdWindow.webContents.on('console-message', (_event, level, message, line, sourceId) => {
+    if (level < 2) {
+      return
+    }
+
+    logMainProcessEvent(level >= 3 ? 'error' : 'warn', 'renderer-console-message', {
+      level,
+      message,
+      line,
+      sourceId
+    })
+  })
+
   createdWindow.on('closed', () => {
-    logMainProcessEvent('info', 'window-closed')
+    logMainProcessEvent('info', 'window-closed', {
+      livedForMs: Date.now() - createdAt
+    })
     if (mainWindow === createdWindow) {
       mainWindow = undefined
     }
@@ -212,6 +314,7 @@ function createWindow () {
 
   createdWindow.webContents.on('render-process-gone', (_event, details) => {
     logMainProcessEvent('error', 'render-process-gone', details)
+    void captureRendererDiagnostics(createdWindow, 'render-process-gone', 'error', details)
     if (mainWindow !== createdWindow || createdWindow.isDestroyed() || isRecoveringRenderer || isQuitting) {
       return
     }
@@ -250,6 +353,7 @@ function createWindow () {
 
   createdWindow.webContents.on('unresponsive', () => {
     logMainProcessEvent('warn', 'renderer-unresponsive')
+    void captureRendererDiagnostics(createdWindow, 'unresponsive', 'warn')
   })
 
   handle(createdWindow)
@@ -287,6 +391,11 @@ if (!app.requestSingleInstanceLock()) {
 
   app.on('window-all-closed', () => {
     logMainProcessEvent('info', 'window-all-closed')
+    if (isRecoveringRenderer) {
+      logMainProcessEvent('info', 'window-all-closed ignored during renderer recovery')
+      return
+    }
+
     if (platform !== 'darwin') {
       app.quit()
     }
