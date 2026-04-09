@@ -13,9 +13,9 @@ export default {
   },
   schedule: {
     title: 'Planung',
-    description: 'Ausgewählte Module nach Zeitfenster automatisch starten und stoppen.',
+    description: 'Ausgew\u00e4hlte Module nach Zeitfenster automatisch starten und stoppen.',
     enabled: 'Scheduler aktivieren',
-    enabledDescription: 'Wenn aktiv, steuert die App Start/Stopp nach den gewählten Zeiten.',
+    enabledDescription: 'Wenn aktiv, steuert die App Start/Stopp nach den gew\u00e4hlten Zeiten.',
     startTime: 'Startzeit',
     endTime: 'Endzeit',
     intervalModule: 'Modul',
@@ -23,7 +23,7 @@ export default {
     intervalsTitle: 'Zeitintervalle',
     noIntervals: 'Keine Intervalle konfiguriert.',
     daysTitle: 'Wochentage',
-    addInterval: 'Intervall hinzufügen',
+    addInterval: 'Intervall hinzuf\u00fcgen',
     removeInterval: 'Intervall entfernen',
     days: {
       sun: 'So',
@@ -34,54 +34,54 @@ export default {
       fri: 'Fr',
       sat: 'Sa'
     },
-    close: 'Schließen',
-    autoSaveHint: 'Änderungen werden automatisch gespeichert.',
-    overlapError: 'Intervalle dürfen sich nicht überschneiden.',
+    close: 'Schlie\u00dfen',
+    autoSaveHint: '\u00c4nderungen werden automatisch gespeichert.',
+    overlapError: 'Intervalle d\u00fcrfen sich nicht \u00fcberschneiden.',
     saveFailed: 'Zeitplan konnte nicht gespeichert werden. Fehler: {error}'
   },
   modules: {
     menu: {
       main: 'Hauptseite',
       active: 'Aktives Modul',
-      available: 'Verfügbare Module'
+      available: 'Verf\u00fcgbare Module'
     },
     active: {
-      selected: 'Ausgewähltes Modul zum Start',
+      selected: 'Ausgew\u00e4hltes Modul zum Start',
       enabled: {
         title: 'Modul aktivieren',
-        caption: 'Modulausführung aktivieren oder deaktivieren'
+        caption: 'Modulausf\u00fchrung aktivieren oder deaktivieren'
       },
-      executionLog: 'Ausführungsprotokoll',
+      executionLog: 'Ausf\u00fchrungsprotokoll',
       stdout: 'Standardausgabe (stdout)',
       stderr: 'Standardfehlerausgabe (stderr)'
     },
     available: {
       configuration: 'Konfiguration',
-      selVersion: 'Version auswählen',
+      selVersion: 'Version ausw\u00e4hlen',
       selVersionDescription: 'Die Modulversion zum Start',
       autoupdates: 'Automatische Updates',
       autoupdatesDescription: 'Das Modul automatisch auf die neueste Version aktualisieren',
-      arguments: 'Startparameter (für fortgeschrittene Nutzer)',
-      argumentsDescription: 'Zusätzliche Startparameter für die Ausführung der Binärdatei',
+      arguments: 'Startparameter (f\u00fcr fortgeschrittene Nutzer)',
+      argumentsDescription: 'Zus\u00e4tzliche Startparameter f\u00fcr die Ausf\u00fchrung der Bin\u00e4rdatei',
       versions: {
         versions: 'Liste der Versionen',
         downloadInstall: 'Herunterladen und Installieren',
-        selectUse: 'Für Verwendung auswählen'
+        selectUse: 'F\u00fcr Verwendung ausw\u00e4hlen'
       }
     },
     mhddosProxy: {
       copies: 'Kopien',
-      copiesDescription: 'Die Anzahl der gestarteten Prozesse (Modulkopien). 0 für Auto',
+      copiesDescription: 'Die Anzahl der gestarteten Prozesse (Modulkopien). 0 f\u00fcr Auto',
       threads: 'Threads',
-      threadsDescription: 'Die Anzahl der gestarteten Threads pro Prozess. 0 für Auto',
+      threadsDescription: 'Die Anzahl der gestarteten Threads pro Prozess. 0 f\u00fcr Auto',
       useMyIp: 'Meine IP benutzen',
       useMyIpDescription: 'Der Prozentanteil der Verwendung Ihrer eigenen IP-Adresse oder VPN, wenn konfiguriert'
     },
     distress: {
-      concurrency: 'Nebenläufigkeit',
+      concurrency: 'Nebenl\u00e4ufigkeit',
       concurrencyDescription: 'Die Anzahl der Aufgabenersteller. 0 setzt Standardwert auf 4096 ',
       torConnections: 'Tor-Verbindungen',
-      torConnectionsDescription: 'Tor-Verbindungen für den Angriff verwenden',
+      torConnectionsDescription: 'Tor-Verbindungen f\u00fcr den Angriff verwenden',
       useMyIp: 'Meine IP benutzen',
       useMyIpDescription: 'Der Prozentanteil der Verwendung Ihrer eigenen IP-Adresse oder VPN, wenn konfiguriert',
       UDPFlood: 'UDP-Flood deaktivieren',
@@ -101,11 +101,11 @@ export default {
     achievements: {
       peopleAreLikeShips: {
         title: 'Menschen sind wie Schiffe',
-        subtitle: 'Wenn sie russisch sind, fahren sie zur Hölle',
+        subtitle: 'Wenn sie russisch sind, fahren sie zur H\u00f6lle',
 
-        body: 'Es scheint, als hätten Sie gerade versucht, die russische Sprache auszuwählen. Sie brauchen uns, um Sie zu retten. Keine Sorge, wir werden Sie bald denazifizieren und befreien.',
-        explanationHint: 'Ich verstehe nicht. Erläutern Sie mir dieses Meme.',
-        explanation: '"russisches Kriegsschiff, geh fick dich selbst", war die letzte Kommunikation, die am 24. Februar, dem ersten Tag der Snake-Island-Kampagne 2022, vom ukrainischen Grenzschützer Roman Hrybov an den russischen Lenkwaffenkreuzer moskva gerichtet wurde. Am 13. April 2022 wurde moskva durch eine Explosion, verursacht von ukrainischen Anti-Schiffs-Raketen, kritisch beschädigt und sank am folgenden Tag. "Menschen sind wie Schiffe" ist ein bekanntes Lied der Band Skryabin in der Ukraine. Die Denazifizierung und die Befreiung der Ukrainer sind Slogans der russischen Propaganda der "russischen Welt"-Doktrin.',
+        body: 'Es scheint, als h\u00e4tten Sie gerade versucht, die russische Sprache auszuw\u00e4hlen. Sie brauchen uns, um Sie zu retten. Keine Sorge, wir werden Sie bald denazifizieren und befreien.',
+        explanationHint: 'Ich verstehe nicht. Erl\u00e4utern Sie mir dieses Meme.',
+        explanation: '"russisches Kriegsschiff, geh fick dich selbst", war die letzte Kommunikation, die am 24. Februar, dem ersten Tag der Snake-Island-Kampagne 2022, vom ukrainischen Grenzsch\u00fctzer Roman Hrybov an den russischen Lenkwaffenkreuzer moskva gerichtet wurde. Am 13. April 2022 wurde moskva durch eine Explosion, verursacht von ukrainischen Anti-Schiffs-Raketen, kritisch besch\u00e4digt und sank am folgenden Tag. "Menschen sind wie Schiffe" ist ein bekanntes Lied der Band Skryabin in der Ukraine. Die Denazifizierung und die Befreiung der Ukrainer sind Slogans der russischen Propaganda der "russischen Welt"-Doktrin.',
         goodButton: 'Ich bin albern. Bitte befreien Sie mich',
         badButton: 'Ich mag die Ukraine nicht'
       }
@@ -119,7 +119,7 @@ export default {
     title: 'Es scheint, dies ist Ihr erster Start. Lassen Sie uns Ihnen helfen.',
 
     header: {
-      language: 'Sprache auswählen',
+      language: 'Sprache ausw\u00e4hlen',
       data: 'Daten',
       itarmy: 'ITArmy ID',
       module: 'Module'
@@ -131,57 +131,57 @@ export default {
 
     data: {
       body: 'Die Anwendung wird automatisch die erforderlichen Module herunterladen und auf Ihrem PC speichern. Module und alle Daten werden im Ordner gespeichert',
-      windows: 'Bevor Sie fortfahren, stellen Sie sicher, dass Sie den Datenordner zu den Ausnahmen von Windows Defender und dem Antivirenprogramm hinzugefügt haben. Andernfalls werden alle heruntergeladenen Daten gelöscht.',
-      openDataFolderButton: 'Datenordner öffnen',
-      changeDataFolderButton: 'Datenordner ändern',
+      windows: 'Bevor Sie fortfahren, stellen Sie sicher, dass Sie den Datenordner zu den Ausnahmen von Windows Defender und dem Antivirenprogramm hinzugef\u00fcgt haben. Andernfalls werden alle heruntergeladenen Daten gel\u00f6scht.',
+      openDataFolderButton: 'Datenordner \u00f6ffnen',
+      changeDataFolderButton: 'Datenordner \u00e4ndern',
       continueButton: 'Weiter',
-      backButton: 'Zurück'
+      backButton: 'Zur\u00fcck'
     },
 
     itarmy: {
       body: "Wenn Sie eine ITArmy ID haben, geben Sie sie unten ein. Andernfalls klicken Sie auf die 'Weiter' Taste",
       uuidInputTitle: 'ITArmy ID',
       continueButton: 'Weiter',
-      backButton: 'Zurück'
+      backButton: 'Zur\u00fcck'
     },
 
     module: {
-      body: 'Wählen Sie eine Voreinstellung aus. Alle Daten können dann geändert werden',
+      body: 'W\u00e4hlen Sie eine Voreinstellung aus. Alle Daten k\u00f6nnen dann ge\u00e4ndert werden',
       installation: {
         title: 'Modulinstallation'
       },
       preset: {
         government: {
           title: 'Staatseinrichtung / Alter PC',
-          description: 'Diese Voreinstellung verwendet so wenig Ressourcen wie möglich. Dies kann einige Modulfunktionen deaktivieren.'
+          description: 'Diese Voreinstellung verwendet so wenig Ressourcen wie m\u00f6glich. Dies kann einige Modulfunktionen deaktivieren.'
         },
         laptop: {
           title: 'Laptop',
-          description: 'Diese Voreinstellung versucht, so wenig Ressourcen wie möglich zu verwenden, ohne dabei Funktionen zu deaktivieren.'
+          description: 'Diese Voreinstellung versucht, so wenig Ressourcen wie m\u00f6glich zu verwenden, ohne dabei Funktionen zu deaktivieren.'
         },
         comfort: {
           title: 'Komfort',
-          description: 'Diese Voreinstellung verwendet Ressourcen im Komfortmodus. Es beeinträchtigt die Leistung Ihres Computers nicht.'
+          description: 'Diese Voreinstellung verwendet Ressourcen im Komfortmodus. Es beeintr\u00e4chtigt die Leistung Ihres Computers nicht.'
         },
         normal: {
           title: 'Normal',
-          description: 'Normaler Heimcomputer. Diese Voreinstellung verwendet standardmäßig die Konfiguration, die von den Modulentwicklern bereitgestellt wird.'
+          description: 'Normaler Heimcomputer. Diese Voreinstellung verwendet standardm\u00e4\u00dfig die Konfiguration, die von den Modulentwicklern bereitgestellt wird.'
         },
         max: {
           title: 'Maximal',
-          description: 'Höchste Leistung. Diese Voreinstellung verwendet die maximale Ressourcenkapazität Ihres Computers. Dies kann Verzögerungen in anderen Programmen verursachen.'
+          description: 'H\u00f6chste Leistung. Diese Voreinstellung verwendet die maximale Ressourcenkapazit\u00e4t Ihres Computers. Dies kann Verz\u00f6gerungen in anderen Programmen verursachen.'
         },
         expert: {
           title: 'Experte',
-          description: 'Diese Voreinstellung führt keine Aktionen aus. Alle Einstellungen müssen manuell gesetzt werden.'
+          description: 'Diese Voreinstellung f\u00fchrt keine Aktionen aus. Alle Einstellungen m\u00fcssen manuell gesetzt werden.'
         }
       }
     },
 
     doneDialog: {
       title: 'Einrichtung abgeschlossen',
-      body: 'Jetzt können Sie die Anwendung verwenden. Wir benötigen jedoch noch etwas Zeit, um alles vorzubereiten (1-3 Minuten). Während dieser Zeit kann es keine Updates auf dem Hauptdashboard geben. Dies ist normal für den ersten Start :) In wenigen Minuten werden Diagramme und aktuelle Informationen auf dem Hauptdashboard angezeigt.',
-      finishButton: "Großartig! Los geht's!"
+      body: 'Jetzt k\u00f6nnen Sie die Anwendung verwenden. Wir ben\u00f6tigen jedoch noch etwas Zeit, um alles vorzubereiten (1-3 Minuten). W\u00e4hrend dieser Zeit kann es keine Updates auf dem Hauptdashboard geben. Dies ist normal f\u00fcr den ersten Start :) In wenigen Minuten werden Diagramme und aktuelle Informationen auf dem Hauptdashboard angezeigt.',
+      finishButton: 'Gro\u00dfartig! Los geht\'s!'
     }
   },
   settings: {
@@ -192,20 +192,20 @@ export default {
     autoUpdates: 'Automatische Updates',
     autoUpdatesDescription: 'Die Anwendung automatisch auf die letzte Version aktualisieren.',
     autoStartup: 'Autostart',
-    autoStartupDescription: 'Die Anwendung automatisch starten, wenn das System hochfährt.',
+    autoStartupDescription: 'Die Anwendung automatisch starten, wenn das System hochf\u00e4hrt.',
     hideTray: 'Anwendung im Infobereich verstecken',
-    hideTrayDescription: 'Die App im Infobereich verstecken, aber nicht schließen. Das Hauptfenster beim Start nicht anzeigen.',
+    hideTrayDescription: 'Die App im Infobereich verstecken, aber nicht schlie\u00dfen. Das Hauptfenster beim Start nicht anzeigen.',
     language: 'Sprache',
     idDescription: 'Wie kann man ID bekommen? Schauen Sie nach',
     data: 'Speicher',
     dataDescription: 'Derzeit sind Ihre Module im Ordner:',
-    warnDelStatistics: 'Sind Sie sicher, dass Sie alle Statistiken löschen möchten?',
-    warnDelCache: 'Sind Sie sicher, dass Sie den Modulcache löschen möchten? Die App wird nach dieser Aktion geschlossen und möglicherweise nicht automatisch neu gestartet.',
-    warnDelData: 'Sind Sie sicher, dass Sie alle Daten löschen möchten, einschließlich Cache, Einstellungen und Module? Die App wird nach dieser Aktion geschlossen und möglicherweise nicht automatisch neu gestartet',
-    openDataFolder: 'Dateinordner öffnen',
-    changeModulesDataLocation: 'Den Speicherort der Moduldaten ändern',
-    deleteStatistics: 'Statistiken löschen',
-    deleteModulesCache: 'Modulcache löschen',
+    warnDelStatistics: 'Sind Sie sicher, dass Sie alle Statistiken l\u00f6schen m\u00f6chten?',
+    warnDelCache: 'Sind Sie sicher, dass Sie den Modulcache l\u00f6schen m\u00f6chten? Die App wird nach dieser Aktion geschlossen und m\u00f6glicherweise nicht automatisch neu gestartet.',
+    warnDelData: 'Sind Sie sicher, dass Sie alle Daten l\u00f6schen m\u00f6chten, einschlie\u00dflich Cache, Einstellungen und Module? Die App wird nach dieser Aktion geschlossen und m\u00f6glicherweise nicht automatisch neu gestartet',
+    openDataFolder: 'Dateinordner \u00f6ffnen',
+    changeModulesDataLocation: 'Den Speicherort der Moduldaten \u00e4ndern',
+    deleteStatistics: 'Statistiken l\u00f6schen',
+    deleteModulesCache: 'Modulcache l\u00f6schen',
     deleteAllTheData: 'Werkseinstellungen',
     diagnostics: {
       title: 'Diagnose',
@@ -221,32 +221,15 @@ export default {
       q2: 'Wer ist putin?',
       q3: 'Was ist ausgetrocknet?',
 
-      cancell: 'Aufwachen, als wäre nichts passiert',
+      cancell: 'Aufwachen, als w\u00e4re nichts passiert',
       submit: 'Ab ins Kaninchenloch'
     }
   },
 
   dashboard: {
     statistics: 'Angriffskraft-Statistiken',
-    announcement: {
-      title: 'Mitteilung',
-      close: 'Schließen',
-      message: `UPD 07.04.26
-
-Liebe Community!
-
-Leider ist es uns innerhalb der von der Kanaladministration gesetzten Frist nicht gelungen, eine gemeinsame Basis zu finden. Unsere Position bleibt unverändert: Wir handeln offen, sind jedoch verpflichtet zu verstehen, an wen genau wir vertrauliche Daten übergeben. Im Falle einer offiziellen Anfrage sind wir bereit, alle erforderlichen Informationen und Zugänge den entsprechend befugten Personen bereitzustellen.
-
-Gleichzeitig können wir unsere Arbeit nicht unter Bedingungen fortsetzen, die außerhalb des rechtlichen Rahmens des Staates liegen und eine Bedrohung für uns alle darstellen.
-
-Aus diesem Grund setzen wir den Betrieb aller von uns verwalteten Werkzeuge vorübergehend aus, bis die Situation vollständig geklärt ist.
-
-Vielen Dank für Ihr Verständnis.
-
-Ruhm der Ukraine!`
-    },
     bytes: 'Gesendet / Datenverkehr / Insgesamt',
-    bytesHint: 'Die Statistiken zum gesendeten Datenverkehr können ungenau sein. Dies hängt vom Modul und seiner Funktionsweise ab. Die Gesamtstatistik ist immer präzise und zeigt aggregierte Informationen aus allen laufenden Tools an.',
+    bytesHint: 'Die Statistiken zum gesendeten Datenverkehr k\u00f6nnen ungenau sein. Dies h\u00e4ngt vom Modul und seiner Funktionsweise ab. Die Gesamtstatistik ist immer pr\u00e4zise und zeigt aggregierte Informationen aus allen laufenden Tools an.',
     moduleStatus: 'Modul-Status',
     control: 'Systemsteuerung',
     autostart: 'Autostart',
@@ -266,7 +249,7 @@ Ruhm der Ukraine!`
       trend: 'Trend',
       view: {
         raw: 'Roh',
-        smooth: 'Geglättet'
+        smooth: 'Gegl\u00e4ttet'
       },
       noData: 'Noch keine Statistik',
       events: {
@@ -284,20 +267,20 @@ Ruhm der Ukraine!`
     activeness: {
       score: 'Activeness Score'
     },
-    itarmyAPIKeyEmpty: 'IT Army ID ist nicht angegeben. Es ist nicht kritisch, aber es ist erforderlich, um allgemeine Statistiken anzuzeigen. Sie können sie in den Einstellungen angeben.'
+    itarmyAPIKeyEmpty: 'IT Army ID ist nicht angegeben. Es ist nicht kritisch, aber es ist erforderlich, um allgemeine Statistiken anzuzeigen. Sie k\u00f6nnen sie in den Einstellungen angeben.'
   },
 
   developers: {
-    itaySubtitle: 'Eine Community ukrainischer IT-Spezialisten, die Ende Februar 2022 gegründet wurde, um den Feind im Informations- und Cyberspace nach dem Beginn der russischen Invasion in der Ukraine am 24. Februar 2022 zu neutralisieren.',
-    shieldMore: 'Erfahren Sie mehr über uns und unsere Operationen:',
+    itaySubtitle: 'Eine Community ukrainischer IT-Spezialisten, die Ende Februar 2022 gegr\u00fcndet wurde, um den Feind im Informations- und Cyberspace nach dem Beginn der russischen Invasion in der Ukraine am 24. Februar 2022 zu neutralisieren.',
+    shieldMore: 'Erfahren Sie mehr \u00fcber uns und unsere Operationen:',
     partners: 'Kollegen und Partner',
     contacts: 'Kontakte',
-    contactP1: 'Für Fragen zur Anwendung, fragen Sie zunächst im IT Army-Chat:',
+    contactP1: 'F\u00fcr Fragen zur Anwendung, fragen Sie zun\u00e4chst im IT Army-Chat:',
     contactP1_1: 'Oder als letztes Mittel, auf unserem Kanal',
-    contactP1_2: 'Wenn Sie uns auf dem Kanal schreiben, denken Sie daran, dass wir nur über sehr begrenzte Ressourcen verfügen und möglicherweise nicht antworten können. In der Regel gibt es jedoch Community-Mitglieder, die Ihnen helfen können.',
+    contactP1_2: 'Wenn Sie uns auf dem Kanal schreiben, denken Sie daran, dass wir nur \u00fcber sehr begrenzte Ressourcen verf\u00fcgen und m\u00f6glicherweise nicht antworten k\u00f6nnen. In der Regel gibt es jedoch Community-Mitglieder, die Ihnen helfen k\u00f6nnen.',
     contactP2: 'Technische Probleme mit der Anwendung - wenn Sie wissen, wie man GitHub verwendet, erstellen Sie bitte ein Issue im Repository.',
     contactP2_1: 'Wenn nicht - fragen Sie im IT Army-Chat.',
-    contactP3: 'Fragen über Module - richten Sie sie an die Modul-Entwickler.',
+    contactP3: 'Fragen \u00fcber Module - richten Sie sie an die Modul-Entwickler.',
     contributors: 'Mitwirkende',
     contributorsSubtitle: 'Helfen Sie dabei, das Programm zu verbessern, und Ihr Name wird automatisch in dieser Liste erscheinen. Die Liste zeigt auch Mitwirkende zur vorherigen Version der Anwendung und einigen Modulen.'
   },
@@ -307,9 +290,9 @@ Ruhm der Ukraine!`
       title: 'Activeness Login',
       email: 'E-Mail',
       password: 'Passwort',
-      info: 'Unglücklicherweise erfordert Activeness zusätzliche Anmeldung zur Verwendung. In Zukunft werden wir versuchen, eine Anmeldung für alle IT Army-Dienste bereitzustellen. Wenn Sie nicht wissen, was Activeness ist, besuchen Sie https://activeness.social/.',
+      info: 'Ungl\u00fccklicherweise erfordert Activeness zus\u00e4tzliche Anmeldung zur Verwendung. In Zukunft werden wir versuchen, eine Anmeldung f\u00fcr alle IT Army-Dienste bereitzustellen. Wenn Sie nicht wissen, was Activeness ist, besuchen Sie https://activeness.social/.',
       loginButton: 'Einloggen / Registrieren',
-      failed: 'Anmeldung fehlgeschlagen. Überprüfen Sie Ihre Anmeldeinformationen/Netzwerkverbindung/Activeness-Status und versuchen Sie es erneut.'
+      failed: 'Anmeldung fehlgeschlagen. \u00dcberpr\u00fcfen Sie Ihre Anmeldeinformationen/Netzwerkverbindung/Activeness-Status und versuchen Sie es erneut.'
     },
     tasksTable: {
       title: 'Aufgaben',
@@ -318,7 +301,7 @@ Ruhm der Ukraine!`
       link: 'Link',
       description: 'Beschreibung',
       actions: 'Aktionen',
-      priority: 'Diese Aufgabe hat Priorität. Es ist sehr wichtig, sie zuerst zu erledigen'
+      priority: 'Diese Aufgabe hat Priorit\u00e4t. Es ist sehr wichtig, sie zuerst zu erledigen'
     },
 
     logoutButton: 'Ausloggen',

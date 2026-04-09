@@ -229,23 +229,6 @@ export default {
 
   dashboard: {
     statistics: 'Attack Power Statistics',
-    announcement: {
-      title: 'Announcement',
-      close: 'Close',
-      message: `UPD 07.04.26
-
-Dear Community!
-
-Unfortunately, within the time allotted by the channel administration, we were unable to find common ground. Our position remains unchanged: we act openly, but we are obliged to understand exactly to whom we are handing over confidential data. Upon receipt of an official request, we are ready to provide all necessary information and access to the duly authorized persons.
-
-At the same time, we cannot continue working under conditions that fall outside the legal framework of the state and create a threat to all of us.
-
-In this regard, we are temporarily suspending the operation of all tools under our control until the situation is fully resolved.
-
-Thank you for your understanding.
-
-Glory to Ukraine!`
-    },
     bytes: 'Sent / Traffic / Total',
     bytesHint: 'Statistics of send traffic may be not accurate. It depends on the module and the way it works. Total statistics is always precise and shows aggregated information from all the running tools.',
     moduleStatus: 'Module Status',

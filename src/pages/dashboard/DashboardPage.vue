@@ -1,23 +1,5 @@
 <template>
   <q-page padding>
-    <q-dialog v-model="showAnnouncementDialog">
-      <q-card class="announcement-dialog">
-        <q-card-section class="row items-center q-pb-sm">
-          <div class="text-h6 text-bold">{{ $t('dashboard.announcement.title') }}</div>
-          <q-space />
-          <q-btn v-close-popup flat round dense icon="close" aria-label="Close" />
-        </q-card-section>
-
-        <q-card-section>
-          <div class="announcement-dialog__content">{{ $t('dashboard.announcement.message') }}</div>
-        </q-card-section>
-
-        <q-card-actions align="right">
-          <q-btn v-close-popup color="primary" :label="$t('dashboard.announcement.close')" />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
-
     <div class="row">
       <div class="col-xs-12 col-sm-6 col-lg-3 q-pa-xs d-flex">
         <ModuleStatusComponent />
@@ -62,7 +44,6 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
 import { useQuasar } from 'quasar'
 import ModuleStatusComponent from './ModuleStatusComponent.vue'
 import BytesSendComponent from './BytesSendComponent.vue'
@@ -72,23 +53,9 @@ import CombinedLogOutputComponent from '../modules/CombinedLogOutputComponent.vu
 import ActivenessScoreComponent from './ActivenessScoreComponent.vue'
 
 const $q = useQuasar()
-const showAnnouncementDialog = ref(true)
 </script>
 
 <style scoped>
-.announcement-dialog {
-  width: min(720px, 92vw);
-  max-width: 92vw;
-}
-
-.announcement-dialog__content {
-  max-height: 55vh;
-  overflow-y: auto;
-  padding-right: 8px;
-  white-space: pre-line;
-  line-height: 1.6;
-}
-
 .execution-log-card {
   border-radius: 12px;
 }
