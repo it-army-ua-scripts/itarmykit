@@ -1,5 +1,74 @@
 // app global css in SCSS form
 
+body {
+  --app-shell-surface: #ffffff;
+  --app-shell-text: #111827;
+  --app-shell-text-muted: #111827;
+  --app-nav-hover-bg: #dddddd;
+  --app-nav-active-bg: #e5e7eb;
+  --app-stat-icon-bg: #ffd836;
+  --app-panel-bg: rgba(248, 250, 252, 0.62);
+  --app-panel-border: rgba(148, 163, 184, 0.28);
+  --app-panel-header-border: rgba(148, 163, 184, 0.2);
+  --app-log-bg: rgba(241, 245, 249, 0.72);
+  --app-log-text: #111827;
+  --app-matrix-accent: #16a34a;
+  --app-matrix-accent-muted: #166534;
+  --app-dialog-bg: #f8fafc;
+  --app-input-bg: #e5e7eb;
+  --app-soft-surface: rgba(255, 255, 255, 0.78);
+  --app-soft-border: rgba(148, 163, 184, 0.24);
+  --app-muted-text: #6b7280;
+  --app-accent-warm: #f59e0b;
+  --app-accent-cool: #3b82f6;
+}
+
+body.app-theme--light {
+  --app-shell-surface: #ffffff;
+  --app-shell-text: #111827;
+  --app-shell-text-muted: #111827;
+  --app-nav-hover-bg: #dddddd;
+  --app-nav-active-bg: #e5e7eb;
+  --app-stat-icon-bg: #ffd836;
+  --app-panel-bg: rgba(248, 250, 252, 0.62);
+  --app-panel-border: rgba(148, 163, 184, 0.28);
+  --app-panel-header-border: rgba(148, 163, 184, 0.2);
+  --app-log-bg: rgba(241, 245, 249, 0.72);
+  --app-log-text: #111827;
+  --app-matrix-accent: #16a34a;
+  --app-matrix-accent-muted: #166534;
+  --app-dialog-bg: #f8fafc;
+  --app-input-bg: #e5e7eb;
+  --app-soft-surface: rgba(255, 255, 255, 0.78);
+  --app-soft-border: rgba(148, 163, 184, 0.24);
+  --app-muted-text: #6b7280;
+  --app-accent-warm: #f59e0b;
+  --app-accent-cool: #3b82f6;
+}
+
+body.app-theme--dark {
+  --app-shell-surface: #1d1d1d;
+  --app-shell-text: #f3f4f6;
+  --app-shell-text-muted: #f3f4f6;
+  --app-nav-hover-bg: #334155;
+  --app-nav-active-bg: #000000;
+  --app-stat-icon-bg: #2a364d;
+  --app-panel-bg: rgba(15, 23, 42, 0.38);
+  --app-panel-border: rgba(148, 163, 184, 0.24);
+  --app-panel-header-border: rgba(148, 163, 184, 0.2);
+  --app-log-bg: rgba(15, 23, 42, 0.45);
+  --app-log-text: #e5e7eb;
+  --app-matrix-accent: #86efac;
+  --app-matrix-accent-muted: #4ade80;
+  --app-dialog-bg: #111827;
+  --app-input-bg: rgba(30, 41, 59, 0.92);
+  --app-soft-surface: rgba(30, 41, 59, 0.72);
+  --app-soft-border: rgba(148, 163, 184, 0.2);
+  --app-muted-text: #9ca3af;
+  --app-accent-warm: #f59e0b;
+  --app-accent-cool: #60a5fa;
+}
+
 /* === Stat cards === */
 .stat-icon-box {
   width: 72px;
@@ -9,7 +78,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffd836;
+  background: var(--app-stat-icon-bg);
   align-self: stretch;
 }
 
@@ -17,44 +86,267 @@
   font-size: 32px;
 }
 
-body.q-dark .stat-icon-box,
-body.body--dark .stat-icon-box,
-.q-dark .stat-icon-box {
-  background: #2a364d;
-}
-
 /* === Mode: Matrix === */
-.matrix-active,
-.matrix-active .q-layout,
-.matrix-active .q-page-container,
-.matrix-active .q-page {
+body.app-mode--matrix,
+body.app-mode--matrix .q-layout,
+body.app-mode--matrix .q-page-container,
+body.app-mode--matrix .q-page {
   background: transparent !important;
 }
 
-body.body--dark .matrix-active .q-header,
-body.body--dark .matrix-active .q-drawer,
-body.body--dark .matrix-active .q-card,
-body.body--dark .matrix-active .q-table__card,
-body.body--dark .matrix-active .q-item,
-body.body--dark .matrix-active .q-toolbar {
+body.app-theme--dark.app-mode--matrix .q-header,
+body.app-theme--dark.app-mode--matrix .q-drawer,
+body.app-theme--dark.app-mode--matrix .q-card,
+body.app-theme--dark.app-mode--matrix .q-table__card,
+body.app-theme--dark.app-mode--matrix .q-item,
+body.app-theme--dark.app-mode--matrix .q-toolbar {
   background: rgba(10, 12, 16, 0.65) !important;
   backdrop-filter: blur(2px);
 }
 
-body.body--dark .matrix-active .q-drawer {
+body.app-theme--dark.app-mode--matrix .q-drawer {
   border-right: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-body.body--light .matrix-active .q-header,
-body.body--light .matrix-active .q-drawer,
-body.body--light .matrix-active .q-card,
-body.body--light .matrix-active .q-table__card,
-body.body--light .matrix-active .q-item,
-body.body--light .matrix-active .q-toolbar {
+body.app-theme--light.app-mode--matrix .q-header,
+body.app-theme--light.app-mode--matrix .q-drawer,
+body.app-theme--light.app-mode--matrix .q-card,
+body.app-theme--light.app-mode--matrix .q-table__card,
+body.app-theme--light.app-mode--matrix .q-item,
+body.app-theme--light.app-mode--matrix .q-toolbar {
   background: rgba(255, 255, 255, 0.62) !important;
   backdrop-filter: blur(2px);
 }
 
-body.body--light .matrix-active .q-drawer {
+body.app-theme--light.app-mode--matrix .q-drawer {
   border-right: 1px solid rgba(15, 23, 42, 0.16);
+}
+
+/* === Mode: Easter === */
+body.app-mode--easter {
+  --app-shell-surface: rgba(255, 251, 235, 0.92);
+  --app-shell-text: #6b3f1d;
+  --app-shell-text-muted: #9a3412;
+  --app-nav-hover-bg: rgba(245, 158, 11, 0.18);
+  --app-nav-active-bg: rgba(249, 115, 22, 0.14);
+  --app-panel-bg: rgba(255, 255, 255, 0.86);
+  --app-panel-border: rgba(249, 115, 22, 0.22);
+  --app-panel-header-border: rgba(249, 115, 22, 0.18);
+  --app-log-bg: rgba(255, 252, 244, 0.94);
+  --app-log-text: #6b3f1d;
+  --app-dialog-bg: #fff7ed;
+  --app-input-bg: rgba(255, 237, 213, 0.96);
+  --app-soft-surface: rgba(255, 252, 244, 0.82);
+  --app-soft-border: rgba(249, 115, 22, 0.18);
+  --app-muted-text: #9a3412;
+  --app-accent-warm: #f59e0b;
+  --app-accent-cool: #8b5cf6;
+}
+
+body.app-theme--light.app-mode--easter,
+body.app-theme--light.app-mode--easter .q-layout,
+body.app-theme--light.app-mode--easter .q-page-container,
+body.app-theme--light.app-mode--easter .q-page {
+  background:
+    radial-gradient(circle at top left, rgba(254, 240, 138, 0.55), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(251, 146, 60, 0.14), transparent 32%),
+    linear-gradient(180deg, #fff8ee 0%, #fff7e2 100%) !important;
+}
+
+body.app-theme--light.app-mode--easter .app-shell-header {
+  background:
+    linear-gradient(90deg, rgba(245, 158, 11, 0.12), rgba(251, 146, 60, 0.08), rgba(250, 204, 21, 0.08)),
+    rgba(255, 251, 235, 0.96) !important;
+  border-bottom: 1px solid rgba(249, 115, 22, 0.2);
+}
+
+body.app-theme--light.app-mode--easter .app-shell-drawer {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 247, 237, 0.98)) !important;
+}
+
+body.app-theme--dark.app-mode--easter {
+  --app-shell-surface: rgba(51, 26, 78, 0.9);
+  --app-shell-text: #fef3c7;
+  --app-shell-text-muted: #fde68a;
+  --app-nav-hover-bg: rgba(251, 191, 36, 0.18);
+  --app-nav-active-bg: rgba(236, 72, 153, 0.2);
+  --app-panel-bg: rgba(58, 33, 87, 0.82);
+  --app-panel-border: rgba(250, 204, 21, 0.18);
+  --app-panel-header-border: rgba(250, 204, 21, 0.14);
+  --app-log-bg: rgba(49, 26, 73, 0.86);
+  --app-log-text: #fef3c7;
+  --app-dialog-bg: #3b224f;
+  --app-input-bg: rgba(88, 28, 135, 0.72);
+  --app-soft-surface: rgba(66, 33, 92, 0.8);
+  --app-soft-border: rgba(250, 204, 21, 0.16);
+  --app-muted-text: #fcd34d;
+  --app-accent-warm: #f59e0b;
+  --app-accent-cool: #a78bfa;
+}
+
+body.app-theme--dark.app-mode--easter,
+body.app-theme--dark.app-mode--easter .q-layout,
+body.app-theme--dark.app-mode--easter .q-page-container,
+body.app-theme--dark.app-mode--easter .q-page {
+  background:
+    radial-gradient(circle at top left, rgba(251, 191, 36, 0.18), transparent 26%),
+    radial-gradient(circle at bottom right, rgba(244, 114, 182, 0.16), transparent 28%),
+    linear-gradient(180deg, #1f1230 0%, #2c163d 100%) !important;
+}
+
+body.app-theme--dark.app-mode--easter .app-shell-header {
+  background:
+    linear-gradient(90deg, rgba(251, 191, 36, 0.12), rgba(236, 72, 153, 0.1), rgba(59, 130, 246, 0.1)),
+    rgba(51, 26, 78, 0.94) !important;
+  border-bottom: 1px solid rgba(250, 204, 21, 0.18);
+}
+
+body.app-theme--dark.app-mode--easter .app-shell-drawer {
+  background:
+    linear-gradient(180deg, rgba(51, 26, 78, 0.96), rgba(40, 17, 63, 0.98)) !important;
+}
+
+body.app-mode--easter .app-logo {
+  filter: drop-shadow(0 8px 18px rgba(249, 115, 22, 0.28));
+}
+
+body.app-mode--easter .app-nav-item {
+  position: relative;
+  overflow: hidden;
+}
+
+body.app-mode--easter .app-nav-item::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(10px 14px at 18px 50%, rgba(249, 115, 22, 0.18), rgba(249, 115, 22, 0) 72%),
+    radial-gradient(10px 14px at calc(100% - 18px) 50%, rgba(59, 130, 246, 0.16), rgba(59, 130, 246, 0) 72%);
+  pointer-events: none;
+}
+
+body.app-mode--easter .app-nav-item--active {
+  box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.2);
+}
+
+body.app-mode--easter .q-card,
+body.app-mode--easter .top-list-item,
+body.app-mode--easter .execution-log-card {
+  position: relative;
+  overflow: hidden;
+}
+
+body.app-mode--easter .q-card::before,
+body.app-mode--easter .top-list-item::before,
+body.app-mode--easter .execution-log-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: linear-gradient(90deg, #f59e0b 0%, #ec4899 48%, #3b82f6 100%);
+  opacity: 0.95;
+  pointer-events: none;
+}
+
+body.app-mode--easter .q-card::after,
+body.app-mode--easter .top-list-item::after,
+body.app-mode--easter .execution-log-card::after {
+  display: none;
+}
+
+body.app-mode--easter .stat-icon-box {
+  width: 78px;
+  min-width: 78px;
+  height: 100%;
+  min-height: 72px;
+  margin: 0;
+  align-self: stretch;
+  border-radius: 8px 0 0 8px;
+  background: transparent;
+  position: relative;
+}
+
+body.app-mode--easter .stat-icon-box::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 52px;
+  height: 68px;
+  transform: translate(-50%, -50%);
+  border-radius: 50% 50% 46% 46% / 58% 58% 42% 42%;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent),
+    linear-gradient(135deg, #facc15 0%, #fb923c 100%);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 255, 255, 0.28),
+    0 10px 22px rgba(249, 115, 22, 0.18);
+  animation: easter-egg-float 4.8s ease-in-out infinite;
+  transform-origin: 50% 58%;
+}
+
+body.app-mode--easter .stat-icon-box::after {
+  display: none;
+}
+
+body.app-mode--easter .stat-icon-box .q-icon {
+  position: relative;
+  z-index: 1;
+}
+
+body.app-mode--easter .col-xs-12:nth-child(4n + 1) .stat-icon-box::before {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent),
+    linear-gradient(135deg, #facc15 0%, #fb923c 100%);
+}
+
+body.app-mode--easter .col-xs-12:nth-child(4n + 2) .stat-icon-box::before {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent),
+    linear-gradient(135deg, #93c5fd 0%, #2563eb 100%);
+  animation-delay: 0.6s;
+}
+
+body.app-mode--easter .col-xs-12:nth-child(4n + 3) .stat-icon-box::before {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent),
+    linear-gradient(135deg, #86efac 0%, #16a34a 100%);
+  animation-delay: 1.2s;
+}
+
+body.app-mode--easter .col-xs-12:nth-child(4n + 4) .stat-icon-box::before {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent),
+    linear-gradient(135deg, #f9a8d4 0%, #db2777 100%);
+  animation-delay: 1.8s;
+}
+
+@keyframes easter-egg-float {
+  0%, 100% {
+    transform: translate(-50%, -50%) rotate(0deg) scale(1);
+    box-shadow:
+      inset 0 0 0 2px rgba(255, 255, 255, 0.28),
+      0 10px 22px rgba(249, 115, 22, 0.18);
+  }
+
+  25% {
+    transform: translate(-50%, calc(-50% - 1px)) rotate(-3deg) scale(1.02);
+  }
+
+  50% {
+    transform: translate(-50%, calc(-50% - 3px)) rotate(2deg) scale(1.03);
+    box-shadow:
+      inset 0 0 0 2px rgba(255, 255, 255, 0.32),
+      0 14px 26px rgba(249, 115, 22, 0.22);
+  }
+
+  75% {
+    transform: translate(-50%, calc(-50% - 1px)) rotate(3deg) scale(1.015);
+  }
+}
+
+body.app-mode--easter .q-btn.bg-primary,
+body.app-mode--easter .q-btn.text-primary {
+  --q-primary: #d97706;
 }

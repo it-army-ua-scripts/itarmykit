@@ -3,23 +3,19 @@
         ref="scroll"
         outlined
         style="height: 260px; max-height: 360px;"
-        :class="[
-            'execution-log-scroll q-mt-sm',
-            $q.dark.isActive ? 'execution-log-scroll--dark' : 'execution-log-scroll--light',
-        ]"
+        class="execution-log-scroll q-mt-sm"
     >
-        <pre :class="['execution-log-pre', $q.dark.isActive ? 'execution-log-pre--dark' : 'execution-log-pre--light']">{{ log }}</pre>
+        <pre class="execution-log-pre">{{ log }}</pre>
     </q-scroll-area>
 </template>
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
 import { IpcRendererEvent } from 'electron'
-import { QScrollArea, useQuasar } from 'quasar'
+import { QScrollArea } from 'quasar'
 
 const log = ref('')
 const scroll = ref<QScrollArea>()
-const $q = useQuasar()
 
 async function loadState () {
   const executionEngineState = await window.executionEngineAPI.getState()
@@ -77,10 +73,8 @@ onUnmounted(() => {
 .execution-log-scroll {
     border: 1px solid rgba(148, 163, 184, 0.28);
     border-radius: 12px;
-}
-
-.execution-log-scroll--light {
-    background: rgba(241, 245, 249, 0.72);
+    border-color: var(--app-panel-border);
+    background: var(--app-log-bg);
 }
 
 .execution-log-pre {
@@ -91,18 +85,6 @@ onUnmounted(() => {
     font-size: 13px;
     line-height: 1.45;
     font-family: "JetBrains Mono", "Fira Code", "Consolas", monospace;
-}
-
-.execution-log-pre--light {
-    color: #111827;
-}
-
-.execution-log-scroll--dark {
-    border-color: rgba(148, 163, 184, 0.24);
-    background: rgba(15, 23, 42, 0.45);
-}
-
-.execution-log-pre--dark {
-    color: #e5e7eb;
+    color: var(--app-log-text);
 }
 </style>

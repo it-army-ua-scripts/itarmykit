@@ -10,11 +10,11 @@ export const useMatrixStore = defineStore('matrix', {
   actions: {
     async setEnabled (enabled: boolean) {
       this._enabled = enabled
-      await window.settingsAPI.gui.setMatrixMode(enabled)
+      await window.settingsAPI.gui.setMode(enabled ? 'matrix' : 'default')
     },
     async load () {
       const settingsData = await window.settingsAPI.get()
-      this._enabled = settingsData.gui.matrixMode
+      this._enabled = settingsData.gui.mode === 'matrix'
     }
   }
 })

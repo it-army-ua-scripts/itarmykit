@@ -1,14 +1,12 @@
 <template>
-    <canvas v-if="matrixStore._enabled" ref="canvas" width="1000" height="2000" style="position: fixed; inset: 0; width: 100vw; height: 100vh; overflow: hidden; pointer-events: none; z-index: 0;" />
+    <canvas v-if="appearanceStore.modeId === 'matrix'" ref="canvas" width="1000" height="2000" style="position: fixed; inset: 0; width: 100vw; height: 100vh; overflow: hidden; pointer-events: none; z-index: 0;" />
 </template>
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch } from 'vue'
-import { useQuasar } from 'quasar'
-import { useMatrixStore } from './matrix.store'
+import { useAppearanceStore } from 'src/appearance/store'
 
-const $q = useQuasar()
-const matrixStore = useMatrixStore()
+const appearanceStore = useAppearanceStore()
 
 const canvas = ref<HTMLCanvasElement>()
 
@@ -22,28 +20,28 @@ let columns = window.innerWidth / fontSize
 
 const rainDrops = [] as Array<number>
 
-watch([matrixStore.$state], () => {
+watch([appearanceStore.$state], () => {
   setTimeout(() => {
     resize()
   }, 100)
 }, { deep: true })
 
 function draw () {
-  if (!matrixStore._enabled) return
+  if (appearanceStore.modeId !== 'matrix') return
 
   const context = canvas?.value?.getContext('2d')
 
   if (!context) return
   if (!canvas.value) return
 
-  if ($q.dark.isActive) {
+  if (appearanceStore.isDarkTheme) {
     context.fillStyle = 'rgba(27, 27, 27, 0.1)'
   } else {
     context.fillStyle = 'rgba(255, 255, 255, 0.05)'
   }
   context.fillRect(0, 0, canvas.value.width, canvas.value.height)
 
-  context.fillStyle = $q.dark.isActive ? 'rgba(34, 197, 94, 0.42)' : 'rgba(16, 148, 48, 0.6)'
+  context.fillStyle = appearanceStore.isDarkTheme ? 'rgba(34, 197, 94, 0.42)' : 'rgba(16, 148, 48, 0.6)'
   context.font = fontSize + 'px monospace'
 
   for (let i = 0; i < rainDrops.length; i++) {
@@ -70,7 +68,7 @@ function resize () {
 }
 
 onMounted(async () => {
-  await matrixStore.load()
+  await appearanceStore.load()
 
   resize()
   window.addEventListener('resize', resize)

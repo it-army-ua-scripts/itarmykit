@@ -160,34 +160,41 @@
       <q-card-section>
         <div class="text-h6">{{ $t("settings.look") }}</div>
         <q-separator class="q-mt-xs q-mb-xs" />
-        <q-item class="" v-ripple clickable @click="setDarkMode(!guiDarkMode)">
+        <q-item>
           <q-item-section>
-            <q-item-label>{{ $t("settings.darkMode") }}</q-item-label>
+            <q-item-label>{{ $t("settings.theme") }}</q-item-label>
           </q-item-section>
           <q-item-section side top>
-            <q-toggle
-              color="primary"
-              v-model="guiDarkMode"
-              @update:model-value="setDarkMode"
+            <q-select
+              dense
+              outlined
+              emit-value
+              map-options
+              style="min-width: 180px"
+              :model-value="selectedThemeId"
+              :options="themeOptions"
+              @update:model-value="setTheme"
             />
           </q-item-section>
         </q-item>
 
-        <q-item
-          v-if="matrixModeUnlocked"
-          class=""
-          v-ripple
-          clickable
-          @click="setMatrixMode(!guiMatrixMode)"
-        >
+        <q-item>
           <q-item-section>
-            <q-item-label>{{ $t("settings.matrixMode") }}</q-item-label>
+            <q-item-label>{{ $t("settings.mode") }}</q-item-label>
+            <q-item-label v-if="!appearanceStore.isModeUnlocked('matrix')" caption>
+              {{ $t("settings.modeLockedHint") }}
+            </q-item-label>
           </q-item-section>
           <q-item-section side top>
-            <q-toggle
-              color="primary"
-              v-model="guiMatrixMode"
-              @update:model-value="setMatrixMode"
+            <q-select
+              dense
+              outlined
+              emit-value
+              map-options
+              style="min-width: 180px"
+              :model-value="selectedModeId"
+              :options="modeOptions"
+              @update:model-value="setMode"
             />
           </q-item-section>
         </q-item>
@@ -328,13 +335,16 @@
 import { useQuasar } from 'quasar'
 import LanguageSelectorComponent from './settings/LanguageSelectorComponent.vue'
 
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 
-import { useMatrixStore } from 'src/layouts/matrix.store'
+import { appearanceModes, appearanceThemes } from 'src/appearance/catalog'
+import { useAppearanceStore } from 'src/appearance/store'
 import MatrixModeQuizDialog from './settings/MatrixModeQuizDialog.vue'
 
 const $q = useQuasar()
-const matrixStore = useMatrixStore()
+const { t } = useI18n()
+const appearanceStore = useAppearanceStore()
 
 const systemAutoUpdate = ref(true)
 async function setSystemAutoUpdate (newValue: boolean) {
@@ -397,25 +407,50 @@ async function deleteAllData () {
   await loadSettings()
 }
 
-const guiDarkMode = ref(false)
-async function setDarkMode (newValue: boolean) {
-  await window.settingsAPI.gui.setDarkMode(newValue)
-  guiDarkMode.value = newValue
-  $q.dark.set(newValue)
-
-  if (itArmyUUID.value && newValue && !matrixModeUnlocked.value) {
-    matrixModeQuizDialog.value = true
-  }
+const selectedThemeId = ref(appearanceStore.themeId)
+async function setTheme (themeId: string) {
+  await appearanceStore.setTheme(themeId)
+  selectedThemeId.value = appearanceStore.themeId
+  appearanceStore.applyRuntimeAppearance($q.dark)
 }
 
-const guiMatrixMode = ref(false)
-async function setMatrixMode (newValue: boolean) {
-  matrixStore.setEnabled(newValue)
-  guiMatrixMode.value = newValue
-}
-
-const matrixModeUnlocked = ref(false)
+const selectedModeId = ref(appearanceStore.modeId)
 const matrixModeQuizDialog = ref(false)
+
+const themeOptions = computed(() => appearanceThemes.map((theme) => ({
+  label: t(theme.labelKey),
+  value: theme.id
+})))
+
+const modeOptions = computed(() => appearanceModes.map((mode) => ({
+  label: mode.id === 'matrix' && !appearanceStore.isModeUnlocked('matrix')
+    ? `${t(mode.labelKey)} (${t('settings.locked')})`
+    : t(mode.labelKey),
+  value: mode.id
+})))
+
+async function openMatrixQuizIfAvailable () {
+  if (!itArmyUUID.value) {
+    selectedModeId.value = appearanceStore.modeId
+    return
+  }
+
+  matrixModeQuizDialog.value = true
+}
+
+async function setMode (modeId: string) {
+  if (modeId === 'matrix' && !appearanceStore.isModeUnlocked('matrix')) {
+    await openMatrixQuizIfAvailable()
+    selectedModeId.value = appearanceStore.modeId
+    return
+  }
+
+  const applied = await appearanceStore.setMode(modeId)
+  if (!applied && modeId === 'matrix') {
+    await openMatrixQuizIfAvailable()
+  }
+  selectedModeId.value = appearanceStore.modeId
+}
 
 async function loadSettings () {
   const settings = await window.settingsAPI.get()
@@ -425,9 +460,9 @@ async function loadSettings () {
   modulesDataFolderPath.value = settings.modules.dataPath
   itArmyUUID.value = settings.itarmy.uuid
   itArmyAPIKey.value = settings.itarmy.apiKey
-  guiDarkMode.value = settings.gui.darkMode
-  guiMatrixMode.value = settings.gui.matrixMode
-  matrixModeUnlocked.value = settings.gui.matrixModeUnlocked
+  appearanceStore.hydrate(settings.gui)
+  selectedThemeId.value = appearanceStore.themeId
+  selectedModeId.value = appearanceStore.modeId
 }
 
 onMounted(async () => {

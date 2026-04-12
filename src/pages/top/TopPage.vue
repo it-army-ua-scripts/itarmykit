@@ -1,9 +1,9 @@
 <template>
   <q-page padding>
-    <div class="text-h4 text-center text-bold q-mb-md">
+    <div class="text-h4 text-center text-bold q-mb-md top-title">
       {{ $t("top.volunteers") }}
     </div>
-    <q-tabs v-model="activeTab" dense>
+    <q-tabs v-model="activeTab" dense class="top-tabs">
       <q-tab name="weekly" :label="$t('top.week')" />
       <q-tab name="monthly" :label="$t('top.month')" />
       <q-tab name="activeness" :label="$t('top.activeness')" />
@@ -184,17 +184,33 @@ onMounted(async () => {
 .top-list-item {
   padding: 12px;
   border-radius: 12px;
-  background: #ffffff;
+  background: var(--app-soft-surface);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-  border: 1px solid #e6e6e6;
+  border: 1px solid var(--app-soft-border);
   text-align: center;
   position: relative;
+}
+
+.top-title {
+  color: var(--app-shell-text);
+}
+
+.top-tabs :deep(.q-tab) {
+  color: var(--app-muted-text);
+}
+
+.top-tabs :deep(.q-tab--active) {
+  color: var(--app-shell-text);
+}
+
+.top-tabs :deep(.q-tab__indicator) {
+  background: var(--app-accent-warm);
 }
 
 .top-list-label {
   font-size: 12px;
   text-transform: uppercase;
-  color: #6b6b6b;
+  color: var(--app-muted-text);
   margin-bottom: 2px;
   letter-spacing: 0.4px;
 }
@@ -204,50 +220,24 @@ onMounted(async () => {
   font-weight: 700;
   margin-bottom: 8px;
   word-break: break-word;
+  color: var(--app-shell-text);
 }
 
 .top-list-item--leader {
-  border-color: #f0c419;
-  box-shadow: 0 8px 20px rgba(240, 196, 25, 0.2);
+  border-color: var(--app-accent-warm);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--app-accent-warm) 22%, transparent);
 }
 
 .top-list-rank {
   position: absolute;
   top: 8px;
   left: 8px;
-  background: #f0c419;
+  background: var(--app-accent-warm);
   color: #111;
   font-weight: 800;
   font-size: 12px;
   padding: 2px 6px;
   border-radius: 6px;
-}
-
-body.q-dark .top-list-item,
-body.body--dark .top-list-item,
-.q-dark .top-list-item {
-  background: #1f1f1f;
-  border-color: #3a3a3a;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
-}
-
-body.q-dark .top-list-label,
-body.body--dark .top-list-label,
-.q-dark .top-list-label {
-  color: #a5a5a5;
-}
-
-body.q-dark .top-list-value,
-body.body--dark .top-list-value,
-.q-dark .top-list-value {
-  color: #f2f2f2;
-}
-
-body.q-dark .top-list-item--leader,
-body.body--dark .top-list-item--leader,
-.q-dark .top-list-item--leader {
-  border-color: #f0c419;
-  box-shadow: 0 8px 20px rgba(240, 196, 25, 0.35);
 }
 
 @media (max-width: 1400px) {

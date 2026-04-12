@@ -1,12 +1,12 @@
 <template>
   <q-spinner size="xl" class="q-ma-xl" v-if="loadingAll" />
   <div v-if="loginRequired && !loadingAll">
-    <q-card flat class="q-pa-md">
+    <q-card flat class="q-pa-md activeness-login-card">
       <q-card-section>
-        <div class="text-h5 text-center">
+        <div class="text-h5 text-center activeness-title">
           {{ $t("activeness.login.title") }}
         </div>
-        <div class="text-subtitle1 text-center">
+        <div class="text-subtitle1 text-center activeness-subtitle">
           {{ $t("activeness.login.info") }}
         </div>
       </q-card-section>
@@ -40,7 +40,7 @@
     </q-card>
   </div>
 
-  <div v-if="!loginRequired && !loadingAll" class="q-pa-md">
+  <div v-if="!loginRequired && !loadingAll" class="q-pa-md activeness-shell">
     <div class="row q-mb-sm justify-end">
       <div class="col-12 col-md-3">
         <q-btn class="full-width" icon="logout" outline @click="logout">{{
@@ -303,3 +303,33 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style scoped>
+.activeness-login-card,
+.activeness-shell :deep(.q-table__card) {
+  background: var(--app-soft-surface);
+  border: 1px solid var(--app-soft-border);
+  border-radius: 16px;
+}
+
+.activeness-title {
+  color: var(--app-shell-text);
+}
+
+.activeness-subtitle {
+  color: var(--app-muted-text);
+}
+
+.activeness-shell :deep(.q-field__control) {
+  background: var(--app-soft-surface);
+}
+
+.activeness-shell :deep(.q-table th),
+.activeness-shell :deep(.q-table td) {
+  color: var(--app-shell-text);
+}
+
+.activeness-shell :deep(.q-table__title) {
+  color: var(--app-shell-text);
+}
+</style>

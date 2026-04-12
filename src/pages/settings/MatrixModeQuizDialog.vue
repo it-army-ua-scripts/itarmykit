@@ -1,11 +1,11 @@
 <template>
-    <q-card flat style="width: min(500px, 90vw);">
+    <q-card flat class="matrix-quiz-card" style="width: min(500px, 90vw);">
         <q-card-section>
-            <div class="text-h5 text-bold text-light-green-13">{{ $t('settings.matrixQuiz.header', {name: itArmyUUID}) }}</div>
-            <div class="text-caption text-light-green-13">{{ $t('settings.matrixQuiz.body') }}</div>
+            <div class="text-h5 text-bold matrix-quiz-title">{{ $t('settings.matrixQuiz.header', {name: itArmyUUID}) }}</div>
+            <div class="text-caption matrix-quiz-body">{{ $t('settings.matrixQuiz.body') }}</div>
         </q-card-section>
 
-        <q-card-section>
+        <q-card-section class="matrix-quiz-form">
             {{ $t('settings.matrixQuiz.q1')  }}
             <q-input
                 filled
@@ -42,9 +42,9 @@
 import { QInput } from 'quasar'
 import { onMounted, ref } from 'vue'
 
-import { useMatrixStore } from 'src/layouts/matrix.store'
+import { useAppearanceStore } from 'src/appearance/store'
 
-const matrixStore = useMatrixStore()
+const appearanceStore = useAppearanceStore()
 
 const emit = defineEmits(['onClose'])
 
@@ -63,8 +63,8 @@ async function solve () {
     return
   }
 
-  await window.settingsAPI.gui.setMatrixModeUnlocked(true)
-  await matrixStore.setEnabled(true)
+  await appearanceStore.unlockMode('matrix')
+  await appearanceStore.setMode('matrix')
   emit('onClose')
 }
 
@@ -74,3 +74,36 @@ onMounted(async () => {
 })
 
 </script>
+
+<style scoped>
+.matrix-quiz-card {
+  background: var(--app-dialog-bg, var(--app-panel-bg));
+  color: var(--app-shell-text);
+  border: 1px solid var(--app-panel-border);
+  border-radius: 16px;
+}
+
+.matrix-quiz-title {
+  color: var(--app-matrix-accent, #16a34a);
+}
+
+.matrix-quiz-body {
+  color: var(--app-matrix-accent-muted, #15803d);
+}
+
+.matrix-quiz-form :deep(.q-field--filled .q-field__control) {
+  background: var(--app-input-bg, rgba(148, 163, 184, 0.1));
+}
+
+body.app-theme--dark .matrix-quiz-card {
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+}
+
+body.app-theme--light .matrix-quiz-title {
+  color: #15803d;
+}
+
+body.app-theme--light .matrix-quiz-body {
+  color: #166534;
+}
+</style>
