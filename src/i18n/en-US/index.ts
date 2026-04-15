@@ -302,7 +302,8 @@ export default {
       password: 'Password',
       info: 'Unfortunatelly, activeness requires additional login to be used. In future we will try to provide one login to all the IT Army services. If you dont know what is the Activeness, visit https://activeness.social/',
       loginButton: 'Login / Register',
-      failed: 'Login failed. Check your credentials/network connection/activeness status and try again.'
+      failed: 'Login failed. Check your email and password and try again.',
+      networkFailed: 'Login failed because the activeness service is unavailable or your network connection is down.'
     },
     tasksTable: {
       title: 'Tasks',
@@ -316,9 +317,37 @@ export default {
 
     logoutButton: 'Logout',
     suggesttarget: 'Suggest my target',
+    actions: {
+      done: 'Done',
+      ignore: 'Ignore',
+      openFirst: 'Open the link first'
+    },
+    summary: {
+      subtitle: 'Open the target, complete the report, then mark the task or skip it.',
+      available: 'Available tasks',
+      priority: 'Priority tasks',
+      nextStep: 'Next step',
+      nextStepHint: 'Open the first priority task and finish it before moving on.',
+      tip: 'Tip: use the green button after you finish the report, and use Ignore only for tasks you cannot process.',
+      emptyTitle: 'No tasks right now',
+      emptyBody: 'Refresh later or suggest a new target for the team.',
+      noDescription: 'No additional details',
+      priorityTag: 'Priority'
+    },
 
     notifyTaskLoadFailed: 'Failed to load tasks. Error: {error}',
     notifyFailedToMakeTaskDone: 'Failed to make task done. Error: {error}',
-    notifyFailedTOIgnoreTask: 'Failed to ignore task. Error: {error}'
+    notifyFailedTOIgnoreTask: 'Failed to ignore task. Error: {error}',
+    errors: {
+      clickTooFast: 'You are acting too fast. Please wait a few seconds and try again.',
+      invalidTaskId: 'This task is no longer available. Please refresh the list.',
+      openTaskFirst: 'Open the task link first, then mark it as done.',
+      sidExpired: 'Your activeness session has expired. Please log in again.',
+      sidCheckFail: 'Your activeness session is no longer valid for this account. Please log in again.',
+      sessionExpired: 'Your activeness session has expired. Please log in again.',
+      doneRejected: 'The activeness service rejected the completion request ({error}).',
+      ignoreRejected: 'The activeness service rejected the ignore request ({error}).',
+      unknown: 'Unknown activeness error.'
+    }
   }
 }

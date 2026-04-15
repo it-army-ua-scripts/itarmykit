@@ -18,14 +18,15 @@ export function handleHelpers () {
       if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
         console.warn('Blocked external URL with unsupported protocol', parsed.protocol)
         writeStabilityLog({ level: 'warn', source: 'helpers', event: 'blocked-external-url', details: { protocol: parsed.protocol, url } })
-        return
+        return false
       }
     } catch {
       console.warn('Blocked external URL due to invalid format')
       writeStabilityLog({ level: 'warn', source: 'helpers', event: 'blocked-invalid-url', details: { url } })
-      return
+      return false
     }
     await shell.openExternal(url)
+    return true
   })
 
   ipcMain.handle('helpers:logRendererEvent', async (_e, event: string, details?: unknown) => {

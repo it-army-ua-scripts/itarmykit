@@ -1,4 +1,5 @@
 import { ipcMain } from 'electron'
+import { electronNetFetch } from '../../lib/utils/electronNet'
 
 export interface PeriodTopData {
     items: Array<{
@@ -30,7 +31,7 @@ function emptyPeriodTopData (): PeriodTopData {
 
 async function getTopData (): Promise<TopData> {
   try {
-    const response = await fetch('https://itarmy.com.ua/leaderboard/json/leaderboard.json')
+    const response = await electronNetFetch('https://itarmy.com.ua/leaderboard/json/leaderboard.json')
     if (response.status !== 200) {
       return {
         success: false,

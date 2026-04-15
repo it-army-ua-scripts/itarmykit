@@ -301,7 +301,8 @@ export default {
       password: 'Passwort',
       info: 'Ungl\u00fccklicherweise erfordert Activeness zus\u00e4tzliche Anmeldung zur Verwendung. In Zukunft werden wir versuchen, eine Anmeldung f\u00fcr alle IT Army-Dienste bereitzustellen. Wenn Sie nicht wissen, was Activeness ist, besuchen Sie https://activeness.social/.',
       loginButton: 'Einloggen / Registrieren',
-      failed: 'Anmeldung fehlgeschlagen. \u00dcberpr\u00fcfen Sie Ihre Anmeldeinformationen/Netzwerkverbindung/Activeness-Status und versuchen Sie es erneut.'
+      failed: 'Anmeldung fehlgeschlagen. Pr\u00fcfen Sie E-Mail und Passwort und versuchen Sie es erneut.',
+      networkFailed: 'Die Anmeldung ist fehlgeschlagen, weil der Activeness-Dienst oder Ihre Netzwerkverbindung nicht verf\u00fcgbar ist.'
     },
     tasksTable: {
       title: 'Aufgaben',
@@ -315,9 +316,37 @@ export default {
 
     logoutButton: 'Ausloggen',
     suggesttarget: 'Mein Ziel vorschlagen',
+    actions: {
+      done: 'Erledigt',
+      ignore: 'Ignorieren',
+      openFirst: 'Öffnen Sie zuerst den Link'
+    },
+    summary: {
+      subtitle: 'Öffnen Sie das Ziel, führen Sie die Meldung durch und markieren oder überspringen Sie die Aufgabe danach.',
+      available: 'Verfügbare Aufgaben',
+      priority: 'Priorisierte Aufgaben',
+      nextStep: 'Nächster Schritt',
+      nextStepHint: 'Beginnen Sie mit der ersten priorisierten Aufgabe und schließen Sie sie ab, bevor Sie weitermachen.',
+      tip: 'Tipp: Nutzen Sie die grüne Schaltfläche nach der Meldung. Ignorieren Sie Aufgaben nur, wenn Sie sie wirklich nicht bearbeiten können.',
+      emptyTitle: 'Zurzeit keine Aufgaben',
+      emptyBody: 'Schauen Sie später noch einmal vorbei oder schlagen Sie ein neues Ziel für das Team vor.',
+      noDescription: 'Keine zusätzlichen Details',
+      priorityTag: 'Priorität'
+    },
 
     notifyTaskLoadFailed: 'Fehler beim Laden der Aufgaben. Fehler: {error}',
     notifyFailedToMakeTaskDone: 'Fehler beim Markieren der Aufgabe als erledigt. Fehler: {error}',
-    notifyFailedTOIgnoreTask: 'Fehler beim Ignorieren der Aufgabe. Fehler: {error}'
+    notifyFailedTOIgnoreTask: 'Fehler beim Ignorieren der Aufgabe. Fehler: {error}',
+    errors: {
+      clickTooFast: 'Die Aktion wurde zu schnell wiederholt. Bitte warten Sie ein paar Sekunden und versuchen Sie es erneut.',
+      invalidTaskId: 'Diese Aufgabe ist nicht mehr verf\u00fcgbar. Bitte aktualisieren Sie die Liste.',
+      openTaskFirst: 'Öffnen Sie zuerst den Link zur Aufgabe und markieren Sie sie erst danach als erledigt.',
+      sidExpired: 'Ihre Activeness-Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.',
+      sidCheckFail: 'Ihre Activeness-Sitzung passt nicht mehr zu diesem Konto. Bitte melden Sie sich erneut an.',
+      sessionExpired: 'Ihre Activeness-Sitzung ist abgelaufen. Bitte melden Sie sich erneut an.',
+      doneRejected: 'Der Activeness-Dienst hat das Abschlie\u00dfen der Aufgabe abgelehnt ({error}).',
+      ignoreRejected: 'Der Activeness-Dienst hat das Ignorieren der Aufgabe abgelehnt ({error}).',
+      unknown: 'Unbekannter Activeness-Fehler.'
+    }
   }
 }

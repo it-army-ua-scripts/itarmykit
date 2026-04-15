@@ -31,6 +31,7 @@ import type { Contributor } from './handlers/developers'
 import type {
   GetStatsResponse as GetActivenessStatsResponse,
   GetTasksListResponse as GetActivenessTasksListResponse,
+  LoginResponse as ActivenessLoginResponse,
   MakeTaskDoneResponse as MakeActivenessTaskDoneResponse,
   IgnoreTaskResponse as IgnoreActivenessTaskResponse
 } from '../lib/activeness/api'
@@ -268,8 +269,8 @@ const activenessAPI = {
   async isLoggedIn (): Promise<boolean> {
     return await invoke<boolean>('activeness:isLoggedIn')
   },
-  async login (email: string, password: string): Promise<boolean> {
-    return await invoke<boolean>('activeness:login', email, password)
+  async login (email: string, password: string): Promise<ActivenessLoginResponse> {
+    return await invoke<ActivenessLoginResponse>('activeness:login', email, password)
   },
   async logout (): Promise<void> {
     await invoke<void>('activeness:logout')
@@ -312,8 +313,8 @@ const systemAPI = {
 contextBridge.exposeInMainWorld('systemAPI', systemAPI)
 
 const helpersAPI = {
-  async openURLInBrowser (url: string): Promise<void> {
-    await invoke<void>('helpers:openURLInBrowser', url)
+  async openURLInBrowser (url: string): Promise<boolean> {
+    return await invoke<boolean>('helpers:openURLInBrowser', url)
   },
   async logRendererEvent (event: string, details?: unknown): Promise<void> {
     await invoke<void>('helpers:logRendererEvent', event, details)

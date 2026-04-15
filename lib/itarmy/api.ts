@@ -1,7 +1,6 @@
-import { withRequestTimeout } from '../utils/fetch'
+import { electronNetFetch } from '../utils/electronNet'
 
 const BASE_URL = 'https://bl4ck.dev/api'
-const BASE_REQUEST_OPTIONS = withRequestTimeout()
 
 export interface UserStats {
     login: string
@@ -21,7 +20,7 @@ export interface GetUserStatsResponse {
 
 export async function getUserStats (params: GetUserStatsRequest): Promise<GetUserStatsResponse> {
   try {
-    const statsResponse = await fetch(`${BASE_URL}/user/get-user-stats?apiKey=${encodeURI(params.apiKey)}`, BASE_REQUEST_OPTIONS)
+    const statsResponse = await electronNetFetch(`${BASE_URL}/user/get-user-stats?apiKey=${encodeURI(params.apiKey)}`)
     if (statsResponse.status !== 200) {
       return {
         success: false,

@@ -1,13 +1,12 @@
 import { ChildProcessWithoutNullStreams, spawn } from 'child_process'
 import { EventEmitter } from 'events'
-import { Readable } from 'stream'
-import type { ReadableStream as WebReadableStream } from 'stream/web'
 import path from 'path'
 import fs from 'fs'
 import decompress from 'decompress'
 import { Settings } from '../../src-electron/handlers/settings'
 import { getCPUArchitecture } from './archLib'
 import { writeFileAtomicWithBackup } from '../utils/atomicFile'
+import { electronNetDownloadFile, electronNetFetch } from '../utils/electronNet'
 import { terminateChildProcess } from '../utils/processControl'
 import { writeStabilityLog } from '../utils/stabilityLog'
 
@@ -153,7 +152,7 @@ export abstract class Module<ConfigType extends BaseConfig> {
     let release: GithubRelease
     try {
       console.log(`Fetching github release: https://api.github.com/repos/${owner}/${repo}/releases/tags/${tag}`)
-      const releaseResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases/tags/${tag}`)
+      const releaseResponse = await electronNetFetch(`https://api.github.com/repos/${owner}/${repo}/releases/tags/${tag}`)
       if (releaseResponse.status !== 200) {
         yield { stage: 'FAILED', progress: 0, errorCode: InstallationErrorCodes.UNKNOWN, errorMessage: `Cant fetch github release: ${await releaseResponse.text()}` }
         return
@@ -219,7 +218,7 @@ export abstract class Module<ConfigType extends BaseConfig> {
     const cacheTtlMs = 5 * 60 * 1000
     if (this.githubReleaseCacheTime === undefined || this.githubReleaseCacheTime.getTime() + cacheTtlMs < now) {
       console.debug('[Module] Refreshing GitHub releases cache', { owner, repo })
-      const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases`)
+      const response = await electronNetFetch(`https://api.github.com/repos/${owner}/${repo}/releases`)
       if (response.status !== 200) {
         throw new Error(`Cant fetch github releases: ${await response.text()}`)
       }
@@ -242,61 +241,35 @@ export abstract class Module<ConfigType extends BaseConfig> {
   }
 
   protected async *downloadFile (url: string, outPath: string): AsyncGenerator<{ progress: number }, void, void> {
-    const response = await fetch(url)
-    if (!response.ok) {
-      throw new Error(`Download failed: ${response.status} ${response.statusText}`)
-    }
-
-    const fileStream = fs.createWriteStream(outPath)
-    const contentLengthHeader = response.headers.get('content-length')
-    if (contentLengthHeader == null) {
-      throw new Error('Content length is null')
-    }
-    const contentLength = parseInt(contentLengthHeader, 10)
-    let downloadedBytes = 0
-
-    yield { progress: 0.001 }
-
-    if (response.body == null) {
-      throw new Error('Response body is null')
-    }
-    const body = Readable.fromWeb(response.body as unknown as WebReadableStream)
-    body.pipe(fileStream)
-
     const eventEmitter = new EventEmitter()
 
-    body.on('data', (chunk) => {
-      downloadedBytes += chunk.length
-      eventEmitter.emit('progress', downloadedBytes / contentLength * 100)
-    })
-
-    body.on('error', (err: unknown) => {
+    void electronNetDownloadFile(url, outPath, (progress) => {
+      eventEmitter.emit('progress', progress)
+    }).then(() => {
+      eventEmitter.emit('done')
+    }).catch((err) => {
       eventEmitter.emit('err', err)
     })
 
     let lastYieldProgress = 0
     while (true) {
-      const result = await new Promise<{ progress: number }>((resolve, reject) => {
-        eventEmitter.on('progress', (progress: number) => {
-          eventEmitter.removeAllListeners()
-          resolve({ progress })
-        })
-
-        eventEmitter.on('err', (err: unknown) => {
-          eventEmitter.removeAllListeners()
-          reject(err)
-        })
+      const result = await new Promise<{ type: 'progress', progress: number } | { type: 'done' }>((resolve, reject) => {
+        eventEmitter.once('progress', (progress: number) => resolve({ type: 'progress', progress }))
+        eventEmitter.once('done', () => resolve({ type: 'done' }))
+        eventEmitter.once('err', (err: unknown) => reject(err))
       })
-      if (result.progress === 100) {
-        await new Promise<void>((resolve, reject) => {
-          fileStream.on('finish', resolve)
-          fileStream.on('error', reject)
-        })
+
+      eventEmitter.removeAllListeners('progress')
+      eventEmitter.removeAllListeners('done')
+      eventEmitter.removeAllListeners('err')
+
+      if (result.type === 'done') {
         return
       }
-      if (lastYieldProgress + 5 < result.progress || result.progress === 100) {
+
+      if (lastYieldProgress + 5 < result.progress || result.progress === 100 || result.progress <= 0.01) {
         lastYieldProgress = result.progress
-        yield result
+        yield { progress: result.progress }
       }
     }
   }

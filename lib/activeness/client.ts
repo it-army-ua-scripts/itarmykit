@@ -1,4 +1,4 @@
-import { SID, Task, getTasksList, GetTasksListResponse, makeTaskDone, MakeTaskDoneResponse, ignoreTask, IgnoreTaskResponse, getStats, Stats, GetStatsResponse, login } from './api'
+import { SID, Task, getTasksList, GetTasksListResponse, makeTaskDone, MakeTaskDoneResponse, ignoreTask, IgnoreTaskResponse, getStats, Stats, GetStatsResponse, login, LoginResponse, FetchLike } from './api'
 
 const TASKS_CACHE_UPDATE_INTERVAL = 1000 * 60 * 2 // 2 minutes
 const STATISTICS_CACHE_UPDATE_INTERVAL = 1000 * 60 * 2 // 2 minutes
@@ -15,24 +15,29 @@ export class ActivenessClient {
 
   protected cachedStatistics?: Stats
   protected lastStatisticsCacheUpdate?: Date
+  protected readonly fetchImpl: FetchLike
 
-  constructor () {
+  constructor (fetchImpl: FetchLike = fetch) {
     this._score = 0
+    this.fetchImpl = fetchImpl
   }
 
   get score (): number {
     return this._score
   }
 
-  async login (email: string, password: string): Promise<boolean> {
-    const loginResponse = await login({ email, password })
+  set score (value: number) {
+    this._score = Math.max(0, value)
+  }
+
+  async login (email: string, password: string): Promise<LoginResponse> {
+    const loginResponse = await login({ email, password }, this.fetchImpl)
     if (loginResponse.status === 'ok') {
       this._sid = loginResponse.sid
       this._score = loginResponse.score
-      return true
     }
 
-    return false
+    return loginResponse
   }
 
   logout () {
@@ -42,8 +47,6 @@ export class ActivenessClient {
 
   async loginWithSID (sid: SID): Promise<boolean> {
     this._sid = sid
-    // TODO: Reload score
-    this._score = 0
     return true
   }
 
@@ -71,7 +74,7 @@ export class ActivenessClient {
       }
     }
 
-    const requestResponse = await getTasksList({ sid: this._sid })
+    const requestResponse = await getTasksList({ sid: this._sid }, this.fetchImpl)
     if (requestResponse.status === 'ok') {
       this.lastTaskListCacheUpdate = new Date()
       this.cachedTasksList = requestResponse.list
@@ -85,7 +88,7 @@ export class ActivenessClient {
       throw new Error('Not logged in')
     }
 
-    const requestResponse = await makeTaskDone({ sid: this._sid, id: taskId })
+    const requestResponse = await makeTaskDone({ sid: this._sid, id: taskId }, this.fetchImpl)
     if (requestResponse.status === 'ok') {
       this._score += 1
 
@@ -105,7 +108,7 @@ export class ActivenessClient {
       throw new Error('Not logged in')
     }
 
-    const requestResponse = await ignoreTask({ sid: this._sid, id: taskId })
+    const requestResponse = await ignoreTask({ sid: this._sid, id: taskId }, this.fetchImpl)
     if (requestResponse.status === 'ok') {
       if (this.cachedTasksList) {
         const taskIndex = this.cachedTasksList.findIndex(task => task.id === taskId)
@@ -126,7 +129,7 @@ export class ActivenessClient {
       }
     }
 
-    const requestResponse = await getStats()
+    const requestResponse = await getStats(this.fetchImpl)
     if (requestResponse.status === 'ok') {
       this.lastStatisticsCacheUpdate = new Date()
       this.cachedStatistics = requestResponse
